@@ -1,0 +1,579 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E503612FD088C000A6BE32 /* MemoryGameApp.swift */; };
+		04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503652FD088C300A6BE32 /* Assets.xcassets */; };
+		04E503692FD088C300A6BE32 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503682FD088C300A6BE32 /* Preview Assets.xcassets */; };
+		MMK001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF001 /* AppTheme.swift */; };
+		MMK002 /* GameEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF002 /* GameEnums.swift */; };
+		MMK003 /* CardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF003 /* CardModel.swift */; };
+		MMK004 /* CategoryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF004 /* CategoryModel.swift */; };
+		MMK005 /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF005 /* LevelModel.swift */; };
+		MMK006 /* AchievementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF006 /* AchievementModel.swift */; };
+		MMK007 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF007 /* SwiftDataModels.swift */; };
+		MMK008 /* LevelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF008 /* LevelCatalog.swift */; };
+		MMK009 /* MatchStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF009 /* MatchStrategy.swift */; };
+		MMK010 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF010 /* GameEngine.swift */; };
+		MMK011 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF011 /* AudioManager.swift */; };
+		MMK012 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF012 /* HapticManager.swift */; };
+		MMK013 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF013 /* ProgressStore.swift */; };
+		MMK014 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF014 /* HomeViewModel.swift */; };
+		MMK015 /* ProgressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF015 /* ProgressViewModel.swift */; };
+		MMK016 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF016 /* GameViewModel.swift */; };
+		MMK017 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF017 /* SettingsViewModel.swift */; };
+		MMK018 /* MemoryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF018 /* MemoryCardView.swift */; };
+		MMK019 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF019 /* ConfettiView.swift */; };
+		MMK020 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF020 /* ProgressBarView.swift */; };
+		MMK021 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF021 /* BadgeView.swift */; };
+		MMK023 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF023 /* RootView.swift */; };
+		MMK024 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF024 /* HomeView.swift */; };
+		MMK027 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF027 /* GameView.swift */; };
+		MMK028 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF028 /* ResultView.swift */; };
+		MMK029 /* AchievementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF029 /* AchievementView.swift */; };
+		MMK030 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF030 /* SettingsView.swift */; };
+		MMK031 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF031 /* SplashView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		04E5035E2FD088C000A6BE32 /* MemoryGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04E503612FD088C000A6BE32 /* MemoryGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryGameApp.swift; sourceTree = "<group>"; };
+		04E503652FD088C300A6BE32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		04E503682FD088C300A6BE32 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		MMKF001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		MMKF002 /* GameEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEnums.swift; sourceTree = "<group>"; };
+		MMKF003 /* CardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardModel.swift; sourceTree = "<group>"; };
+		MMKF004 /* CategoryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryModel.swift; sourceTree = "<group>"; };
+		MMKF005 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		MMKF006 /* AchievementModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementModel.swift; sourceTree = "<group>"; };
+		MMKF007 /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
+		MMKF008 /* LevelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelCatalog.swift; sourceTree = "<group>"; };
+		MMKF009 /* MatchStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchStrategy.swift; sourceTree = "<group>"; };
+		MMKF010 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
+		MMKF011 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		MMKF012 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		MMKF013 /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
+		MMKF014 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		MMKF015 /* ProgressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModel.swift; sourceTree = "<group>"; };
+		MMKF016 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		MMKF017 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		MMKF018 /* MemoryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryCardView.swift; sourceTree = "<group>"; };
+		MMKF019 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		MMKF020 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
+		MMKF021 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
+		MMKF023 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		MMKF024 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		MMKF027 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		MMKF028 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
+		MMKF029 /* AchievementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementView.swift; sourceTree = "<group>"; };
+		MMKF030 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		MMKF031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		04E5035B2FD088C000A6BE32 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		04E503552FD088C000A6BE32 = {
+			isa = PBXGroup;
+			children = (
+				04E503602FD088C000A6BE32 /* MemoryGame */,
+				04E5035F2FD088C000A6BE32 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		04E5035F2FD088C000A6BE32 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				04E5035E2FD088C000A6BE32 /* MemoryGame.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		04E503602FD088C000A6BE32 /* MemoryGame */ = {
+			isa = PBXGroup;
+			children = (
+				04E503612FD088C000A6BE32 /* MemoryGameApp.swift */,
+				MMKG001 /* Core */,
+				MMKG002 /* Models */,
+				MMKG003 /* Data */,
+				MMKG004 /* Engine */,
+				MMKG005 /* Persistence */,
+				MMKG006 /* Services */,
+				MMKG007 /* ViewModels */,
+				MMKG008 /* Components */,
+				MMKG009 /* Views */,
+				04E503652FD088C300A6BE32 /* Assets.xcassets */,
+				04E503672FD088C300A6BE32 /* Preview Content */,
+			);
+			path = MemoryGame;
+			sourceTree = "<group>";
+		};
+		04E503672FD088C300A6BE32 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				04E503682FD088C300A6BE32 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		MMKG001 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				MMKG010 /* Theme */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		MMKG002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF002 /* GameEnums.swift */,
+				MMKF003 /* CardModel.swift */,
+				MMKF004 /* CategoryModel.swift */,
+				MMKF005 /* LevelModel.swift */,
+				MMKF006 /* AchievementModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		MMKG003 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF008 /* LevelCatalog.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		MMKG004 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF009 /* MatchStrategy.swift */,
+				MMKF010 /* GameEngine.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		MMKG005 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF007 /* SwiftDataModels.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		MMKG006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF011 /* AudioManager.swift */,
+				MMKF012 /* HapticManager.swift */,
+				MMKF013 /* ProgressStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		MMKG007 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF014 /* HomeViewModel.swift */,
+				MMKF015 /* ProgressViewModel.swift */,
+				MMKF016 /* GameViewModel.swift */,
+				MMKF017 /* SettingsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		MMKG008 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF018 /* MemoryCardView.swift */,
+				MMKF019 /* ConfettiView.swift */,
+				MMKF020 /* ProgressBarView.swift */,
+				MMKF021 /* BadgeView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		MMKG009 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF023 /* RootView.swift */,
+				MMKF031 /* SplashView.swift */,
+				MMKG011 /* Home */,
+				MMKG014 /* Game */,
+				MMKG015 /* Result */,
+				MMKG016 /* Achievement */,
+				MMKG017 /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		MMKG010 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF001 /* AppTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		MMKG011 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF024 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		MMKG014 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF027 /* GameView.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		MMKG015 /* Result */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF028 /* ResultView.swift */,
+			);
+			path = Result;
+			sourceTree = "<group>";
+		};
+		MMKG016 /* Achievement */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF029 /* AchievementView.swift */,
+			);
+			path = Achievement;
+			sourceTree = "<group>";
+		};
+		MMKG017 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF030 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		04E5035D2FD088C000A6BE32 /* MemoryGame */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 04E5036C2FD088C300A6BE32 /* Build configuration list for PBXNativeTarget "MemoryGame" */;
+			buildPhases = (
+				04E5035A2FD088C000A6BE32 /* Sources */,
+				04E5035B2FD088C000A6BE32 /* Frameworks */,
+				04E5035C2FD088C000A6BE32 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MemoryGame;
+			productName = MemoryGame;
+			productReference = 04E5035E2FD088C000A6BE32 /* MemoryGame.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		04E503562FD088C000A6BE32 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					04E5035D2FD088C000A6BE32 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = 04E503592FD088C000A6BE32 /* Build configuration list for PBXProject "MemoryGame" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 04E503552FD088C000A6BE32;
+			productRefGroup = 04E5035F2FD088C000A6BE32 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				04E5035D2FD088C000A6BE32 /* MemoryGame */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		04E5035C2FD088C000A6BE32 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				04E503692FD088C300A6BE32 /* Preview Assets.xcassets in Resources */,
+				04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		04E5035A2FD088C000A6BE32 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */,
+				MMK001 /* AppTheme.swift in Sources */,
+				MMK002 /* GameEnums.swift in Sources */,
+				MMK003 /* CardModel.swift in Sources */,
+				MMK004 /* CategoryModel.swift in Sources */,
+				MMK005 /* LevelModel.swift in Sources */,
+				MMK006 /* AchievementModel.swift in Sources */,
+				MMK007 /* SwiftDataModels.swift in Sources */,
+				MMK008 /* LevelCatalog.swift in Sources */,
+				MMK009 /* MatchStrategy.swift in Sources */,
+				MMK010 /* GameEngine.swift in Sources */,
+				MMK011 /* AudioManager.swift in Sources */,
+				MMK012 /* HapticManager.swift in Sources */,
+				MMK013 /* ProgressStore.swift in Sources */,
+				MMK014 /* HomeViewModel.swift in Sources */,
+				MMK015 /* ProgressViewModel.swift in Sources */,
+				MMK016 /* GameViewModel.swift in Sources */,
+				MMK017 /* SettingsViewModel.swift in Sources */,
+				MMK018 /* MemoryCardView.swift in Sources */,
+				MMK019 /* ConfettiView.swift in Sources */,
+				MMK020 /* ProgressBarView.swift in Sources */,
+				MMK021 /* BadgeView.swift in Sources */,
+				MMK023 /* RootView.swift in Sources */,
+				MMK024 /* HomeView.swift in Sources */,
+				MMK027 /* GameView.swift in Sources */,
+				MMK028 /* ResultView.swift in Sources */,
+				MMK029 /* AchievementView.swift in Sources */,
+				MMK030 /* SettingsView.swift in Sources */,
+				MMK031 /* SplashView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		04E5036A2FD088C300A6BE32 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		04E5036B2FD088C300A6BE32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		04E5036D2FD088C300A6BE32 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
+				DEVELOPMENT_TEAM = 46SSZ8CCPX;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MemoryGame/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match Kids";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.memogame.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		04E5036E2FD088C300A6BE32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
+				DEVELOPMENT_TEAM = 46SSZ8CCPX;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MemoryGame/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match Kids";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.memogame.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		04E503592FD088C000A6BE32 /* Build configuration list for PBXProject "MemoryGame" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				04E5036A2FD088C300A6BE32 /* Debug */,
+				04E5036B2FD088C300A6BE32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		04E5036C2FD088C300A6BE32 /* Build configuration list for PBXNativeTarget "MemoryGame" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				04E5036D2FD088C300A6BE32 /* Debug */,
+				04E5036E2FD088C300A6BE32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 04E503562FD088C000A6BE32 /* Project object */;
+}
