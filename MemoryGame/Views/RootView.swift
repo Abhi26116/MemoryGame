@@ -11,11 +11,24 @@ struct RootView: View {
     @StateObject private var progressStore: ProgressStore
     @StateObject private var homeViewModel: HomeViewModel
     @State private var showSplash = true
+    @Environment(\.colorScheme) private var systemColorScheme
 
     init(modelContext: ModelContext) {
         let store = ProgressStore(modelContext: modelContext)
         _progressStore = StateObject(wrappedValue: store)
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(progressStore: store))
+    }
+
+    private var appearanceMode: AppearanceMode {
+        progressStore.appearanceMode
+    }
+
+    private var resolvedScheme: ColorScheme {
+        switch appearanceMode {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return systemColorScheme
+        }
     }
 
     var body: some View {
@@ -30,12 +43,12 @@ struct RootView: View {
                         progressStore: progressStore
                     )
                 }
-                .kidColorScheme()
-                .tint(AppTheme.linkBlue)
+                .tint(AppTheme.linkBlue(for: resolvedScheme))
                 .transition(.opacity)
             }
         }
-        .animation(.easeOut(duration: 0.3), value: showSplash)
+        .appAppearance(appearanceMode)
+        .animation(.easeInOut(duration: 0.45), value: showSplash)
         .task {
             try? await Task.sleep(for: SplashTiming.holdDuration)
             showSplash = false

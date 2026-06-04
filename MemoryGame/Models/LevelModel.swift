@@ -37,6 +37,15 @@ struct LevelModel: Identifiable, Equatable {
 
     var pairCount: Int { pairs.count }
 
+    var totalPairsOnBoard: Int {
+        let slots = gridSize.gridRows * gridSize.gridColumns
+        return matchMode == .triple ? max(1, slots / 3) : max(1, slots / 2)
+    }
+
+    var movesToEarnTwoStars: Int {
+        StarRatingRules.movesForTwoStars(totalPairs: totalPairsOnBoard)
+    }
+
     var difficultyLabel: String {
         switch levelNumber {
         case 1...2: return "Easy"

@@ -84,6 +84,35 @@ final class ProgressStore: ObservableObject {
         save()
     }
 
+    /// Clears level progress and achievements; keeps sound, appearance, and accessibility settings.
+    func resetAllProgress() {
+        for entity in levelProgress.values {
+            modelContext.delete(entity)
+        }
+        levelProgress = [:]
+
+        if let settings {
+            settings.totalStars = 0
+            settings.unlockedAchievementIds = []
+            settings.dailyChallengeCompleted = false
+            settings.dailyStreak = 0
+            settings.lastDailyDate = nil
+        }
+        save()
+    }
+
+    var appearanceMode: AppearanceMode {
+        guard let raw = settings?.appearanceModeRaw, !raw.isEmpty,
+              let mode = AppearanceMode(rawValue: raw) else {
+            return .system
+        }
+        return mode
+    }
+
+    var memorizePreviewEnabled: Bool {
+        settings?.memorizePreviewEnabled ?? true
+    }
+
     private func checkAchievements(settings: AppSettingsEntity) {
         var unlocked = Set(settings.unlockedAchievementIds)
         let goldCount = levelProgress.values.filter { $0.stars >= 3 }.count

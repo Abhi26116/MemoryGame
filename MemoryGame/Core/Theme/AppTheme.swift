@@ -18,12 +18,6 @@ enum AppTheme {
         endPoint: .bottomTrailing
     )
 
-    static let skyGradient = LinearGradient(
-        colors: [Color(hex: "87CEEB"), Color(hex: "B8E6FF"), Color(hex: "FFE5B4")],
-        startPoint: .top,
-        endPoint: .bottom
-    )
-
     static let cardBackGradient = LinearGradient(
         colors: [Color(hex: "5B8DEF"), Color(hex: "7B5BEF"), Color(hex: "9B4DEF")],
         startPoint: .topLeading,
@@ -42,20 +36,69 @@ enum AppTheme {
     static let preschoolPurple = Color(hex: "AF52DE")
     static let learnerBlue = Color(hex: "5AC8FA")
 
-    /// Dark text for labels on light cards and the sky background
-    static let textPrimary = Color(hex: "1E3A5F")
-    static let textSecondary = Color(hex: "5A6B7D")
-    static let sectionTitle = Color(hex: "153A5C")
-    static let linkBlue = Color(hex: "2F6BFF")
-
-    static let cardSurface = Color.white
-    static let chipUnselected = Color(hex: "EEF3FA")
-    static let progressTrack = Color(hex: "D4DEE8")
-
     static let titleFont = Font.system(.largeTitle, design: .rounded, weight: .bold)
     static let headlineFont = Font.system(.title2, design: .rounded, weight: .semibold)
     static let bodyFont = Font.system(.body, design: .rounded)
     static let captionFont = Font.system(.caption, design: .rounded, weight: .medium)
+
+    // MARK: - Adaptive palette (light / dark)
+
+    static func skyGradient(for scheme: ColorScheme) -> LinearGradient {
+        if scheme == .dark {
+            return LinearGradient(
+                colors: [Color(hex: "0F1B2E"), Color(hex: "1A2F4F"), Color(hex: "2A1F3D")],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        return LinearGradient(
+            colors: [Color(hex: "87CEEB"), Color(hex: "B8E6FF"), Color(hex: "FFE5B4")],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    static func cardSurface(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "1E2F45") : Color.white
+    }
+
+    static func textPrimary(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "E8F2FF") : Color(hex: "1E3A5F")
+    }
+
+    static func textSecondary(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "9AB0C8") : Color(hex: "5A6B7D")
+    }
+
+    static func sectionTitle(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "B8D4FF") : Color(hex: "153A5C")
+    }
+
+    static func linkBlue(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "6BA3FF") : Color(hex: "2F6BFF")
+    }
+
+    static func chipUnselected(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "2A3F5C") : Color(hex: "EEF3FA")
+    }
+
+    static func progressTrack(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(hex: "3A5070") : Color(hex: "D4DEE8")
+    }
+
+    static func cardShadowOpacity(for scheme: ColorScheme) -> Double {
+        scheme == .dark ? 0.35 : 0.08
+    }
+
+    // Legacy aliases (light) — prefer adaptive helpers in views
+    static let skyGradient = skyGradient(for: .light)
+    static let textPrimary = textPrimary(for: .light)
+    static let textSecondary = textSecondary(for: .light)
+    static let sectionTitle = sectionTitle(for: .light)
+    static let linkBlue = linkBlue(for: .light)
+    static let cardSurface = cardSurface(for: .light)
+    static let chipUnselected = chipUnselected(for: .light)
+    static let progressTrack = progressTrack(for: .light)
 }
 
 extension Color {
@@ -77,9 +120,19 @@ extension Color {
 }
 
 struct KidFriendlyBackground: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
     func body(content: Content) -> some View {
         content
-            .background(AppTheme.skyGradient.ignoresSafeArea())
+            .background(AppTheme.skyGradient(for: colorScheme).ignoresSafeArea())
+    }
+}
+
+struct AppAppearanceModifier: ViewModifier {
+    let mode: AppearanceMode
+
+    func body(content: Content) -> some View {
+        content.preferredColorScheme(mode.preferredColorScheme)
     }
 }
 
@@ -88,8 +141,7 @@ extension View {
         modifier(KidFriendlyBackground())
     }
 
-    /// Keeps light surfaces readable (avoids white `.primary` text on white cards in Dark Mode).
-    func kidColorScheme() -> some View {
-        preferredColorScheme(.light)
+    func appAppearance(_ mode: AppearanceMode) -> some View {
+        modifier(AppAppearanceModifier(mode: mode))
     }
 }

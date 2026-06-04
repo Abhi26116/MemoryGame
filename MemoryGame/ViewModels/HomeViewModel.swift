@@ -7,7 +7,7 @@ import Foundation
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-    static let starsRequiredToUnlockNext = 2
+    static let starsRequiredToUnlockNext = StarRatingRules.starsRequiredToUnlockNextLevel
 
     private let progressStore: ProgressStore
 
@@ -19,7 +19,6 @@ final class HomeViewModel: ObservableObject {
     func syncFromStore() {
         guard let settings = progressStore.settings else { return }
         AudioManager.shared.soundEnabled = settings.soundEnabled
-        AudioManager.shared.musicEnabled = settings.musicEnabled
     }
 
     var levels: [LevelModel] { LevelCatalog.allLevels }
@@ -49,8 +48,10 @@ final class HomeViewModel: ObservableObject {
     }
 
     func unlockHint(for level: LevelModel) -> String? {
-        guard !isUnlocked(level), level.levelNumber > 1 else { return nil }
-        return "Earn \(Self.starsRequiredToUnlockNext) stars on Level \(level.levelNumber - 1)"
+        guard !isUnlocked(level), level.levelNumber > 1,
+              let previous = LevelCatalog.level(number: level.levelNumber - 1) else { return nil }
+        let moves = previous.movesToEarnTwoStars
+        return "Earn 2 stars on Level \(previous.levelNumber) (≤ \(moves) moves)"
     }
 
     /// Next unlocked level that still needs 2+ stars (for Continue).

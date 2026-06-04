@@ -7,6 +7,7 @@ import SwiftUI
 
 struct AchievementView: View {
     @StateObject private var viewModel: ProgressViewModel
+    @Environment(\.colorScheme) private var colorScheme
 
     init(progressStore: ProgressStore) {
         _viewModel = StateObject(wrappedValue: ProgressViewModel(progressStore: progressStore))
@@ -34,10 +35,10 @@ struct AchievementView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(achievement.title)
                                 .font(AppTheme.headlineFont)
-                                .foregroundStyle(AppTheme.textPrimary)
+                                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
                             Text(achievement.description)
                                 .font(AppTheme.captionFont)
-                                .foregroundStyle(AppTheme.textSecondary)
+                                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         }
                         Spacer()
                         Image(systemName: unlocked ? "checkmark.seal.fill" : "lock.fill")
@@ -46,9 +47,9 @@ struct AchievementView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                            .fill(AppTheme.cardSurface)
+                            .fill(AppTheme.cardSurface(for: colorScheme))
                     )
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
                     .opacity(unlocked ? 1 : 0.75)
                     .accessibilityLabel("\(achievement.title). \(unlocked ? "Unlocked" : "Locked")")
                 }

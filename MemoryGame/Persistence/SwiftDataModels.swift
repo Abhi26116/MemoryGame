@@ -48,6 +48,8 @@ final class AppSettingsEntity {
     var highContrast: Bool
     var colorBlindMode: Bool
     var largeText: Bool
+    var appearanceModeRaw: String
+    var memorizePreviewEnabled: Bool
     var selectedAgeGroupRaw: String
     var selectedDifficultyRaw: String
     var dailyStreak: Int
@@ -65,6 +67,8 @@ final class AppSettingsEntity {
         highContrast: Bool = false,
         colorBlindMode: Bool = false,
         largeText: Bool = false,
+        appearanceModeRaw: String = AppearanceMode.system.rawValue,
+        memorizePreviewEnabled: Bool = true,
         selectedAgeGroupRaw: String = AgeGroup.preschool.rawValue,
         selectedDifficultyRaw: String = Difficulty.easy.rawValue,
         dailyStreak: Int = 0,
@@ -81,6 +85,8 @@ final class AppSettingsEntity {
         self.highContrast = highContrast
         self.colorBlindMode = colorBlindMode
         self.largeText = largeText
+        self.appearanceModeRaw = appearanceModeRaw
+        self.memorizePreviewEnabled = memorizePreviewEnabled
         self.selectedAgeGroupRaw = selectedAgeGroupRaw
         self.selectedDifficultyRaw = selectedDifficultyRaw
         self.dailyStreak = dailyStreak

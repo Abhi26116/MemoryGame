@@ -13,6 +13,7 @@ struct ResultView: View {
     let stars: Int
     let score: Int
     let moves: Int
+    var movesForTwoStars: Int = 0
     let elapsed: TimeInterval
     var nextLevelUnlocked: Bool = false
     var nextLevelTitle: String?
@@ -21,6 +22,7 @@ struct ResultView: View {
     let onHome: () -> Void
 
     @State private var showContent = false
+    @Environment(\.colorScheme) private var colorScheme
 
     private var earnedBadge: BadgeTier? { BadgeTier.forStars(stars) }
 
@@ -40,7 +42,6 @@ struct ResultView: View {
                 .padding(.vertical, 28)
             }
         }
-        .kidColorScheme()
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
                 showContent = true
@@ -52,7 +53,7 @@ struct ResultView: View {
 
     private var celebrationBackground: some View {
         ZStack {
-            AppTheme.skyGradient.ignoresSafeArea()
+            AppTheme.skyGradient(for: colorScheme).ignoresSafeArea()
             Circle()
                 .fill(Color(hex: "FF6B9D").opacity(0.15))
                 .frame(width: 280, height: 280)
@@ -92,15 +93,15 @@ struct ResultView: View {
                 if !levelWon, totalPairs > 0 {
                     Text("Matched \(matchedPairs) of \(totalPairs) pairs")
                         .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 }
 
                 Text(levelTitle)
                     .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(Capsule().fill(AppTheme.chipUnselected))
+                    .background(Capsule().fill(AppTheme.chipUnselected(for: colorScheme)))
             }
 
             HStack(spacing: 10) {
@@ -125,6 +126,13 @@ struct ResultView: View {
         .scaleEffect(showContent ? 1 : 0.92)
         .opacity(showContent ? 1 : 0)
         .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.02), value: showContent)
+    }
+
+    private var unlockNextLevelHint: String {
+        if moves <= movesForTwoStars {
+            return "You earned \(stars) star\(stars == 1 ? "" : "s"). Need 2 stars — try ≤ \(movesForTwoStars) moves."
+        }
+        return "Used \(moves) moves. Unlock next level with 2 stars: finish in ≤ \(movesForTwoStars) moves."
     }
 
     // MARK: - Unlock banner
@@ -160,7 +168,7 @@ struct ResultView: View {
                     .foregroundStyle(Color(hex: "FF9500"))
                 Text("Out of moves — play again to match all the pairs!")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -169,20 +177,20 @@ struct ResultView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: "FFF4E5"))
             )
-        } else if stars < HomeViewModel.starsRequiredToUnlockNext {
+        } else if stars < HomeViewModel.starsRequiredToUnlockNext, levelWon, movesForTwoStars > 0 {
             HStack(spacing: 10) {
                 Image(systemName: "star.leadinghalf.filled")
                     .foregroundStyle(Color(hex: "FF9500"))
-                Text("Get \(HomeViewModel.starsRequiredToUnlockNext) stars to unlock the next level")
+                Text(unlockNextLevelHint)
                     .font(.system(.caption, design: .rounded, weight: .semibold))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(AppTheme.chipUnselected)
+                    .fill(AppTheme.chipUnselected(for: colorScheme))
             )
         }
     }
@@ -214,10 +222,10 @@ struct ResultView: View {
             BadgeView(tier: badge, size: 72)
             Text(badge.rawValue)
                 .font(.system(.caption, design: .rounded, weight: .bold))
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
             Text("Badge")
                 .font(.system(.caption2, design: .rounded, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
         }
         .frame(width: 88)
         .padding(.vertical, 8)
@@ -238,10 +246,10 @@ struct ResultView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(.caption, design: .rounded, weight: .medium))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 Text(value)
                     .font(.system(.title3, design: .rounded, weight: .bold))
-                    .foregroundStyle(AppTheme.textPrimary)
+                    .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
             }
 
             Spacer(minLength: 0)
@@ -250,7 +258,7 @@ struct ResultView: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(AppTheme.chipUnselected)
+                .fill(AppTheme.chipUnselected(for: colorScheme))
         )
     }
 
@@ -319,7 +327,7 @@ struct ResultView: View {
 
     private var resultCardBackground: some View {
         RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-            .fill(AppTheme.cardSurface)
+            .fill(AppTheme.cardSurface(for: colorScheme))
             .shadow(color: Color(hex: "5B8DEF").opacity(0.12), radius: 16, y: 8)
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius)

@@ -43,6 +43,11 @@ final class GameViewModel: ObservableObject {
     var highContrast: Bool { progressStore.settings?.highContrast ?? false }
     var colorBlindMode: Bool { progressStore.settings?.colorBlindMode ?? false }
 
+    var movesForTwoStars: Int { StarRatingRules.movesForTwoStars(totalPairs: totalPairs) }
+    var movesForThreeStars: Int { StarRatingRules.movesForThreeStars(totalPairs: totalPairs) }
+    var movesLeftForTwoStars: Int { max(0, movesForTwoStars - moves) }
+    var isOnPaceForTwoStars: Bool { moves <= movesForTwoStars }
+
     init(level: LevelModel, progressStore: ProgressStore) {
         self.level = level
         self.gridSize = level.gridSize
@@ -66,7 +71,8 @@ final class GameViewModel: ObservableObject {
         isPaused = false
         remainingTime = rules.timerSeconds
 
-        if rules.showInitialPreview {
+        let previewOn = progressStore.memorizePreviewEnabled
+        if rules.showInitialPreview && previewOn {
             beginPreviewPhase()
         } else {
             canInteract = true
@@ -197,7 +203,7 @@ final class GameViewModel: ObservableObject {
         if !rules.hasTimer {
             elapsed = Date().timeIntervalSince(startDate)
         }
-        earnedStars = engine.calculateStars(elapsed: elapsed, moveLimit: rules.maxMoves)
+        earnedStars = engine.calculateStars()
         finalScore = engine.score(elapsed: elapsed)
         showConfetti = levelWon
         if levelWon {

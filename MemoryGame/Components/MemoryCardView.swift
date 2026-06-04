@@ -12,6 +12,7 @@ struct MemoryCardView: View {
     var highContrast: Bool = false
     var colorBlindMode: Bool = false
     let onTap: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var flipDegrees: Double = 0
     @State private var pulseScale: CGFloat = 1
@@ -78,7 +79,7 @@ struct MemoryCardView: View {
         let accent = Color(hex: colorBlindMode ? "007AFF" : card.content.accentColorHex)
         return ZStack {
             RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                .fill(highContrast ? .white : Color.white)
+                .fill(highContrast ? .white : AppTheme.cardSurface(for: colorScheme))
             RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
                 .stroke(accent, lineWidth: highContrast ? 4 : 2)
             VStack(spacing: 4) {
@@ -93,7 +94,7 @@ struct MemoryCardView: View {
                 if !card.content.label.isEmpty {
                     Text(card.content.label)
                         .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(highContrast ? .black : AppTheme.textPrimary)
+                        .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
                         .lineLimit(2)
                         .minimumScaleFactor(0.6)
                         .multilineTextAlignment(.center)

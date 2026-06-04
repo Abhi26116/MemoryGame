@@ -11,6 +11,7 @@ struct GameView: View {
     @State private var showResult = false
     @State private var activeLevel: LevelModel
     @State private var previewTickScale: CGFloat = 1
+    @Environment(\.colorScheme) private var colorScheme
 
     let progressStore: ProgressStore
 
@@ -32,6 +33,17 @@ struct GameView: View {
             && nextLevel != nil
     }
 
+    private var currentLevelStars: Int {
+        progressStore.progress(for: activeLevel.id)?.stars ?? 0
+    }
+
+    private var showsUnlockMoveGoal: Bool {
+        nextLevel != nil
+            && currentLevelStars < HomeViewModel.starsRequiredToUnlockNext
+            && !viewModel.gameFinished
+            && !viewModel.isPreviewPhase
+    }
+
     var body: some View {
         GeometryReader { geo in
             let spacing: CGFloat = 8
@@ -46,7 +58,13 @@ struct GameView: View {
                     gameHud
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
-                        .padding(.bottom, viewModel.isPreviewPhase ? 8 : 12)
+                        .padding(.bottom, showsUnlockMoveGoal ? 6 : (viewModel.isPreviewPhase ? 8 : 12))
+
+                    if showsUnlockMoveGoal {
+                        unlockMoveGoalBanner
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, viewModel.isPreviewPhase ? 6 : 8)
+                    }
 
                     if viewModel.isPreviewPhase {
                         previewBanner
@@ -95,7 +113,6 @@ struct GameView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.isPreviewPhase)
-        .kidColorScheme()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -104,7 +121,7 @@ struct GameView: View {
                         .font(.system(.headline, design: .rounded, weight: .bold))
                     Text(activeLevel.difficultyLabel)
                         .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -114,7 +131,7 @@ struct GameView: View {
                     Image(systemName: viewModel.isPaused ? "play.circle.fill" : "pause.circle.fill")
                         .font(.title2)
                         .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(AppTheme.linkBlue)
+                        .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
                 }
                 .accessibilityLabel(viewModel.isPaused ? "Resume" : "Pause")
             }
@@ -135,6 +152,7 @@ struct GameView: View {
                 stars: viewModel.earnedStars,
                 score: viewModel.finalScore,
                 moves: viewModel.moves,
+                movesForTwoStars: viewModel.movesForTwoStars,
                 elapsed: viewModel.elapsed,
                 nextLevelUnlocked: nextLevelJustUnlocked,
                 nextLevelTitle: nextLevel?.title,
@@ -160,7 +178,7 @@ struct GameView: View {
 
     private var gameBackground: some View {
         ZStack {
-            AppTheme.skyGradient.ignoresSafeArea()
+            AppTheme.skyGradient(for: colorScheme).ignoresSafeArea()
             Circle()
                 .fill(Color(hex: "5B8DEF").opacity(0.12))
                 .frame(width: 200, height: 200)
@@ -206,13 +224,58 @@ struct GameView: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                .fill(AppTheme.cardSurface)
+                .fill(AppTheme.cardSurface(for: colorScheme))
                 .shadow(color: Color(hex: "5B8DEF").opacity(0.1), radius: 12, y: 4)
         )
     }
 
     private var showsMovesHud: Bool {
         viewModel.rules.showsMoveCounter || viewModel.rules.maxMoves != nil
+    }
+
+    private var unlockMoveGoalBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "lock.open.fill")
+                .font(.subheadline.bold())
+                .foregroundStyle(Color(hex: "FFD60A"))
+
+            VStack(alignment: .leading, spacing: 3) {
+                if let next = nextLevel {
+                    Text("Unlock \(next.title)")
+                        .font(.system(.caption, design: .rounded, weight: .bold))
+                        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                }
+                if viewModel.isOnPaceForTwoStars {
+                    Text("≤ \(viewModel.movesForTwoStars) moves for 2★ · \(viewModel.movesLeftForTwoStars) move\(viewModel.movesLeftForTwoStars == 1 ? "" : "s") left")
+                        .font(.system(.caption2, design: .rounded, weight: .semibold))
+                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                } else {
+                    Text("Over 2★ pace — finish in ≤ \(viewModel.movesForTwoStars) moves total")
+                        .font(.system(.caption2, design: .rounded, weight: .semibold))
+                        .foregroundStyle(Color(hex: "FF9500"))
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(hex: "FFD60A").opacity(colorScheme == .dark ? 0.15 : 0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(hex: "FFD60A").opacity(0.35), lineWidth: 1)
+                )
+        )
+        .accessibilityLabel(unlockMoveGoalAccessibilityLabel)
+    }
+
+    private var unlockMoveGoalAccessibilityLabel: String {
+        if viewModel.isOnPaceForTwoStars {
+            return "Unlock next level with 2 stars in \(viewModel.movesForTwoStars) moves or fewer. \(viewModel.movesLeftForTwoStars) moves remaining."
+        }
+        return "Unlock next level with 2 stars in \(viewModel.movesForTwoStars) moves or fewer. You are over the 2 star move limit."
     }
 
     private var movesText: String {
@@ -237,13 +300,13 @@ struct GameView: View {
 
             Text(label)
                 .font(.system(size: 10, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 .lineLimit(1)
 
             Text(value)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
                 .fixedSize(horizontal: false, vertical: true)
@@ -287,7 +350,7 @@ struct GameView: View {
 
                 Text("Look at every card — they flip over soon!")
                     .font(.system(.caption, design: .rounded, weight: .medium))
-                    .foregroundStyle(AppTheme.textSecondary)
+                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)
 
                 previewSecondDots
@@ -298,7 +361,7 @@ struct GameView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                .fill(AppTheme.cardSurface)
+                .fill(AppTheme.cardSurface(for: colorScheme))
                 .shadow(color: Color(hex: "FF6B9D").opacity(0.15), radius: 14, y: 5)
         )
         .overlay(
@@ -327,7 +390,7 @@ struct GameView: View {
     private var previewCountdownRing: some View {
         ZStack {
             Circle()
-                .stroke(AppTheme.progressTrack, lineWidth: 7)
+                .stroke(AppTheme.progressTrack(for: colorScheme), lineWidth: 7)
 
             Circle()
                 .trim(from: 0, to: previewProgress)
@@ -345,7 +408,7 @@ struct GameView: View {
             Text("\(viewModel.previewSecondsLeft)")
                 .font(.system(size: 28, weight: .black, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
                 .contentTransition(.numericText())
                 .scaleEffect(previewTickScale)
         }
@@ -358,7 +421,7 @@ struct GameView: View {
                 Capsule()
                     .fill(index < viewModel.previewSecondsLeft
                           ? AnyShapeStyle(AppTheme.playButtonGradient)
-                          : AnyShapeStyle(AppTheme.progressTrack))
+                          : AnyShapeStyle(AppTheme.progressTrack(for: colorScheme)))
                     .frame(width: index < viewModel.previewSecondsLeft ? 22 : 10, height: 8)
                     .animation(.spring(response: 0.35, dampingFraction: 0.75), value: viewModel.previewSecondsLeft)
             }
@@ -391,7 +454,7 @@ struct GameView: View {
             .padding(32)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                    .fill(AppTheme.cardSurface)
+                    .fill(AppTheme.cardSurface(for: colorScheme))
             )
             .padding(40)
         }

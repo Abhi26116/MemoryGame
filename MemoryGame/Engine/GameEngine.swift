@@ -202,15 +202,14 @@ final class GameEngine {
         }
     }
 
-    func calculateStars(elapsed: TimeInterval, moveLimit: Int?) -> Int {
-        guard isComplete else {
-            return matchedPairs > 0 ? 1 : 0
-        }
-        var stars = 1
-        if moves <= totalPairs + 2 { stars = 2 }
-        if moves <= totalPairs && elapsed < 90 { stars = 3 }
-        if let limit = moveLimit, moves > limit { stars = max(1, stars - 1) }
-        return min(3, stars)
+    /// Stars are based on move efficiency only (not time).
+    func calculateStars() -> Int {
+        StarRatingRules.stars(
+            forMoves: moves,
+            matchedPairs: matchedPairs,
+            totalPairs: totalPairs,
+            levelComplete: isComplete
+        )
     }
 
     func score(elapsed: TimeInterval) -> Int {
@@ -218,6 +217,29 @@ final class GameEngine {
         let timeBonus = max(0, Int(120 - elapsed))
         let movePenalty = moves * 5
         return max(0, base + timeBonus - movePenalty)
+    }
+}
+
+enum StarRatingRules {
+    static let starsRequiredToUnlockNextLevel = 2
+    static let twoStarExtraMoves = 5
+
+    static func movesForThreeStars(totalPairs: Int) -> Int {
+        max(1, totalPairs)
+    }
+
+    static func movesForTwoStars(totalPairs: Int) -> Int {
+        movesForThreeStars(totalPairs: totalPairs) + twoStarExtraMoves
+    }
+
+    static func stars(forMoves moves: Int, matchedPairs: Int, totalPairs: Int, levelComplete: Bool) -> Int {
+        guard levelComplete else {
+            return matchedPairs > 0 ? 1 : 0
+        }
+        let pairs = max(1, totalPairs)
+        if moves <= movesForThreeStars(totalPairs: pairs) { return 3 }
+        if moves <= movesForTwoStars(totalPairs: pairs) { return 2 }
+        return 1
     }
 }
 

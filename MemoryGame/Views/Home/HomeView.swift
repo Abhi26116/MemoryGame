@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     let progressStore: ProgressStore
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ScrollView {
@@ -32,7 +33,7 @@ struct HomeView: View {
                     .font(.title2)
                     .foregroundStyle(Color(hex: "FFD60A"))
                     .padding(12)
-                    .background(Circle().fill(AppTheme.cardSurface.opacity(0.95)))
+                    .background(Circle().fill(AppTheme.cardSurface(for: colorScheme).opacity(0.95)))
                     .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
             }
             .padding(.top, 8)
@@ -45,9 +46,9 @@ struct HomeView: View {
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.title2)
-                    .foregroundStyle(AppTheme.sectionTitle)
+                    .foregroundStyle(AppTheme.sectionTitle(for: colorScheme))
                     .padding(12)
-                    .background(Circle().fill(AppTheme.cardSurface.opacity(0.95)))
+                    .background(Circle().fill(AppTheme.cardSurface(for: colorScheme).opacity(0.95)))
                     .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
             }
             .padding(.top, 8)
@@ -70,9 +71,9 @@ struct HomeView: View {
                     )
                 )
                 .multilineTextAlignment(.center)
-            Text("Earn 2 stars on a level to unlock the next!")
+            Text("Unlock the next level with 2 stars — finish in ≤ pairs + 5 moves!")
                 .font(AppTheme.bodyFont)
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 4)
@@ -82,7 +83,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Your Journey", systemImage: "map.fill")
                 .font(AppTheme.headlineFont)
-                .foregroundStyle(AppTheme.sectionTitle)
+                .foregroundStyle(AppTheme.sectionTitle(for: colorScheme))
             HStack(spacing: 12) {
                 miniStat("\(viewModel.completedLevels)/\(viewModel.totalLevels)", "Levels", "flag.checkered")
                 miniStat("\(viewModel.totalStars)", "Stars", "star.fill")
@@ -94,7 +95,7 @@ struct HomeView: View {
         }
         .padding(16)
         .background(cardBackground)
-        .foregroundStyle(AppTheme.textPrimary)
+        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
     }
 
     private func playNextLevel(_ level: LevelModel) -> some View {
@@ -131,7 +132,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("All Levels")
                 .font(AppTheme.headlineFont)
-                .foregroundStyle(AppTheme.sectionTitle)
+                .foregroundStyle(AppTheme.sectionTitle(for: colorScheme))
 
             LazyVStack(spacing: 10) {
                 ForEach(viewModel.levels) { level in
@@ -157,20 +158,27 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(level.title)
                     .font(.system(.headline, design: .rounded, weight: .bold))
-                    .foregroundStyle(locked ? AppTheme.textSecondary : AppTheme.textPrimary)
+                    .foregroundStyle(locked ? AppTheme.textSecondary(for: colorScheme) : AppTheme.textPrimary(for: colorScheme))
                     .lineLimit(1)
 
                 if let hint = viewModel.unlockHint(for: level) {
                     Text(hint)
                         .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text(levelSubtitleDetail(level))
                         .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+
+                    if viewModel.stars(for: level.id) < HomeViewModel.starsRequiredToUnlockNext,
+                       level.levelNumber < viewModel.totalLevels {
+                        Text("2★ to unlock next: ≤ \(level.movesToEarnTwoStars) moves")
+                            .font(.system(.caption2, design: .rounded, weight: .semibold))
+                            .foregroundStyle(Color(hex: "FF9500"))
+                    }
 
                     difficultyBadge(level.difficultyLabel, locked: locked)
                 }
@@ -218,7 +226,7 @@ struct HomeView: View {
             } else {
                 Image(systemName: "play.circle.fill")
                     .font(.title3)
-                    .foregroundStyle(AppTheme.linkBlue)
+                    .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
             }
         }
         .frame(width: 52)
@@ -227,12 +235,12 @@ struct HomeView: View {
     private func difficultyBadge(_ label: String, locked: Bool) -> some View {
         Text(label)
             .font(.system(size: 11, weight: .bold, design: .rounded))
-            .foregroundStyle(locked ? AppTheme.textSecondary : .white)
+            .foregroundStyle(locked ? AppTheme.textSecondary(for: colorScheme) : .white)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(
                 Capsule()
-                    .fill(locked ? AppTheme.chipUnselected : difficultyColor(label))
+                    .fill(locked ? AppTheme.chipUnselected(for: colorScheme) : difficultyColor(label))
             )
             .fixedSize()
     }
@@ -240,17 +248,17 @@ struct HomeView: View {
     private func miniStat(_ value: String, _ label: String, _ icon: String) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
-                .foregroundStyle(AppTheme.linkBlue)
+                .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
             Text(value)
                 .font(.system(.title3, design: .rounded, weight: .bold))
-                .foregroundStyle(AppTheme.textPrimary)
+                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
             Text(label)
                 .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.textSecondary)
+                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 14).fill(AppTheme.chipUnselected))
+        .background(RoundedRectangle(cornerRadius: 14).fill(AppTheme.chipUnselected(for: colorScheme)))
     }
 
     private func levelSubtitleDetail(_ level: LevelModel) -> String {
@@ -280,7 +288,7 @@ struct HomeView: View {
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-            .fill(AppTheme.cardSurface)
-            .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+            .fill(AppTheme.cardSurface(for: colorScheme))
+            .shadow(color: .black.opacity(AppTheme.cardShadowOpacity(for: colorScheme)), radius: 8, y: 4)
     }
 }
