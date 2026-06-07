@@ -75,6 +75,17 @@ struct MemoryCardView: View {
         }
     }
 
+    private var isMathOrTextCard: Bool {
+        MathAssociationHelper.isExpression(card.content.label)
+            || MathAssociationHelper.isNumericAnswer(card.content.label)
+            || (!card.content.label.isEmpty && card.content.emoji == nil && card.content.symbolName == "plus.forwardslash.minus")
+    }
+
+    private var mathTextSize: CGFloat {
+        let base = largeText ? size * 0.34 : size * 0.28
+        return card.content.label.count > 3 ? base * 0.85 : base
+    }
+
     private var cardFront: some View {
         let accent = Color(hex: colorBlindMode ? "007AFF" : card.content.accentColorHex)
         return ZStack {
@@ -86,18 +97,35 @@ struct MemoryCardView: View {
                 if let emoji = card.content.emoji {
                     Text(emoji)
                         .font(.system(size: largeText ? size * 0.42 : size * 0.36))
+                    if !card.content.label.isEmpty, card.content.label != emoji {
+                        Text(card.content.label)
+                            .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
+                            .multilineTextAlignment(.center)
+                    }
+                } else if isMathOrTextCard {
+                    Text(card.content.label)
+                        .font(.system(size: mathTextSize, weight: .heavy, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.45)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 4)
                 } else {
                     Image(systemName: card.content.symbolName)
                         .font(.system(size: largeText ? size * 0.34 : size * 0.28, weight: .semibold))
                         .foregroundStyle(accent)
-                }
-                if !card.content.label.isEmpty {
-                    Text(card.content.label)
-                        .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.6)
-                        .multilineTextAlignment(.center)
+                    if !card.content.label.isEmpty {
+                        Text(card.content.label)
+                            .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
+                            .multilineTextAlignment(.center)
+                    }
                 }
             }
             .padding(6)

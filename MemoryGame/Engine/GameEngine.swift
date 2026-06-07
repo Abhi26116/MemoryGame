@@ -86,7 +86,6 @@ final class GameEngine {
             break
         }
 
-        padDeck(&deck, level: level, slotCount: slotCount)
         deck = Array(deck.prefix(slotCount))
         cards = deck.shuffled()
         flippedIndices = []
@@ -98,39 +97,6 @@ final class GameEngine {
         totalPairs = switch level.matchMode {
         case .triple: max(1, slotCount / 3)
         default: max(1, slotCount / 2)
-        }
-    }
-
-    private func padDeck(_ deck: inout [CardModel], level: LevelModel, slotCount: Int) {
-        guard !level.pairs.isEmpty else { return }
-        var pairIndex = 0
-        while deck.count < slotCount {
-            let pair = level.pairs[pairIndex % level.pairs.count]
-            let group = pair.groupId ?? pair.id
-            switch level.matchMode {
-            case .identical:
-                let content = pair.left
-                if deck.count < slotCount {
-                    deck.append(CardModel(content: content, pairId: pair.id, matchingPairId: group, groupId: group))
-                }
-                if deck.count < slotCount {
-                    deck.append(CardModel(content: content, pairId: pair.id, matchingPairId: group, groupId: group))
-                }
-            case .association:
-                if deck.count < slotCount {
-                    deck.append(CardModel(content: pair.left, pairId: pair.id, matchingPairId: group, groupId: group))
-                }
-                if deck.count < slotCount {
-                    deck.append(CardModel(content: pair.right, pairId: pair.id, matchingPairId: group, groupId: group))
-                }
-            case .triple:
-                for _ in 0..<3 where deck.count < slotCount {
-                    deck.append(CardModel(content: pair.left, pairId: pair.id, matchingPairId: group, groupId: group))
-                }
-            default:
-                break
-            }
-            pairIndex += 1
         }
     }
 

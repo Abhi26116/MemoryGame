@@ -119,7 +119,7 @@ struct GameView: View {
                 VStack(spacing: 2) {
                     Text(activeLevel.title)
                         .font(.system(.headline, design: .rounded, weight: .bold))
-                    Text(activeLevel.difficultyLabel)
+                    Text(activeLevel.subtitle)
                         .font(.system(.caption2, design: .rounded, weight: .semibold))
                         .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 }

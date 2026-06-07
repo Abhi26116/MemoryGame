@@ -8,6 +8,8 @@ import Foundation
 @MainActor
 final class HomeViewModel: ObservableObject {
     static let starsRequiredToUnlockNext = StarRatingRules.starsRequiredToUnlockNextLevel
+    /// Temporary: all levels playable without earning stars on the previous level.
+    static let allLevelsUnlocked = true
 
     private let progressStore: ProgressStore
 
@@ -40,8 +42,8 @@ final class HomeViewModel: ObservableObject {
         (progressStore.progress(for: levelId)?.completedCount ?? 0) > 0
     }
 
-    /// Level 1 is always open; level N unlocks when level N−1 has at least 2 stars.
     func isUnlocked(_ level: LevelModel) -> Bool {
+        if Self.allLevelsUnlocked { return true }
         if level.levelNumber <= 1 { return true }
         guard let previous = LevelCatalog.level(number: level.levelNumber - 1) else { return false }
         return stars(for: previous.id) >= Self.starsRequiredToUnlockNext

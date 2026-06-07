@@ -10,8 +10,6 @@
 		04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E503612FD088C000A6BE32 /* MemoryGameApp.swift */; };
 		04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503652FD088C300A6BE32 /* Assets.xcassets */; };
 		04E503692FD088C300A6BE32 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503682FD088C300A6BE32 /* Preview Assets.xcassets */; };
-		MMK033 /* LaunchSplash.gif in Resources */ = {isa = PBXBuildFile; fileRef = MMKF033 /* LaunchSplash.gif */; };
-		MMK034 /* AnimatedGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF034 /* AnimatedGIFView.swift */; };
 		MMK001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF001 /* AppTheme.swift */; };
 		MMK002 /* GameEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF002 /* GameEnums.swift */; };
 		MMK003 /* CardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF003 /* CardModel.swift */; };
@@ -19,7 +17,6 @@
 		MMK005 /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF005 /* LevelModel.swift */; };
 		MMK006 /* AchievementModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF006 /* AchievementModel.swift */; };
 		MMK007 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF007 /* SwiftDataModels.swift */; };
-		MMK032 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF032 /* ModelContainerFactory.swift */; };
 		MMK008 /* LevelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF008 /* LevelCatalog.swift */; };
 		MMK009 /* MatchStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF009 /* MatchStrategy.swift */; };
 		MMK010 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF010 /* GameEngine.swift */; };
@@ -41,6 +38,10 @@
 		MMK029 /* AchievementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF029 /* AchievementView.swift */; };
 		MMK030 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF030 /* SettingsView.swift */; };
 		MMK031 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF031 /* SplashView.swift */; };
+		MMK032 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF032 /* ModelContainerFactory.swift */; };
+		MMK033 /* LaunchSplash.gif in Resources */ = {isa = PBXBuildFile; fileRef = MMKF033 /* LaunchSplash.gif */; };
+		MMK034 /* AnimatedGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF034 /* AnimatedGIFView.swift */; };
+		MMK035 /* MathAssociationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF035 /* MathAssociationHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,7 +56,6 @@
 		MMKF005 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
 		MMKF006 /* AchievementModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementModel.swift; sourceTree = "<group>"; };
 		MMKF007 /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
-		MMKF032 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		MMKF008 /* LevelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelCatalog.swift; sourceTree = "<group>"; };
 		MMKF009 /* MatchStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchStrategy.swift; sourceTree = "<group>"; };
 		MMKF010 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
@@ -77,8 +77,10 @@
 		MMKF029 /* AchievementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementView.swift; sourceTree = "<group>"; };
 		MMKF030 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		MMKF031 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		MMKF032 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		MMKF033 /* LaunchSplash.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = LaunchSplash.gif; sourceTree = "<group>"; };
 		MMKF034 /* AnimatedGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedGIFView.swift; sourceTree = "<group>"; };
+		MMKF035 /* MathAssociationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathAssociationHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,6 +171,7 @@
 			children = (
 				MMKF009 /* MatchStrategy.swift */,
 				MMKF010 /* GameEngine.swift */,
+				MMKF035 /* MathAssociationHelper.swift */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -368,6 +371,7 @@
 				MMK008 /* LevelCatalog.swift in Sources */,
 				MMK009 /* MatchStrategy.swift in Sources */,
 				MMK010 /* GameEngine.swift in Sources */,
+				MMK035 /* MathAssociationHelper.swift in Sources */,
 				MMK011 /* AudioManager.swift in Sources */,
 				MMK012 /* HapticManager.swift in Sources */,
 				MMK013 /* ProgressStore.swift in Sources */,
@@ -518,7 +522,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;
@@ -548,7 +552,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;

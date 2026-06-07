@@ -46,13 +46,4 @@ struct LevelModel: Identifiable, Equatable {
         StarRatingRules.movesForTwoStars(totalPairs: totalPairsOnBoard)
     }
 
-    var difficultyLabel: String {
-        switch levelNumber {
-        case 1...2: return "Easy"
-        case 3...6: return "Medium"
-        case 7...18: return "Medium"
-        case 19...32: return "Hard"
-        default: return "Expert"
-        }
-    }
 }

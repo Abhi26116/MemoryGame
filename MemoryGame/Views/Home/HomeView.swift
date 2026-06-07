@@ -71,7 +71,7 @@ struct HomeView: View {
                     )
                 )
                 .multilineTextAlignment(.center)
-            Text("Unlock the next level with 2 stars — finish in ≤ pairs + 5 moves!")
+            Text("All levels are open — pick one and play!")
                 .font(AppTheme.bodyFont)
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 .multilineTextAlignment(.center)
@@ -167,7 +167,7 @@ struct HomeView: View {
                         .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
-                    Text(levelSubtitleDetail(level))
+                    Text(level.subtitle)
                         .font(AppTheme.captionFont)
                         .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         .lineLimit(1)
@@ -179,8 +179,6 @@ struct HomeView: View {
                             .font(.system(.caption2, design: .rounded, weight: .semibold))
                             .foregroundStyle(Color(hex: "FF9500"))
                     }
-
-                    difficultyBadge(level.difficultyLabel, locked: locked)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -232,19 +230,6 @@ struct HomeView: View {
         .frame(width: 52)
     }
 
-    private func difficultyBadge(_ label: String, locked: Bool) -> some View {
-        Text(label)
-            .font(.system(size: 11, weight: .bold, design: .rounded))
-            .foregroundStyle(locked ? AppTheme.textSecondary(for: colorScheme) : .white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(locked ? AppTheme.chipUnselected(for: colorScheme) : difficultyColor(label))
-            )
-            .fixedSize()
-    }
-
     private func miniStat(_ value: String, _ label: String, _ icon: String) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
@@ -259,23 +244,6 @@ struct HomeView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(RoundedRectangle(cornerRadius: 14).fill(AppTheme.chipUnselected(for: colorScheme)))
-    }
-
-    private func levelSubtitleDetail(_ level: LevelModel) -> String {
-        let parts = level.subtitle.split(separator: "·").map { $0.trimmingCharacters(in: .whitespaces) }
-        if parts.count >= 2 {
-            return parts.dropLast().joined(separator: " · ")
-        }
-        return level.subtitle
-    }
-
-    private func difficultyColor(_ label: String) -> Color {
-        switch label {
-        case "Easy": return Color(hex: "34C759")
-        case "Medium": return Color(hex: "FF9500")
-        case "Hard": return Color(hex: "FF3B30")
-        default: return Color(hex: "AF52DE")
-        }
     }
 
     private func levelGradient(_ number: Int) -> LinearGradient {

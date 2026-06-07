@@ -15,11 +15,10 @@ struct NormalMatchStrategy: MatchStrategy {
 
     func isMatch(cards: [CardModel], mode: MatchMode) -> Bool {
         guard cards.count == 2 else { return false }
-        if cards[0].pairId == cards[1].pairId { return true }
+        let groupA = cards[0].groupId ?? cards[0].pairId
+        let groupB = cards[1].groupId ?? cards[1].pairId
+        if groupA == groupB { return true }
         if cards[0].content.id == cards[1].content.id { return true }
-        if mode == .identical {
-            return cards[0].content.visuallyMatches(cards[1].content)
-        }
         return false
     }
 }
@@ -29,10 +28,15 @@ struct AssociationMatchStrategy: MatchStrategy {
 
     func isMatch(cards: [CardModel], mode: MatchMode) -> Bool {
         guard cards.count == 2 else { return false }
+        let first = cards[0].content
+        let second = cards[1].content
+        guard first.id != second.id else { return false }
+
         let groupA = cards[0].groupId ?? cards[0].matchingPairId ?? cards[0].pairId
         let groupB = cards[1].groupId ?? cards[1].matchingPairId ?? cards[1].pairId
-        guard groupA == groupB else { return false }
-        return cards[0].content.id != cards[1].content.id
+        if groupA == groupB { return true }
+
+        return MathAssociationHelper.expressionMatchesAnswer(first.label, second.label)
     }
 }
 
