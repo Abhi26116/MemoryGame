@@ -13,6 +13,10 @@ struct MemoryGameApp: App {
     var body: some Scene {
         WindowGroup {
             RootView(modelContext: sharedModelContainer.mainContext)
+                .task {
+                    AdsManager.shared.configure()
+                    await StoreManager.shared.refresh()
+                }
         }
         .modelContainer(sharedModelContainer)
     }

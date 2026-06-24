@@ -7,9 +7,9 @@ import Foundation
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-    static let starsRequiredToUnlockNext = StarRatingRules.starsRequiredToUnlockNextLevel
-    /// Temporary: all levels playable without earning stars on the previous level.
-    static let allLevelsUnlocked = true
+    /// Testing override: set true to play every level without earning stars first.
+    /// Off in production — only Level 1 is open; each level unlocks by earning 2★ on the previous one.
+    static let allLevelsUnlocked = false
 
     private let progressStore: ProgressStore
 
@@ -46,18 +46,17 @@ final class HomeViewModel: ObservableObject {
         if Self.allLevelsUnlocked { return true }
         if level.levelNumber <= 1 { return true }
         guard let previous = LevelCatalog.level(number: level.levelNumber - 1) else { return false }
-        return stars(for: previous.id) >= Self.starsRequiredToUnlockNext
+        return isCompleted(previous.id)
     }
 
     func unlockHint(for level: LevelModel) -> String? {
         guard !isUnlocked(level), level.levelNumber > 1,
               let previous = LevelCatalog.level(number: level.levelNumber - 1) else { return nil }
-        let moves = previous.movesToEarnTwoStars
-        return "Earn 2 stars on Level \(previous.levelNumber) (≤ \(moves) moves)"
+        return "Complete Level \(previous.levelNumber) to unlock"
     }
 
-    /// Next unlocked level that still needs 2+ stars (for Continue).
+    /// Next unlocked level the player hasn't finished yet (for Continue).
     var suggestedLevel: LevelModel? {
-        levels.first { isUnlocked($0) && stars(for: $0.id) < Self.starsRequiredToUnlockNext }
+        levels.first { isUnlocked($0) && !isCompleted($0.id) }
     }
 }

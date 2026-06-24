@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0451CA0F2FEC2B5E00B80C82 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 0451CA0E2FEC2B5E00B80C82 /* GoogleMobileAds */; };
 		04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E503612FD088C000A6BE32 /* MemoryGameApp.swift */; };
 		04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503652FD088C300A6BE32 /* Assets.xcassets */; };
 		04E503692FD088C300A6BE32 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503682FD088C300A6BE32 /* Preview Assets.xcassets */; };
@@ -42,9 +43,11 @@
 		MMK033 /* LaunchSplash.gif in Resources */ = {isa = PBXBuildFile; fileRef = MMKF033 /* LaunchSplash.gif */; };
 		MMK034 /* AnimatedGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF034 /* AnimatedGIFView.swift */; };
 		MMK035 /* MathAssociationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF035 /* MathAssociationHelper.swift */; };
+		MMK200 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF200 /* Monetization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0451CA102FEC33CC00B80C82 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		04E5035E2FD088C000A6BE32 /* MemoryGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E503612FD088C000A6BE32 /* MemoryGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryGameApp.swift; sourceTree = "<group>"; };
 		04E503652FD088C300A6BE32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -81,6 +84,7 @@
 		MMKF033 /* LaunchSplash.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = LaunchSplash.gif; sourceTree = "<group>"; };
 		MMKF034 /* AnimatedGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedGIFView.swift; sourceTree = "<group>"; };
 		MMKF035 /* MathAssociationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathAssociationHelper.swift; sourceTree = "<group>"; };
+		MMKF200 /* Monetization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +92,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0451CA0F2FEC2B5E00B80C82 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				MMKF008 /* LevelCatalog.swift */,
+				0451CA102FEC33CC00B80C82 /* Products.storekit */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -191,6 +197,7 @@
 				MMKF011 /* AudioManager.swift */,
 				MMKF012 /* HapticManager.swift */,
 				MMKF013 /* ProgressStore.swift */,
+				MMKF200 /* Monetization.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -304,6 +311,9 @@
 			dependencies = (
 			);
 			name = MemoryGame;
+			packageProductDependencies = (
+				0451CA0E2FEC2B5E00B80C82 /* GoogleMobileAds */,
+			);
 			productName = MemoryGame;
 			productReference = 04E5035E2FD088C000A6BE32 /* MemoryGame.app */;
 			productType = "com.apple.product-type.application";
@@ -332,6 +342,9 @@
 				Base,
 			);
 			mainGroup = 04E503552FD088C000A6BE32;
+			packageReferences = (
+				0451CA0D2FEC2B5E00B80C82 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			productRefGroup = 04E5035F2FD088C000A6BE32 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -375,6 +388,7 @@
 				MMK011 /* AudioManager.swift in Sources */,
 				MMK012 /* HapticManager.swift in Sources */,
 				MMK013 /* ProgressStore.swift in Sources */,
+				MMK200 /* Monetization.swift in Sources */,
 				MMK014 /* HomeViewModel.swift in Sources */,
 				MMK015 /* ProgressViewModel.swift in Sources */,
 				MMK016 /* GameViewModel.swift in Sources */,
@@ -598,6 +612,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0451CA0D2FEC2B5E00B80C82 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = exactVersion;
+				version = 11.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0451CA0E2FEC2B5E00B80C82 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0451CA0D2FEC2B5E00B80C82 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 04E503562FD088C000A6BE32 /* Project object */;
 }

@@ -178,16 +178,9 @@ final class GameEngine {
         )
     }
 
-    func score(elapsed: TimeInterval) -> Int {
-        let base = matchedPairs * 100
-        let timeBonus = max(0, Int(120 - elapsed))
-        let movePenalty = moves * 5
-        return max(0, base + timeBonus - movePenalty)
-    }
 }
 
 enum StarRatingRules {
-    static let starsRequiredToUnlockNextLevel = 2
     static let twoStarExtraMoves = 5
 
     static func movesForThreeStars(totalPairs: Int) -> Int {

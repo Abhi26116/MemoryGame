@@ -7,8 +7,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var viewModel: SettingsViewModel
+    @ObservedObject private var store = StoreManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var showResetAlert = false
+    @State private var showParentalGate = false
 
     init(progressStore: ProgressStore) {
         _viewModel = StateObject(wrappedValue: SettingsViewModel(progressStore: progressStore))
@@ -20,6 +22,7 @@ struct SettingsView: View {
                 progressSection
                 appearanceSection
                 gameplaySection
+                removeAdsSection
                 accessibilitySection
                 dataSection
                 aboutSection
@@ -29,8 +32,15 @@ struct SettingsView: View {
         }
         .kidBackground()
         .navigationTitle("Settings")
+        .kidBackButton()
         .tint(AppTheme.linkBlue(for: colorScheme))
         .onAppear { viewModel.syncFromStore() }
+        .sheet(isPresented: $showParentalGate) {
+            ParentalGateView {
+                Task { await store.purchaseRemoveAds() }
+            }
+            .presentationDetents([.medium])
+        }
         .alert("Reset all progress?", isPresented: $showResetAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
@@ -164,6 +174,55 @@ struct SettingsView: View {
         .settingsCard(colorScheme: colorScheme)
     }
 
+    // MARK: - Remove Ads
+
+    private var removeAdsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader("Ads", icon: "heart.slash.fill")
+
+            if store.adsRemoved {
+                HStack(spacing: 10) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(AppTheme.successGreen)
+                    Text("Ads removed — thank you!")
+                        .font(.system(.body, design: .rounded, weight: .semibold))
+                        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                }
+            } else {
+                Button {
+                    showParentalGate = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "heart.slash.fill")
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Remove Ads")
+                                .font(.system(.body, design: .rounded, weight: .bold))
+                            Text("One-time purchase — no more ads")
+                                .font(AppTheme.captionFont)
+                                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                    }
+                    .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                }
+                .buttonStyle(.plain)
+                .disabled(store.isWorking)
+
+                Button("Restore Purchases") {
+                    Task { await store.restore() }
+                }
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                .disabled(store.isWorking)
+            }
+        }
+        .settingsCard(colorScheme: colorScheme)
+    }
+
     // MARK: - Data
 
     private var dataSection: some View {
@@ -198,10 +257,10 @@ struct SettingsView: View {
             sectionHeader("About", icon: "info.circle.fill")
             infoRow(label: "App", value: AppTheme.appName)
             infoRow(label: "Levels", value: "\(viewModel.totalLevels)")
-            infoRow(label: "Unlock rule", value: "2 stars to open next level")
+            infoRow(label: "Unlock rule", value: "Complete a level to open the next")
             infoRow(
                 label: "Star guide",
-                value: "3★ ≤ pairs · 2★ unlocks next (≤ pairs + \(StarRatingRules.twoStarExtraMoves))"
+                value: "3★ ≤ pairs moves · 2★ ≤ pairs + \(StarRatingRules.twoStarExtraMoves) · 1★ finish"
             )
         }
         .settingsCard(colorScheme: colorScheme)

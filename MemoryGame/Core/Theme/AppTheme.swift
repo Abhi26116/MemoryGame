@@ -136,6 +136,31 @@ struct AppAppearanceModifier: ViewModifier {
     }
 }
 
+/// Replaces the plain system "< Back" chevron with a soft circular button that
+/// matches the app's other round controls (gear / trophy / pause).
+struct KidBackButtonModifier: ViewModifier {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left.circle.fill")
+                            .font(.title2)
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                    }
+                    .accessibilityLabel("Back")
+                }
+            }
+    }
+}
+
 extension View {
     func kidBackground() -> some View {
         modifier(KidFriendlyBackground())
@@ -143,5 +168,9 @@ extension View {
 
     func appAppearance(_ mode: AppearanceMode) -> some View {
         modifier(AppAppearanceModifier(mode: mode))
+    }
+
+    func kidBackButton() -> some View {
+        modifier(KidBackButtonModifier())
     }
 }

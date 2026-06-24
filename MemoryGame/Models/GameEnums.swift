@@ -6,60 +6,10 @@
 import Foundation
 import SwiftUI
 
-enum AgeGroup: String, CaseIterable, Identifiable, Codable {
-    case toddler = "Toddlers (2-4)"
-    case preschool = "Preschoolers (4-6)"
-    case earlyLearner = "Early Learners (6-8)"
-
-    var id: String { rawValue }
-
-    var shortName: String {
-        switch self {
-        case .toddler: return "Toddlers"
-        case .preschool: return "Preschool"
-        case .earlyLearner: return "Learners"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .toddler: return "teddybear.fill"
-        case .preschool: return "paintpalette.fill"
-        case .earlyLearner: return "book.fill"
-        }
-    }
-}
-
-enum Difficulty: String, CaseIterable, Identifiable, Codable {
-    case easy = "Easy"
-    case medium = "Medium"
-    case hard = "Hard"
-
-    var id: String { rawValue }
-
-    var hasTimer: Bool { self == .hard }
-    var hasMoveLimit: Bool { self == .hard }
-    var showsMoveCounter: Bool { self != .easy }
-
-    var timerSeconds: Int {
-        switch self {
-        case .easy: return 0
-        case .medium: return 0
-        case .hard: return 120
-        }
-    }
-
-    var maxMoves: Int? {
-        switch self {
-        case .easy, .medium: return nil
-        case .hard: return 40
-        }
-    }
-}
-
 enum GridSize: String, CaseIterable, Identifiable {
     case twoByTwo = "2×2"
     case twoByThree = "2×3"
+    case twoByFour = "2×4"
     case threeByFour = "3×4"
     case fourByFour = "4×4"
     case fourByFive = "4×5"
@@ -67,30 +17,11 @@ enum GridSize: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var rows: Int {
-        switch self {
-        case .twoByTwo, .fourByFour: return 2
-        case .twoByThree, .threeByFour, .fourByFive: return 2
-        case .fiveBySix: return 5
-        }
-    }
-
-    var columns: Int {
-        switch self {
-        case .twoByTwo: return 2
-        case .twoByThree: return 3
-        case .threeByFour: return 4
-        case .fourByFour: return 4
-        case .fourByFive: return 5
-        case .fiveBySix: return 6
-        }
-    }
-
-    /// Corrected grid dimensions per spec
     var gridRows: Int {
         switch self {
         case .twoByTwo: return 2
         case .twoByThree: return 2
+        case .twoByFour: return 2
         case .threeByFour: return 3
         case .fourByFour: return 4
         case .fourByFive: return 4
@@ -102,6 +33,7 @@ enum GridSize: String, CaseIterable, Identifiable {
         switch self {
         case .twoByTwo: return 2
         case .twoByThree: return 3
+        case .twoByFour: return 4
         case .threeByFour: return 4
         case .fourByFour: return 4
         case .fourByFive: return 5
@@ -110,14 +42,6 @@ enum GridSize: String, CaseIterable, Identifiable {
     }
 
     var pairCount: Int { (gridRows * gridColumns) / 2 }
-
-    static func sizes(for difficulty: Difficulty) -> [GridSize] {
-        switch difficulty {
-        case .easy: return [.twoByTwo, .twoByThree]
-        case .medium: return [.threeByFour, .fourByFour]
-        case .hard: return [.fourByFive, .fiveBySix]
-        }
-    }
 }
 
 enum MatchMode: String, Codable {
@@ -126,12 +50,6 @@ enum MatchMode: String, Codable {
     case triple
     case sequence
     case maze
-}
-
-enum LevelTier: String, Codable {
-    case beginner
-    case intermediate
-    case advanced
 }
 
 enum BadgeTier: String, CaseIterable, Codable {

@@ -12,9 +12,6 @@ final class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
     @Published var soundEnabled = true
-    @Published var musicEnabled = true
-
-    private var players: [String: AVAudioPlayer] = [:]
 
     private init() {
         configureSession()

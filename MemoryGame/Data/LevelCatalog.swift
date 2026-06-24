@@ -36,21 +36,23 @@ enum LevelCatalog {
             levelNumber: number,
             title: "Level \(number)",
             subtitle: "\(theme) · \(grid.rawValue)",
+            objective: objective(for: number, mode: mode),
             matchMode: mode,
             gridSize: grid,
-            gameRules: gameRules(for: number),
+            gameRules: gameRules(for: number, pairs: pairCount, mode: mode),
             pairs: pairs
         )
     }
 
     private static func gridSize(for number: Int) -> GridSize {
         switch number {
-        case 1...2: return .twoByTwo
-        case 3...6: return .threeByFour
-        case 7...16: return .fourByFour
-        case 17...28: return .fourByFour
-        case 29...40: return .fourByFive
-        default: return .fiveBySix
+        case 1...2: return .twoByTwo      // 4 cards  (2 pairs)
+        case 3...5: return .twoByThree    // 6 cards  (3 pairs)
+        case 6...8: return .twoByFour     // 8 cards  (4 pairs)
+        case 9...14: return .threeByFour  // 12 cards (6 pairs)
+        case 15...28: return .fourByFour  // 16 cards (8 pairs)
+        case 29...40: return .fourByFive  // 20 cards (10 pairs)
+        default: return .fiveBySix        // 30 cards (15 / 10 triples)
         }
     }
 
@@ -60,55 +62,120 @@ enum LevelCatalog {
         return .identical
     }
 
-    private static func gameRules(for number: Int) -> LevelGameRules {
+    /// Pressure is layered in gradually rather than all at once. The "do I run out?"
+    /// mechanic is the 3–5 hearts (a mismatch costs a life), not a hard move cap.
+    ///   1–2    pure intro — no move counter, no preview (boards too small to fail)
+    ///   3–24   move counter + hearts
+    ///   25–34  + timer, introduced generously (timer alone bites before it's tight)
+    ///   35–50  tighter timer
+    /// Hearts scale with board size; the move counter stays only as a star guide.
+    private static func gameRules(for number: Int, pairs: Int, mode: MatchMode) -> LevelGameRules {
         let preview = number >= 3
+        let seconds = LevelGameRules.defaultPreviewSeconds
+        let hearts = lives(forPairs: pairs, mode: mode)
+
         switch number {
         case 1...2:
             return LevelGameRules(
                 showsMoveCounter: false, hasTimer: false, timerSeconds: 0, maxMoves: nil,
-                showInitialPreview: false, previewSeconds: LevelGameRules.defaultPreviewSeconds
+                showInitialPreview: false, previewSeconds: seconds, maxLives: hearts
             )
-        case 3...6:
-            return LevelGameRules(
-                showsMoveCounter: true, hasTimer: false, timerSeconds: 0, maxMoves: 15,
-                showInitialPreview: preview, previewSeconds: LevelGameRules.defaultPreviewSeconds
-            )
-        case 7...14:
-            return LevelGameRules(
-                showsMoveCounter: true, hasTimer: false, timerSeconds: 0, maxMoves: 22,
-                showInitialPreview: preview, previewSeconds: LevelGameRules.defaultPreviewSeconds
-            )
-        case 15...30:
+        case 3...24:
             return LevelGameRules(
                 showsMoveCounter: true, hasTimer: false, timerSeconds: 0, maxMoves: nil,
-                showInitialPreview: preview, previewSeconds: LevelGameRules.defaultPreviewSeconds
+                showInitialPreview: preview, previewSeconds: seconds, maxLives: hearts
+            )
+        case 25...34:
+            return LevelGameRules(
+                showsMoveCounter: true, hasTimer: true,
+                timerSeconds: timeBudget(pairs: pairs, mode: mode, generous: true),
+                maxMoves: nil,
+                showInitialPreview: preview, previewSeconds: seconds, maxLives: hearts
             )
         default:
-            let timer = max(75, 200 - number * 2)
-            let moves = max(25, 55 - number / 2)
             return LevelGameRules(
-                showsMoveCounter: true, hasTimer: true, timerSeconds: timer, maxMoves: moves,
-                showInitialPreview: preview, previewSeconds: LevelGameRules.defaultPreviewSeconds
+                showsMoveCounter: true, hasTimer: true,
+                timerSeconds: timeBudget(pairs: pairs, mode: mode, generous: false),
+                maxMoves: nil,
+                showInitialPreview: preview, previewSeconds: seconds, maxLives: hearts
             )
         }
     }
 
+    /// Hearts scale with the board so a fixed mistake budget stays fair as boards grow:
+    /// 3 on small boards (≤12 cards), 4 on medium (4×4 / 4×5), 5 on the 30-card boards.
+    private static func lives(forPairs pairs: Int, mode: MatchMode) -> Int {
+        let cards = mode == .triple ? pairs * 3 : pairs * 2
+        switch cards {
+        case ...12: return 3
+        case 13...20: return 4
+        default: return 5
+        }
+    }
+
+    /// Timer scales with the board: bigger boards get MORE time, not less.
+    /// Triple match needs longer because each move turns over three cards.
+    private static func timeBudget(pairs: Int, mode: MatchMode, generous: Bool) -> Int {
+        let perPair = mode == .triple ? 16 : 12
+        let base = generous ? 40 : 25
+        let budget = base + pairs * perPair
+        return (budget / 5) * 5   // round to a tidy 5-second display
+    }
+
     private static let associationThemeNames = [
-        "Letters", "Animal Match", "Opposites", "Addition", "Word Match", "Countries"
+        "Letters", "Animal Match", "Opposites", "Addition", "Word Match", "Countries",
+        "Goes Together", "Baby Animals"
     ]
+
+    private static let tripleThemeNames = ["Colors", "Fruits", "Stars", "Animals", "Vehicles", "Food"]
+
+    /// Association level where the mechanic is first introduced.
+    private static let firstAssociationLevel = 20
+
+    /// Association themes ordered easiest → hardest so the new mechanic ramps up
+    /// (symbol matching → semantic → reading → arithmetic) instead of appearing at random.
+    /// Values index into `associationSets` / `associationThemeNames`.
+    private static let associationDifficultyOrder = [0, 2, 1, 6, 4, 7, 5, 3]
+
+    private static func associationThemeIndex(for level: Int) -> Int {
+        let offset = max(0, level - firstAssociationLevel)
+        return associationDifficultyOrder[offset % associationDifficultyOrder.count]
+    }
 
     private static func displayThemeName(for number: Int, mode: MatchMode) -> String {
         if mode == .association {
-            return associationThemeNames[(number - 1) % associationThemeNames.count]
+            return associationThemeNames[associationThemeIndex(for: number)]
         }
         if mode == .triple {
-            return "Triple Match"
+            return "Triple · \(tripleThemeNames[(number - 1) % tripleThemeNames.count])"
         }
         let themes = [
             "Animals", "Colors", "Fruits", "Vehicles", "Shapes",
             "Faces", "Weather", "Toys", "Nature", "Sports"
         ]
         return themes[themeIndex(for: number)]
+    }
+
+    /// Kid-friendly "what to do" line shown on the play screen and memorize phase.
+    private static func objective(for number: Int, mode: MatchMode) -> String {
+        switch mode {
+        case .triple:
+            return "Find all three cards that are the same!"
+        case .association:
+            switch associationThemeIndex(for: number) {
+            case 0: return "Match each capital letter to its small letter."
+            case 1: return "Match each animal to its favorite food."
+            case 2: return "Match each picture to its opposite."
+            case 3: return "Match each sum to the correct answer."
+            case 4: return "Match each animal to its name."
+            case 5: return "Match each flag to its country."
+            case 6: return "Match the things that go together."
+            case 7: return "Match each animal to its baby's name."
+            default: return "Match the two cards that go together!"
+            }
+        default:
+            return "Find and match the pairs that look the same!"
+        }
     }
 
     // MARK: - Card content pools
@@ -156,14 +223,20 @@ enum LevelCatalog {
          ("🌞", "🌜"), ("🌝", "🌛"), ("🗻", "🏕️"), ("⚡️", "🔋"), ("🌑", "🌕"), ("🏠", "🛏️"),
          ("📖", "✏️"), ("🎨", "🖌️"), ("🎵", "🎹")],
         [("1+1", "2"), ("2+1", "3"), ("3+1", "4"), ("4+1", "5"), ("5+1", "6"), ("6+1", "7"),
-         ("7+1", "8"), ("8+1", "9"), ("9+1", "10"), ("6+5", "11"), ("7+5", "12"), ("8+5", "13"),
-         ("9+5", "14"), ("7+8", "15"), ("8+8", "16")],
+         ("7+1", "8"), ("8+1", "9"), ("9+1", "10"), ("10+1", "11"), ("10+2", "12"), ("10+3", "13"),
+         ("10+4", "14"), ("10+5", "15"), ("10+6", "16")],
         [("🦈", "SHARK"), ("🐋", "WHALE"), ("🦭", "SEAL"), ("🐊", "CROCODILE"), ("🦎", "LIZARD"), ("🐍", "SNAKE"),
          ("🦘", "KANGAROO"), ("🦏", "RHINO"), ("🦛", "HIPPO"), ("🐪", "CAMEL"), ("🦬", "BISON"), ("🦙", "LLAMA"),
          ("🦥", "SLOTH"), ("🦨", "SKUNK"), ("🦫", "BEAVER")],
         [("🇺🇸", "USA"), ("🇬🇧", "UK"), ("🇫🇷", "France"), ("🇯🇵", "Japan"), ("🇮🇳", "India"), ("🇧🇷", "Brazil"),
          ("🇨🇦", "Canada"), ("🇩🇪", "Germany"), ("🇮🇹", "Italy"), ("🇪🇸", "Spain"), ("🇦🇺", "Australia"), ("🇲🇽", "Mexico"),
-         ("🇰🇷", "Korea"), ("🇨🇳", "China"), ("🇿🇦", "South Africa")]
+         ("🇰🇷", "Korea"), ("🇨🇳", "China"), ("🇿🇦", "South Africa")],
+        [("🧦", "👟"), ("🔑", "🔒"), ("✏️", "📓"), ("🪥", "🦷"), ("☂️", "🌧️"), ("🧤", "❄️"),
+         ("🐝", "🌻"), ("🐟", "🐠"), ("🍴", "🍽️"), ("🔌", "💡"), ("🎁", "🎀"), ("⚽", "🥅"),
+         ("🖍️", "🎨"), ("🧩", "🧠"), ("🌱", "💧")],
+        [("🐶", "Puppy"), ("🐱", "Kitten"), ("🐮", "Calf"), ("🐑", "Lamb"), ("🐴", "Foal"), ("🐻", "Cub"),
+         ("🦌", "Fawn"), ("🐔", "Chick"), ("🦘", "Joey"), ("🐸", "Tadpole"), ("🦢", "Cygnet"), ("🐐", "Kid"),
+         ("🦅", "Eaglet"), ("🐷", "Piglet"), ("🦉", "Owlet")]
     ]
 
     private static let tripleSets: [[(String, String)]] = [
@@ -172,7 +245,13 @@ enum LevelCatalog {
         [("🍎", "Apple"), ("🍌", "Banana"), ("🍊", "Orange"), ("🍇", "Grapes"), ("🍓", "Strawberry"), ("🍉", "Watermelon"),
          ("🍑", "Peach"), ("🍒", "Cherry"), ("🥝", "Kiwi"), ("🍍", "Pineapple")],
         [("⭐", "Star"), ("🌙", "Moon"), ("☀️", "Sun"), ("🌈", "Rainbow"), ("☁️", "Cloud"), ("❄️", "Snow"),
-         ("🔥", "Fire"), ("💧", "Water"), ("🌸", "Flower"), ("🍀", "Clover")]
+         ("🔥", "Fire"), ("💧", "Water"), ("🌸", "Flower"), ("🍀", "Clover")],
+        [("🐶", "Dog"), ("🐱", "Cat"), ("🐰", "Rabbit"), ("🐻", "Bear"), ("🦊", "Fox"), ("🐼", "Panda"),
+         ("🦁", "Lion"), ("🐯", "Tiger"), ("🐸", "Frog"), ("🐵", "Monkey")],
+        [("🚗", "Car"), ("🚌", "Bus"), ("🚓", "Police Car"), ("🚑", "Ambulance"), ("🚒", "Fire Truck"), ("✈️", "Plane"),
+         ("🚀", "Rocket"), ("🚁", "Helicopter"), ("🚲", "Bike"), ("⛵", "Boat")],
+        [("🍕", "Pizza"), ("🍔", "Burger"), ("🌭", "Hot Dog"), ("🍟", "Fries"), ("🍩", "Donut"), ("🍪", "Cookie"),
+         ("🍰", "Cake"), ("🍦", "Ice Cream"), ("🍫", "Chocolate"), ("🍿", "Popcorn")]
     ]
 
     private static func makePairs(level: Int, count: Int, mode: MatchMode) -> [LevelPairDefinition] {
@@ -202,7 +281,7 @@ enum LevelCatalog {
     }
 
     private static func makeAssociationPairs(level: Int, count: Int) -> [LevelPairDefinition] {
-        let theme = associationSets[(level - 1) % associationSets.count]
+        let theme = associationSets[associationThemeIndex(for: level)]
         let rotated = rotatedPool(theme, level: level, poolCount: associationSets.count)
         let items = isMathAssociationSet(theme)
             ? uniqueMathPairs(count: count, from: rotated)

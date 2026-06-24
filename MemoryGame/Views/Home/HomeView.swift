@@ -7,6 +7,7 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
+    @ObservedObject private var store = StoreManager.shared
     let progressStore: ProgressStore
     @Environment(\.colorScheme) private var colorScheme
 
@@ -23,6 +24,15 @@ struct HomeView: View {
             .padding(.horizontal, 20)
             .padding(.top, 52)
             .padding(.bottom, 32)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if !store.adsRemoved {
+                BannerAdView()
+                    .frame(height: 50)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+                    .background(AppTheme.cardSurface(for: colorScheme))
+            }
         }
         .kidBackground()
         .overlay(alignment: .topLeading) {
@@ -71,7 +81,7 @@ struct HomeView: View {
                     )
                 )
                 .multilineTextAlignment(.center)
-            Text("All levels are open — pick one and play!")
+            Text("Complete a level to unlock the next one!")
                 .font(AppTheme.bodyFont)
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                 .multilineTextAlignment(.center)
@@ -172,13 +182,11 @@ struct HomeView: View {
                         .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
-
-                    if viewModel.stars(for: level.id) < HomeViewModel.starsRequiredToUnlockNext,
-                       level.levelNumber < viewModel.totalLevels {
-                        Text("2★ to unlock next: ≤ \(level.movesToEarnTwoStars) moves")
-                            .font(.system(.caption2, design: .rounded, weight: .semibold))
-                            .foregroundStyle(Color(hex: "FF9500"))
-                    }
+                    Text(level.objective)
+                        .font(.system(.caption2, design: .rounded, weight: .medium))
+                        .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,7 +225,7 @@ struct HomeView: View {
     private func levelTrailingActions(level: LevelModel) -> some View {
         VStack(spacing: 6) {
             StarRatingView(stars: viewModel.stars(for: level.id), size: 11)
-            if viewModel.stars(for: level.id) >= HomeViewModel.starsRequiredToUnlockNext {
+            if viewModel.isCompleted(level.id) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.body)
                     .foregroundStyle(AppTheme.successGreen)

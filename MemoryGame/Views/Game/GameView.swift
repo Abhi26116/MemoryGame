@@ -29,19 +29,7 @@ struct GameView: View {
     }
 
     private var nextLevelJustUnlocked: Bool {
-        viewModel.earnedStars >= HomeViewModel.starsRequiredToUnlockNext
-            && nextLevel != nil
-    }
-
-    private var currentLevelStars: Int {
-        progressStore.progress(for: activeLevel.id)?.stars ?? 0
-    }
-
-    private var showsUnlockMoveGoal: Bool {
-        nextLevel != nil
-            && currentLevelStars < HomeViewModel.starsRequiredToUnlockNext
-            && !viewModel.gameFinished
-            && !viewModel.isPreviewPhase
+        viewModel.levelWon && nextLevel != nil
     }
 
     var body: some View {
@@ -58,19 +46,17 @@ struct GameView: View {
                     gameHud
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
-                        .padding(.bottom, showsUnlockMoveGoal ? 6 : (viewModel.isPreviewPhase ? 8 : 12))
-
-                    if showsUnlockMoveGoal {
-                        unlockMoveGoalBanner
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, viewModel.isPreviewPhase ? 6 : 8)
-                    }
+                        .padding(.bottom, viewModel.isPreviewPhase ? 8 : 12)
 
                     if viewModel.isPreviewPhase {
                         previewBanner
                             .padding(.horizontal, 16)
                             .padding(.bottom, 10)
                             .transition(.move(edge: .top).combined(with: .opacity))
+                    } else {
+                        objectiveBanner
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 10)
                     }
 
                     Spacer(minLength: 12)
@@ -114,6 +100,7 @@ struct GameView: View {
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.isPreviewPhase)
         .navigationBarTitleDisplayMode(.inline)
+        .kidBackButton()
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 2) {
@@ -138,8 +125,12 @@ struct GameView: View {
         }
         .onChange(of: viewModel.gameFinished) { _, finished in
             if finished {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    showResult = true
+                AdsManager.shared.handleLevelFinished(
+                    adsRemoved: StoreManager.shared.adsRemoved
+                ) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        showResult = true
+                    }
                 }
             }
         }
@@ -150,10 +141,9 @@ struct GameView: View {
                 matchedPairs: viewModel.matchedPairs,
                 totalPairs: viewModel.totalPairs,
                 stars: viewModel.earnedStars,
-                score: viewModel.finalScore,
                 moves: viewModel.moves,
-                movesForTwoStars: viewModel.movesForTwoStars,
                 elapsed: viewModel.elapsed,
+                lossReasonText: viewModel.lossReasonText,
                 nextLevelUnlocked: nextLevelJustUnlocked,
                 nextLevelTitle: nextLevel?.title,
                 onPlayAgain: {
@@ -197,29 +187,35 @@ struct GameView: View {
     // MARK: - HUD
 
     private var gameHud: some View {
-        HStack(spacing: 10) {
-            if showsMovesHud {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                if showsMovesHud {
+                    hudTile(
+                        icon: "arrow.left.arrow.right",
+                        tint: "5B8DEF",
+                        label: "Moves",
+                        value: movesText
+                    )
+                }
+
                 hudTile(
-                    icon: "arrow.left.arrow.right",
-                    tint: "5B8DEF",
-                    label: "Moves",
-                    value: movesText
+                    icon: viewModel.rules.hasTimer ? "timer" : "clock.fill",
+                    tint: "FF6B9D",
+                    label: viewModel.rules.hasTimer ? "Time left" : "Time",
+                    value: timeText
+                )
+
+                hudTile(
+                    icon: "square.grid.2x2.fill",
+                    tint: "34C759",
+                    label: "Pairs",
+                    value: "\(viewModel.matchedPairs)/\(viewModel.totalPairs)"
                 )
             }
 
-            hudTile(
-                icon: viewModel.rules.hasTimer ? "timer" : "clock.fill",
-                tint: "FF6B9D",
-                label: viewModel.rules.hasTimer ? "Time left" : "Time",
-                value: timeText
-            )
-
-            hudTile(
-                icon: "square.grid.2x2.fill",
-                tint: "34C759",
-                label: "Pairs",
-                value: "\(viewModel.matchedPairs)/\(viewModel.totalPairs)"
-            )
+            if viewModel.livesEnabled {
+                livesRow
+            }
         }
         .padding(10)
         .background(
@@ -229,53 +225,55 @@ struct GameView: View {
         )
     }
 
-    private var showsMovesHud: Bool {
-        viewModel.rules.showsMoveCounter || viewModel.rules.maxMoves != nil
-    }
+    private var livesRow: some View {
+        HStack(spacing: 8) {
+            Text("Lives")
+                .font(.system(.caption, design: .rounded, weight: .semibold))
+                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
 
-    private var unlockMoveGoalBanner: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "lock.open.fill")
-                .font(.subheadline.bold())
-                .foregroundStyle(Color(hex: "FFD60A"))
-
-            VStack(alignment: .leading, spacing: 3) {
-                if let next = nextLevel {
-                    Text("Unlock \(next.title)")
-                        .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
-                }
-                if viewModel.isOnPaceForTwoStars {
-                    Text("≤ \(viewModel.movesForTwoStars) moves for 2★ · \(viewModel.movesLeftForTwoStars) move\(viewModel.movesLeftForTwoStars == 1 ? "" : "s") left")
-                        .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
-                } else {
-                    Text("Over 2★ pace — finish in ≤ \(viewModel.movesForTwoStars) moves total")
-                        .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(Color(hex: "FF9500"))
+            HStack(spacing: 5) {
+                ForEach(0..<viewModel.maxLives, id: \.self) { index in
+                    let alive = index < viewModel.livesRemaining
+                    Image(systemName: alive ? "heart.fill" : "heart")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(alive
+                                         ? Color(hex: "FF3B30")
+                                         : AppTheme.progressTrack(for: colorScheme))
+                        .scaleEffect(alive ? 1 : 0.85)
                 }
             }
+            .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.livesRemaining)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(viewModel.livesRemaining) of \(viewModel.maxLives) lives left")
+    }
 
+    private var objectiveBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "target")
+                .font(.caption.bold())
+                .foregroundStyle(Color(hex: "5B8DEF"))
+            Text(activeLevel.objective)
+                .font(.system(.caption, design: .rounded, weight: .semibold))
+                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(hex: "FFD60A").opacity(colorScheme == .dark ? 0.15 : 0.12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color(hex: "FFD60A").opacity(0.35), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "5B8DEF").opacity(colorScheme == .dark ? 0.18 : 0.1))
         )
-        .accessibilityLabel(unlockMoveGoalAccessibilityLabel)
+        .accessibilityLabel("Goal: \(activeLevel.objective)")
     }
 
-    private var unlockMoveGoalAccessibilityLabel: String {
-        if viewModel.isOnPaceForTwoStars {
-            return "Unlock next level with 2 stars in \(viewModel.movesForTwoStars) moves or fewer. \(viewModel.movesLeftForTwoStars) moves remaining."
-        }
-        return "Unlock next level with 2 stars in \(viewModel.movesForTwoStars) moves or fewer. You are over the 2 star move limit."
+    private var showsMovesHud: Bool {
+        viewModel.rules.showsMoveCounter || viewModel.rules.maxMoves != nil
     }
 
     private var movesText: String {
@@ -348,7 +346,7 @@ struct GameView: View {
                         )
                 }
 
-                Text("Look at every card — they flip over soon!")
+                Text(activeLevel.objective)
                     .font(.system(.caption, design: .rounded, weight: .medium))
                     .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)

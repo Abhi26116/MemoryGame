@@ -58,5 +58,6 @@ struct AchievementView: View {
         }
         .kidBackground()
         .navigationTitle("Achievements")
+        .kidBackButton()
     }
 }

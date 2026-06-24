@@ -75,15 +75,20 @@ struct MemoryCardView: View {
         }
     }
 
-    private var isMathOrTextCard: Bool {
-        MathAssociationHelper.isExpression(card.content.label)
-            || MathAssociationHelper.isNumericAnswer(card.content.label)
-            || (!card.content.label.isEmpty && card.content.emoji == nil && card.content.symbolName == "plus.forwardslash.minus")
+    /// Any card without an emoji shows its label as text (letters, words, country
+    /// names, math). The current content has no intentional SF-symbol cards, so the
+    /// old symbol+label path left a stray ⭐ above letters/words.
+    private var isTextCard: Bool {
+        card.content.emoji == nil && !card.content.label.isEmpty
     }
 
-    private var mathTextSize: CGFloat {
+    private var textSize: CGFloat {
         let base = largeText ? size * 0.34 : size * 0.28
-        return card.content.label.count > 3 ? base * 0.85 : base
+        switch card.content.label.count {
+        case 0...3: return base          // "A", "12", "USA"
+        case 4...6: return base * 0.72    // "SHARK", "Japan"
+        default: return base * 0.55       // "CROCODILE", "South Africa"
+        }
     }
 
     private var cardFront: some View {
@@ -105,9 +110,9 @@ struct MemoryCardView: View {
                             .minimumScaleFactor(0.6)
                             .multilineTextAlignment(.center)
                     }
-                } else if isMathOrTextCard {
+                } else if isTextCard {
                     Text(card.content.label)
-                        .font(.system(size: mathTextSize, weight: .heavy, design: .rounded))
+                        .font(.system(size: textSize, weight: .heavy, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
                         .lineLimit(2)

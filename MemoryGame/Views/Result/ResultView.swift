@@ -11,10 +11,9 @@ struct ResultView: View {
     var matchedPairs: Int = 0
     var totalPairs: Int = 0
     let stars: Int
-    let score: Int
     let moves: Int
-    var movesForTwoStars: Int = 0
     let elapsed: TimeInterval
+    var lossReasonText: String? = nil
     var nextLevelUnlocked: Bool = false
     var nextLevelTitle: String?
     let onPlayAgain: () -> Void
@@ -78,7 +77,7 @@ struct ResultView: View {
 
             VStack(spacing: 6) {
                 Text(levelWon ? "Level Complete!" : "Game Over!")
-                    .font(.system(size: 32, weight: .heavy, design: .rounded))
+                    .font(.system(.largeTitle, design: .rounded, weight: .heavy))
                     .foregroundStyle(
                         LinearGradient(
                             colors: levelWon
@@ -128,18 +127,11 @@ struct ResultView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.02), value: showContent)
     }
 
-    private var unlockNextLevelHint: String {
-        if moves <= movesForTwoStars {
-            return "You earned \(stars) star\(stars == 1 ? "" : "s"). Need 2 stars — try ≤ \(movesForTwoStars) moves."
-        }
-        return "Used \(moves) moves. Unlock next level with 2 stars: finish in ≤ \(movesForTwoStars) moves."
-    }
-
     // MARK: - Unlock banner
 
     @ViewBuilder
     private var unlockBanner: some View {
-        if stars >= HomeViewModel.starsRequiredToUnlockNext, nextLevelUnlocked, let nextLevelTitle {
+        if nextLevelUnlocked, let nextLevelTitle {
             HStack(spacing: 10) {
                 Image(systemName: "lock.open.fill")
                     .font(.title3)
@@ -166,7 +158,7 @@ struct ResultView: View {
             HStack(spacing: 10) {
                 Image(systemName: "arrow.counterclockwise.circle.fill")
                     .foregroundStyle(Color(hex: "FF9500"))
-                Text("Out of moves — play again to match all the pairs!")
+                Text(lossReasonText ?? "Out of moves — play again to match all the pairs!")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)
@@ -176,21 +168,6 @@ struct ResultView: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: "FFF4E5"))
-            )
-        } else if stars < HomeViewModel.starsRequiredToUnlockNext, levelWon, movesForTwoStars > 0 {
-            HStack(spacing: 10) {
-                Image(systemName: "star.leadinghalf.filled")
-                    .foregroundStyle(Color(hex: "FF9500"))
-                Text(unlockNextLevelHint)
-                    .font(.system(.caption, design: .rounded, weight: .semibold))
-                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(AppTheme.chipUnselected(for: colorScheme))
             )
         }
     }
@@ -204,7 +181,6 @@ struct ResultView: View {
             }
 
             VStack(spacing: 10) {
-                statTile(icon: "star.circle.fill", color: "FFD60A", label: "Score", value: "\(score)")
                 statTile(icon: "arrow.left.arrow.right.circle.fill", color: "5B8DEF", label: "Moves", value: "\(moves)")
                 statTile(icon: "clock.fill", color: "FF6B9D", label: "Time", value: formatElapsed(elapsed))
             }
@@ -266,9 +242,7 @@ struct ResultView: View {
 
     private var actionButtons: some View {
         VStack(spacing: 12) {
-            if levelWon,
-               stars >= HomeViewModel.starsRequiredToUnlockNext,
-               nextLevelUnlocked, let onNextLevel {
+            if nextLevelUnlocked, let onNextLevel {
                 resultButton(
                     title: "Next Level",
                     icon: "arrow.right.circle.fill",
@@ -355,7 +329,6 @@ struct ResultView: View {
     ResultView(
         levelTitle: "Level 1",
         stars: 2,
-        score: 293,
         moves: 4,
         elapsed: 6,
         nextLevelUnlocked: true,

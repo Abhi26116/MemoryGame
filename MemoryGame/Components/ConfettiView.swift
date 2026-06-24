@@ -14,7 +14,7 @@ struct ConfettiView: View {
             Canvas { context, size in
                 let now = timeline.date.timeIntervalSinceReferenceDate
                 for particle in particles {
-                    var p = particle
+                    let p = particle
                     let age = now - p.birth
                     guard age < p.lifetime else { continue }
                     let x = p.startX + sin(age * p.wobbleSpeed) * 30

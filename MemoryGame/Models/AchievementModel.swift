@@ -35,18 +35,18 @@ extension AchievementModel {
         AchievementModel(
             id: "memory_master",
             title: "Memory Master",
-            description: "Complete 25 levels",
+            description: "Complete all 50 levels",
             icon: "brain.head.profile",
             requiredStars: 0,
-            requiredLevels: 25
+            requiredLevels: 50
         ),
         AchievementModel(
             id: "half_way",
             title: "Halfway Hero",
-            description: "Reach level 25",
+            description: "Complete 25 levels",
             icon: "flag.fill",
             requiredStars: 0,
-            requiredLevels: 0
+            requiredLevels: 25
         ),
         AchievementModel(
             id: "speed_demon",
@@ -65,16 +65,6 @@ extension AchievementModel {
             requiredLevels: 15
         )
     ]
-}
-
-struct LevelProgressRecord: Identifiable, Equatable {
-    var id: String { levelId }
-    let levelId: String
-    var stars: Int
-    var bestScore: Int
-    var fastestTime: TimeInterval?
-    var completedCount: Int
-    var lastBadge: BadgeTier?
 }
 
 struct DailyChallengeState: Equatable {

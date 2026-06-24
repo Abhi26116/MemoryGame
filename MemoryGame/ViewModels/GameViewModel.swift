@@ -6,6 +6,13 @@
 import Foundation
 import SwiftUI
 
+enum GameOverReason: Equatable {
+    case won
+    case outOfMoves
+    case outOfTime
+    case outOfLives
+}
+
 @MainActor
 final class GameViewModel: ObservableObject {
     @Published private(set) var cards: [CardModel] = []
@@ -19,8 +26,9 @@ final class GameViewModel: ObservableObject {
     @Published var gameFinished = false
     @Published private(set) var levelWon = false
     @Published var earnedStars = 0
-    @Published var finalScore = 0
     @Published var mismatchIndices: [Int] = []
+    @Published private(set) var livesRemaining = LevelGameRules.defaultLives
+    @Published private(set) var failReason: GameOverReason = .won
 
     @Published private(set) var isPreviewPhase = false
     @Published private(set) var previewSecondsLeft = 0
@@ -43,10 +51,18 @@ final class GameViewModel: ObservableObject {
     var highContrast: Bool { progressStore.settings?.highContrast ?? false }
     var colorBlindMode: Bool { progressStore.settings?.colorBlindMode ?? false }
 
-    var movesForTwoStars: Int { StarRatingRules.movesForTwoStars(totalPairs: totalPairs) }
-    var movesForThreeStars: Int { StarRatingRules.movesForThreeStars(totalPairs: totalPairs) }
-    var movesLeftForTwoStars: Int { max(0, movesForTwoStars - moves) }
-    var isOnPaceForTwoStars: Bool { moves <= movesForTwoStars }
+    var maxLives: Int { rules.maxLives }
+    var livesEnabled: Bool { rules.livesEnabled }
+
+    /// Encouraging reason shown on the result screen after a loss (nil when won).
+    var lossReasonText: String? {
+        switch failReason {
+        case .won: return nil
+        case .outOfLives: return "Out of hearts — play again to match all the pairs!"
+        case .outOfMoves: return "Out of moves — play again to match all the pairs!"
+        case .outOfTime: return "Time's up — play again to match all the pairs!"
+        }
+    }
 
     init(level: LevelModel, progressStore: ProgressStore) {
         self.level = level
@@ -67,6 +83,8 @@ final class GameViewModel: ObservableObject {
         elapsed = 0
         gameFinished = false
         levelWon = false
+        failReason = .won
+        livesRemaining = rules.maxLives
         showConfetti = false
         isPaused = false
         remainingTime = rules.timerSeconds
@@ -91,7 +109,8 @@ final class GameViewModel: ObservableObject {
 
         previewTask = Task { [weak self] in
             guard let self else { return }
-            for remaining in stride(from: self.rules.previewSeconds, through: 1, by: -1) {
+            // Count down one number per second: 5,4,3,2,1 then reveal — exactly previewSeconds long.
+            for remaining in stride(from: self.rules.previewSeconds - 1, through: 1, by: -1) {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 guard !Task.isCancelled else { return }
                 await MainActor.run {
@@ -126,7 +145,7 @@ final class GameViewModel: ObservableObject {
                     self.elapsed = Date().timeIntervalSince(self.startDate)
                     if self.rules.hasTimer, self.remainingTime > 0 {
                         self.remainingTime -= 1
-                        if self.remainingTime == 0 { self.finishGame() }
+                        if self.remainingTime == 0 { self.finishGame(reason: .outOfTime) }
                     }
                 }
             }
@@ -163,6 +182,9 @@ final class GameViewModel: ObservableObject {
         case .mismatch(let indices):
             AudioManager.shared.playMismatch()
             HapticManager.error(enabled: hapticsEnabled)
+            if livesEnabled {
+                livesRemaining = max(0, livesRemaining - 1)
+            }
             mismatchIndices = indices
             engine.markShaking(indices: indices)
             cards = engine.cards
@@ -172,7 +194,11 @@ final class GameViewModel: ObservableObject {
                     self.engine.hideMismatch(indices: indices)
                     self.cards = self.engine.cards
                     self.mismatchIndices = []
-                    self.endIfOutOfMoves()
+                    if self.livesEnabled, self.livesRemaining == 0 {
+                        self.finishGame(reason: .outOfLives)
+                    } else {
+                        self.endIfOutOfMoves()
+                    }
                 }
             }
         case .sequenceStep:
@@ -190,21 +216,21 @@ final class GameViewModel: ObservableObject {
 
     private func endIfOutOfMoves() {
         guard moveLimitReached, !engine.isComplete else { return }
-        finishGame()
+        finishGame(reason: .outOfMoves)
     }
 
-    private func finishGame() {
+    private func finishGame(reason: GameOverReason = .won) {
         guard !gameFinished else { return }
         gameFinished = true
         canInteract = false
         levelWon = engine.isComplete
+        failReason = levelWon ? .won : reason
         previewTask?.cancel()
         timerTask?.cancel()
         if !rules.hasTimer {
             elapsed = Date().timeIntervalSince(startDate)
         }
         earnedStars = engine.calculateStars()
-        finalScore = engine.score(elapsed: elapsed)
         showConfetti = levelWon
         if levelWon {
             AudioManager.shared.playComplete()
@@ -213,12 +239,17 @@ final class GameViewModel: ObservableObject {
             AudioManager.shared.playMismatch()
             HapticManager.error(enabled: hapticsEnabled)
         }
-        progressStore.recordCompletion(
-            levelId: level.id,
-            stars: earnedStars,
-            score: finalScore,
-            elapsed: elapsed
-        )
+        // Only a win counts as completing the level — a loss (out of hearts / time)
+        // records nothing, so it can't unlock the next level or inflate progress.
+        if levelWon {
+            progressStore.recordCompletion(
+                levelId: level.id,
+                stars: earnedStars,
+                elapsed: elapsed,
+                levelWon: true,
+                hasTimer: rules.hasTimer
+            )
+        }
     }
 
     func reset() {

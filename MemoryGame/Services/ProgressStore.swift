@@ -48,7 +48,13 @@ final class ProgressStore: ObservableObject {
         levelProgress[levelId]
     }
 
-    func recordCompletion(levelId: String, stars: Int, score: Int, elapsed: TimeInterval) {
+    func recordCompletion(
+        levelId: String,
+        stars: Int,
+        elapsed: TimeInterval,
+        levelWon: Bool = true,
+        hasTimer: Bool = false
+    ) {
         let entity: LevelProgressEntity
         if let existing = levelProgress[levelId] {
             entity = existing
@@ -60,7 +66,6 @@ final class ProgressStore: ObservableObject {
 
         entity.completedCount += 1
         entity.stars = max(entity.stars, stars)
-        entity.bestScore = max(entity.bestScore, score)
         if let fastest = entity.fastestTime {
             entity.fastestTime = min(fastest, elapsed)
         } else {
@@ -73,7 +78,12 @@ final class ProgressStore: ObservableObject {
 
         if let settings {
             settings.totalStars += stars
-            checkAchievements(settings: settings)
+            checkAchievements(
+                settings: settings,
+                lastElapsed: elapsed,
+                lastLevelWon: levelWon,
+                lastLevelTimed: hasTimer
+            )
         }
         save()
     }
@@ -113,7 +123,12 @@ final class ProgressStore: ObservableObject {
         settings?.memorizePreviewEnabled ?? true
     }
 
-    private func checkAchievements(settings: AppSettingsEntity) {
+    private func checkAchievements(
+        settings: AppSettingsEntity,
+        lastElapsed: TimeInterval,
+        lastLevelWon: Bool,
+        lastLevelTimed: Bool
+    ) {
         var unlocked = Set(settings.unlockedAchievementIds)
         let goldCount = levelProgress.values.filter { $0.stars >= 3 }.count
         for achievement in AchievementModel.catalog {
@@ -124,10 +139,10 @@ final class ProgressStore: ObservableObject {
                 earned = completedLevels >= 1
             case "star_collector":
                 earned = totalStars >= achievement.requiredStars
-            case "memory_master":
+            case "memory_master", "half_way":
                 earned = completedLevels >= achievement.requiredLevels
-            case "half_way":
-                earned = completedLevels >= 25
+            case "speed_demon":
+                earned = lastLevelWon && lastLevelTimed && lastElapsed > 0 && lastElapsed < 60
             case "perfect_gold":
                 earned = goldCount >= achievement.requiredLevels
             default:
