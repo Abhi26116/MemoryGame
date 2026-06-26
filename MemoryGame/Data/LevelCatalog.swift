@@ -71,7 +71,7 @@ enum LevelCatalog {
     /// Hearts scale with board size; the move counter stays only as a star guide.
     private static func gameRules(for number: Int, pairs: Int, mode: MatchMode) -> LevelGameRules {
         let preview = number >= 3
-        let seconds = LevelGameRules.defaultPreviewSeconds
+        let seconds = previewSeconds(forPairs: pairs, mode: mode)
         let hearts = lives(forPairs: pairs, mode: mode)
 
         switch number {
@@ -102,10 +102,24 @@ enum LevelCatalog {
         }
     }
 
-    /// Hearts scale with the board so a fixed mistake budget stays fair as boards grow:
-    /// 3 on small boards (≤12 cards), 4 on medium (4×4 / 4×5), 5 on the 30-card boards.
-    private static func lives(forPairs pairs: Int, mode: MatchMode) -> Int {
+    /// Memorize-preview length scales with the board — bigger boards get more time to study.
+    /// (Levels 1–2 don't show a preview at all.)
+    private static func previewSeconds(forPairs pairs: Int, mode: MatchMode) -> Int {
         let cards = mode == .triple ? pairs * 3 : pairs * 2
+        switch cards {
+        case ...8: return 6      // 2×2 … 2×4
+        case 9...12: return 8    // 3×4
+        case 13...20: return 10  // 4×4, 4×5
+        default: return 12       // 5×6 (30 cards)
+        }
+    }
+
+    /// Hearts scale with the board so a fixed mistake budget stays fair as boards grow:
+    /// 3 on small boards (≤12 cards), 4 on medium (4×4 / 4×5), 5 on the 30-card board,
+    /// and 6 on the triple-match levels (42–50) since matching three is harder.
+    private static func lives(forPairs pairs: Int, mode: MatchMode) -> Int {
+        if mode == .triple { return 6 }
+        let cards = pairs * 2
         switch cards {
         case ...12: return 3
         case 13...20: return 4

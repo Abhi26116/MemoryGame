@@ -414,13 +414,13 @@ struct GameView: View {
     }
 
     private var previewSecondDots: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 3) {
             ForEach(0..<viewModel.rules.previewSeconds, id: \.self) { index in
                 Capsule()
                     .fill(index < viewModel.previewSecondsLeft
                           ? AnyShapeStyle(AppTheme.playButtonGradient)
                           : AnyShapeStyle(AppTheme.progressTrack(for: colorScheme)))
-                    .frame(width: index < viewModel.previewSecondsLeft ? 22 : 10, height: 8)
+                    .frame(width: index < viewModel.previewSecondsLeft ? 13 : 6, height: 7)
                     .animation(.spring(response: 0.35, dampingFraction: 0.75), value: viewModel.previewSecondsLeft)
             }
         }

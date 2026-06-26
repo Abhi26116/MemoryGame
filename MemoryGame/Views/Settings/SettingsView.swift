@@ -139,7 +139,7 @@ struct SettingsView: View {
             ) { viewModel.setHaptics($0) }
             settingsToggle(
                 title: "Memorize Preview",
-                subtitle: "Show all cards for 5 seconds at the start (level 3+)",
+                subtitle: "Show all cards to memorize at the start (level 3+)",
                 icon: "eye.fill",
                 isOn: $viewModel.memorizePreviewEnabled
             ) { viewModel.setMemorizePreview($0) }
