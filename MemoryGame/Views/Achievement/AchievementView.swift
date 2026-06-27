@@ -6,58 +6,51 @@
 import SwiftUI
 
 struct AchievementView: View {
+    /// Observed so newly-unlocked achievements appear without leaving the tab.
+    @ObservedObject var progressStore: ProgressStore
     @StateObject private var viewModel: ProgressViewModel
-    @Environment(\.colorScheme) private var colorScheme
 
     init(progressStore: ProgressStore) {
+        self.progressStore = progressStore
         _viewModel = StateObject(wrappedValue: ProgressViewModel(progressStore: progressStore))
     }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                ProgressBarView(
-                    progress: viewModel.progressFraction,
-                    label: "Overall progress"
-                )
-                .padding(.horizontal, 4)
-
+            VStack(spacing: DS.Spacing.lg) {
                 ForEach(viewModel.achievements, id: \.0.id) { achievement, unlocked in
-                    HStack(spacing: 16) {
+                    HStack(spacing: DS.Spacing.lg) {
                         ZStack {
                             Circle()
-                                .fill(unlocked ? AppTheme.primaryGradient : LinearGradient(colors: [.gray.opacity(0.3)], startPoint: .top, endPoint: .bottom))
+                                .fill(unlocked
+                                      ? AnyShapeStyle(DS.Gradient.brand)
+                                      : AnyShapeStyle(Color.gray.opacity(0.3)))
                                 .frame(width: 52, height: 52)
                             Image(systemName: achievement.icon)
                                 .font(.title2)
                                 .foregroundStyle(unlocked ? .white : .gray)
                         }
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                             Text(achievement.title)
-                                .font(AppTheme.headlineFont)
-                                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                                .font(.DSText.headline)
+                                .foregroundStyle(DS.Color.textPrimary)
                             Text(achievement.description)
-                                .font(AppTheme.captionFont)
-                                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                                .font(.DSText.caption)
+                                .foregroundStyle(DS.Color.textSecondary)
                         }
                         Spacer()
                         Image(systemName: unlocked ? "checkmark.seal.fill" : "lock.fill")
-                            .foregroundStyle(unlocked ? AppTheme.successGreen : .gray)
+                            .foregroundStyle(unlocked ? DS.Color.success : .gray)
                     }
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                            .fill(AppTheme.cardSurface(for: colorScheme))
-                    )
-                    .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                    .dsCard()
                     .opacity(unlocked ? 1 : 0.75)
-                    .accessibilityLabel("\(achievement.title). \(unlocked ? "Unlocked" : "Locked")")
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(achievement.title). \(achievement.description). \(unlocked ? "Unlocked" : "Locked")")
                 }
             }
-            .padding(20)
+            .padding(DS.Layout.screenPadding)
         }
-        .kidBackground()
+        .dsScreenBackground()
         .navigationTitle("Achievements")
-        .kidBackButton()
     }
 }

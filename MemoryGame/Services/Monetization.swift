@@ -16,10 +16,19 @@ import GoogleMobileAds
 final class AdsManager: NSObject, ObservableObject {
     static let shared = AdsManager()
 
-    /// Google's official TEST ad units — safe to develop with. Swap for your real
-    /// units (App ID is already in Info.plist) only when you ship.
-    static let interstitialUnitID = "ca-app-pub-3940256099942544/4411468910"
-    static let bannerUnitID = "ca-app-pub-3940256099942544/2934735716"
+    /// While `true`, EVERY build (including TestFlight / App Store) uses Google's TEST
+    /// ads — safe to tap, never real money. Flip to `false` only when the app is live
+    /// and your AdMob app is approved, to serve your real ads. (App ID in Info.plist
+    /// is always the real one.)
+    static let useTestAds = true
+
+    private static let testInterstitialUnitID = "ca-app-pub-3940256099942544/4411468910"
+    private static let testBannerUnitID = "ca-app-pub-3940256099942544/2934735716"
+    private static let liveInterstitialUnitID = "ca-app-pub-9350608203842553/5602694936"
+    private static let liveBannerUnitID = "ca-app-pub-9350608203842553/6247738364"
+
+    static var interstitialUnitID: String { useTestAds ? testInterstitialUnitID : liveInterstitialUnitID }
+    static var bannerUnitID: String { useTestAds ? testBannerUnitID : liveBannerUnitID }
 
     private var interstitial: GADInterstitialAd?
     private var gamesSinceLastAd = 0

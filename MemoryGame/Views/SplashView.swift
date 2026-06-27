@@ -222,7 +222,7 @@ struct SplashView: View {
     private var titleSection: some View {
         VStack(spacing: 14) {
             Text(AppTheme.appName)
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(AppTheme.display(36))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(
                     LinearGradient(
@@ -255,7 +255,7 @@ struct SplashView: View {
         .offset(x: shimmer ? 180 : -180)
         .mask(
             Text(AppTheme.appName)
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(AppTheme.display(36))
                 .multilineTextAlignment(.center)
         )
         .allowsHitTesting(false)

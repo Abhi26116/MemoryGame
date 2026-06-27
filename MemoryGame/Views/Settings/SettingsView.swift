@@ -4,36 +4,44 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @StateObject private var viewModel: SettingsViewModel
+    /// Observed so the progress stats stay live (gameplay happens on another tab).
+    @ObservedObject var progressStore: ProgressStore
     @ObservedObject private var store = StoreManager.shared
-    @Environment(\.colorScheme) private var colorScheme
     @State private var showResetAlert = false
     @State private var showParentalGate = false
+    @State private var showNotifDeniedAlert = false
+    @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
+    @AppStorage("remindersEnabled") private var remindersEnabled = false
 
     init(progressStore: ProgressStore) {
+        self.progressStore = progressStore
         _viewModel = StateObject(wrappedValue: SettingsViewModel(progressStore: progressStore))
     }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
+            VStack(spacing: DS.Spacing.xl) {
                 progressSection
+                levelsSection
                 appearanceSection
+                cardStyleSection
                 gameplaySection
+                notificationsSection
                 removeAdsSection
                 accessibilitySection
                 dataSection
                 aboutSection
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .padding(.horizontal, DS.Layout.screenPadding)
+            .padding(.vertical, DS.Spacing.lg)
         }
-        .kidBackground()
+        .dsScreenBackground()
         .navigationTitle("Settings")
-        .kidBackButton()
-        .tint(AppTheme.linkBlue(for: colorScheme))
+        .tint(DS.Color.link)
         .onAppear { viewModel.syncFromStore() }
         .sheet(isPresented: $showParentalGate) {
             ParentalGateView {
@@ -49,47 +57,89 @@ struct SettingsView: View {
         } message: {
             Text("This removes stars, level progress, and achievements. Your settings stay the same.")
         }
+        .alert("Notifications are off", isPresented: $showNotifDeniedAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Enable notifications for Memory Match in the Settings app to get daily reminders.")
+        }
     }
 
     // MARK: - Progress
 
     private var progressSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Your Progress", icon: "chart.bar.fill")
+        DSCard {
+            SectionHeader(title: "Your Progress", icon: "chart.bar.fill")
 
-            HStack(spacing: 10) {
-                statPill(value: "\(viewModel.completedLevels)/\(viewModel.totalLevels)", label: "Levels", icon: "flag.checkered")
-                statPill(value: "\(viewModel.totalStars)", label: "Stars", icon: "star.fill")
-                statPill(value: "\(viewModel.goldLevels)", label: "Gold", icon: "crown.fill")
+            HStack(spacing: DS.Spacing.sm + 2) {
+                StatCard(value: "\(progressStore.completedLevels)", label: "Done", icon: "flag.checkered")
+                StatCard(value: "\(progressStore.totalStars)", label: "Stars",
+                         icon: "star.fill", tint: DS.Color.star)
+                StatCard(value: "\(progressStore.goldLevels)", label: "Gold",
+                         icon: "crown.fill", tint: DS.Color.star)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.sm) {
                 Image(systemName: "trophy.fill")
-                    .foregroundStyle(Color(hex: "FFD60A"))
-                Text("\(viewModel.achievementsUnlocked) achievements unlocked")
-                    .font(AppTheme.captionFont)
-                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                    .foregroundStyle(DS.Color.star)
+                Text("\(progressStore.achievementsUnlocked) achievements unlocked")
+                    .font(.DSText.caption)
+                    .foregroundStyle(DS.Color.textSecondary)
             }
         }
-        .settingsCard(colorScheme: colorScheme)
+    }
+
+    // MARK: - Levels
+
+    private var levelsSection: some View {
+        DSCard {
+            SectionHeader(title: "Levels", icon: "square.grid.2x2.fill")
+            NavigationLink {
+                LevelsView(progressStore: progressStore)
+            } label: {
+                HStack(spacing: DS.Spacing.md) {
+                    Image(systemName: "list.number")
+                        .font(.title3)
+                        .foregroundStyle(DS.Color.link)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
+                        Text("All Levels")
+                            .font(.system(.body, design: .rounded, weight: .bold))
+                            .foregroundStyle(DS.Color.textPrimary)
+                        Text("Browse, replay, and check your stars")
+                            .font(.DSText.caption)
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.footnote)
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.pressable)
+        }
     }
 
     // MARK: - Appearance
 
     private var appearanceSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Appearance", icon: "paintbrush.fill")
+        DSCard {
+            SectionHeader(title: "Appearance", icon: "paintbrush.fill")
             Text("Choose light, dark, or match your device.")
-                .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                .font(.DSText.caption)
+                .foregroundStyle(DS.Color.textSecondary)
 
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.sm) {
                 ForEach(AppearanceMode.allCases) { mode in
                     appearanceButton(mode)
                 }
             }
         }
-        .settingsCard(colorScheme: colorScheme)
     }
 
     private func appearanceButton(_ mode: AppearanceMode) -> some View {
@@ -97,34 +147,81 @@ struct SettingsView: View {
         return Button {
             viewModel.setAppearance(mode)
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: DS.Spacing.xs + 2) {
                 Image(systemName: mode.icon)
                     .font(.title3)
                 Text(mode.title)
                     .font(.system(.caption2, design: .rounded, weight: .bold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .foregroundStyle(selected ? .white : AppTheme.textPrimary(for: colorScheme))
+            .padding(.vertical, DS.Spacing.md)
+            .foregroundStyle(selected ? .white : DS.Color.textPrimary)
             .background(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
                     .fill(
                         selected
-                            ? AnyShapeStyle(AppTheme.primaryGradient)
-                            : AnyShapeStyle(AppTheme.chipUnselected(for: colorScheme))
+                            ? AnyShapeStyle(DS.Gradient.brand)
+                            : AnyShapeStyle(DS.Color.fill)
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityLabel("\(mode.title) theme")
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    // MARK: - Card Style
+
+    private var cardStyleSection: some View {
+        DSCard {
+            SectionHeader(title: "Card Style", icon: "rectangle.stack.fill")
+            Text("Pick the look of the card backs.")
+                .font(.DSText.caption)
+                .foregroundStyle(DS.Color.textSecondary)
+
+            HStack(spacing: DS.Spacing.sm + 2) {
+                ForEach(CardBackStyle.allCases) { style in
+                    let selected = cardBackRaw == style.rawValue
+                    Button {
+                        cardBackRaw = style.rawValue
+                    } label: {
+                        VStack(spacing: DS.Spacing.xs + 2) {
+                            RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                .fill(style.gradient)
+                                .frame(height: 58)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                        .stroke(.white, lineWidth: selected ? 3 : 0)
+                                )
+                                .overlay(
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.white)
+                                        .opacity(selected ? 1 : 0)
+                                )
+                                .dsShadow(.card)
+                            Text(style.label)
+                                .font(.system(.caption2, design: .rounded, weight: .semibold))
+                                .foregroundStyle(selected ? DS.Color.textPrimary : DS.Color.textSecondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                    }
+                    .buttonStyle(.pressable)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(style.label) card back")
+                    .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+                }
+            }
+        }
     }
 
     // MARK: - Gameplay
 
     private var gameplaySection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            sectionHeader("Gameplay", icon: "gamecontroller.fill")
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+            SectionHeader(title: "Gameplay", icon: "gamecontroller.fill")
             settingsToggle(
                 title: "Sound Effects",
                 subtitle: "Flips, matches, and level complete sounds",
@@ -144,14 +241,45 @@ struct SettingsView: View {
                 isOn: $viewModel.memorizePreviewEnabled
             ) { viewModel.setMemorizePreview($0) }
         }
-        .settingsCard(colorScheme: colorScheme)
+        .dsCard()
+    }
+
+    // MARK: - Notifications
+
+    private var notificationsSection: some View {
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+            SectionHeader(title: "Notifications", icon: "bell.badge.fill")
+            settingsToggle(
+                title: "Reminders",
+                subtitle: "A daily nudge, plus a friendly note if you've been away",
+                icon: "bell.fill",
+                isOn: $remindersEnabled
+            ) { handleReminders($0) }
+        }
+        .dsCard()
+    }
+
+    private func handleReminders(_ enabled: Bool) {
+        if enabled {
+            Task {
+                let granted = await NotificationManager.shared.requestAuthorization()
+                if granted {
+                    NotificationManager.shared.scheduleReminders()
+                } else {
+                    remindersEnabled = false
+                    showNotifDeniedAlert = true
+                }
+            }
+        } else {
+            NotificationManager.shared.cancelAll()
+        }
     }
 
     // MARK: - Accessibility
 
     private var accessibilitySection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            sectionHeader("Accessibility", icon: "accessibility")
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+            SectionHeader(title: "Accessibility", icon: "accessibility")
             settingsToggle(
                 title: "Large Text",
                 subtitle: "Bigger emojis and labels on game cards",
@@ -171,128 +299,105 @@ struct SettingsView: View {
                 isOn: $viewModel.colorBlindMode
             ) { viewModel.setColorBlind($0) }
         }
-        .settingsCard(colorScheme: colorScheme)
+        .dsCard()
     }
 
     // MARK: - Remove Ads
 
     private var removeAdsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Ads", icon: "heart.slash.fill")
+        DSCard {
+            SectionHeader(title: "Ads", icon: "heart.slash.fill")
 
             if store.adsRemoved {
-                HStack(spacing: 10) {
+                HStack(spacing: DS.Spacing.sm + 2) {
                     Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(AppTheme.successGreen)
+                        .foregroundStyle(DS.Color.success)
                     Text("Ads removed — thank you!")
                         .font(.system(.body, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                        .foregroundStyle(DS.Color.textPrimary)
                 }
             } else {
                 Button {
                     showParentalGate = true
                 } label: {
-                    HStack(spacing: 12) {
+                    HStack(spacing: DS.Spacing.md) {
                         Image(systemName: "heart.slash.fill")
                             .font(.title3)
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                             Text("Remove Ads")
                                 .font(.system(.body, design: .rounded, weight: .bold))
                             Text("One-time purchase — no more ads")
-                                .font(AppTheme.captionFont)
-                                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                                .font(.DSText.caption)
+                                .foregroundStyle(DS.Color.textSecondary)
                         }
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.footnote)
-                            .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                            .foregroundStyle(DS.Color.textSecondary)
                     }
-                    .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                    .foregroundStyle(DS.Color.link)
+                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
                 .disabled(store.isWorking)
 
-                Button("Restore Purchases") {
+                Button {
                     Task { await store.restore() }
+                } label: {
+                    Text("Restore Purchases")
+                        .font(.DSText.caption)
+                        .foregroundStyle(DS.Color.link)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
-                .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                .buttonStyle(.pressable)
                 .disabled(store.isWorking)
             }
         }
-        .settingsCard(colorScheme: colorScheme)
     }
 
     // MARK: - Data
 
     private var dataSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Data", icon: "externaldrive.fill")
+        DSCard {
+            SectionHeader(title: "Data", icon: "externaldrive.fill")
             Button(role: .destructive) {
                 showResetAlert = true
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: DS.Spacing.md) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.title3)
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                         Text("Reset All Progress")
                             .font(.system(.body, design: .rounded, weight: .bold))
                         Text("Start over from Level 1")
-                            .font(AppTheme.captionFont)
-                            .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                            .font(.DSText.caption)
+                            .foregroundStyle(DS.Color.textSecondary)
                     }
                     Spacer()
                 }
-                .foregroundStyle(Color(hex: "FF3B30"))
+                .foregroundStyle(DS.Color.danger)
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable)
         }
-        .settingsCard(colorScheme: colorScheme)
     }
 
     // MARK: - About
 
     private var aboutSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("About", icon: "info.circle.fill")
+        DSCard {
+            SectionHeader(title: "About", icon: "info.circle.fill")
             infoRow(label: "App", value: AppTheme.appName)
-            infoRow(label: "Levels", value: "\(viewModel.totalLevels)")
             infoRow(label: "Unlock rule", value: "Complete a level to open the next")
             infoRow(
                 label: "Star guide",
                 value: "3★ ≤ pairs moves · 2★ ≤ pairs + \(StarRatingRules.twoStarExtraMoves) · 1★ finish"
             )
         }
-        .settingsCard(colorScheme: colorScheme)
     }
 
     // MARK: - Components
-
-    private func sectionHeader(_ title: String, icon: String) -> some View {
-        Label(title, systemImage: icon)
-            .font(AppTheme.headlineFont)
-            .foregroundStyle(AppTheme.sectionTitle(for: colorScheme))
-    }
-
-    private func statPill(value: String, label: String, icon: String) -> some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
-            Text(value)
-                .font(.system(.subheadline, design: .rounded, weight: .bold))
-                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
-            Text(label)
-                .font(.system(.caption2, design: .rounded, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(AppTheme.chipUnselected(for: colorScheme))
-        )
-    }
 
     private func settingsToggle(
         title: String,
@@ -302,62 +407,37 @@ struct SettingsView: View {
         onChange: @escaping (Bool) -> Void
     ) -> some View {
         Toggle(isOn: isOn) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.md) {
                 Image(systemName: icon)
                     .font(.body)
-                    .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                    .foregroundStyle(DS.Color.link)
                     .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(title)
                         .font(.system(.body, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                        .foregroundStyle(DS.Color.textPrimary)
                     Text(subtitle)
-                        .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                        .font(.DSText.caption)
+                        .foregroundStyle(DS.Color.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
-        .tint(Color(hex: "5B8DEF"))
-        .padding(.vertical, 8)
+        .tint(DS.Color.brand)
+        .padding(.vertical, DS.Spacing.sm)
         .onChange(of: isOn.wrappedValue) { _, value in onChange(value) }
     }
 
     private func infoRow(label: String, value: String) -> some View {
         HStack(alignment: .top) {
             Text(label)
-                .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                .font(.DSText.caption)
+                .foregroundStyle(DS.Color.textSecondary)
             Spacer()
             Text(value)
                 .font(.system(.caption, design: .rounded, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                .foregroundStyle(DS.Color.textPrimary)
                 .multilineTextAlignment(.trailing)
         }
-    }
-}
-
-private struct SettingsCardModifier: ViewModifier {
-    let colorScheme: ColorScheme
-
-    func body(content: Content) -> some View {
-        content
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                    .fill(AppTheme.cardSurface(for: colorScheme))
-                    .shadow(
-                        color: .black.opacity(AppTheme.cardShadowOpacity(for: colorScheme)),
-                        radius: 8,
-                        y: 4
-                    )
-            )
-    }
-}
-
-private extension View {
-    func settingsCard(colorScheme: ColorScheme) -> some View {
-        modifier(SettingsCardModifier(colorScheme: colorScheme))
     }
 }

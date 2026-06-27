@@ -15,12 +15,6 @@ final class SettingsViewModel: ObservableObject {
     @Published var appearanceMode: AppearanceMode = .system
     @Published var memorizePreviewEnabled = true
 
-    @Published private(set) var completedLevels = 0
-    @Published private(set) var totalLevels = LevelCatalog.levelCount
-    @Published private(set) var totalStars = 0
-    @Published private(set) var goldLevels = 0
-    @Published private(set) var achievementsUnlocked = 0
-
     private let progressStore: ProgressStore
 
     init(progressStore: ProgressStore) {
@@ -39,11 +33,6 @@ final class SettingsViewModel: ObservableObject {
             ? .system
             : (AppearanceMode(rawValue: s.appearanceModeRaw) ?? .system)
         memorizePreviewEnabled = s.memorizePreviewEnabled
-
-        completedLevels = progressStore.completedLevels
-        totalStars = progressStore.totalStars
-        goldLevels = progressStore.levelProgress.values.filter { $0.stars >= 3 }.count
-        achievementsUnlocked = s.unlockedAchievementIds.count
     }
 
     func setSound(_ value: Bool) {

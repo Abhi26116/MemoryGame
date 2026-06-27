@@ -11,6 +11,7 @@ struct ProgressBarView: View {
     var height: CGFloat = 14
     var gradient: LinearGradient = AppTheme.primaryGradient
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -26,7 +27,7 @@ struct ProgressBarView: View {
                     Capsule()
                         .fill(gradient)
                         .frame(width: max(0, geo.size.width * min(1, progress)))
-                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: progress)
+                        .animation(DS.Motion.respecting(reduceMotion, DS.Motion.spring), value: progress)
                 }
             }
             .frame(height: height)

@@ -43,7 +43,14 @@
 		MMK033 /* LaunchSplash.gif in Resources */ = {isa = PBXBuildFile; fileRef = MMKF033 /* LaunchSplash.gif */; };
 		MMK034 /* AnimatedGIFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF034 /* AnimatedGIFView.swift */; };
 		MMK035 /* MathAssociationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF035 /* MathAssociationHelper.swift */; };
+		MMK040 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF040 /* DesignTokens.swift */; };
+		MMK041 /* DSControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF041 /* DSControls.swift */; };
+		MMK042 /* DSContainers.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF042 /* DSContainers.swift */; };
+		MMK043 /* LevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF043 /* LevelsView.swift */; };
+		MMK044 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF044 /* WelcomeView.swift */; };
+		MMK045 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF045 /* NotificationManager.swift */; };
 		MMK200 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF200 /* Monetization.swift */; };
+		MMK301 /* Fredoka.ttf in Resources */ = {isa = PBXBuildFile; fileRef = MMKF301 /* Fredoka.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,7 +91,14 @@
 		MMKF033 /* LaunchSplash.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = LaunchSplash.gif; sourceTree = "<group>"; };
 		MMKF034 /* AnimatedGIFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedGIFView.swift; sourceTree = "<group>"; };
 		MMKF035 /* MathAssociationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathAssociationHelper.swift; sourceTree = "<group>"; };
+		MMKF040 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		MMKF041 /* DSControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSControls.swift; sourceTree = "<group>"; };
+		MMKF042 /* DSContainers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSContainers.swift; sourceTree = "<group>"; };
+		MMKF043 /* LevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelsView.swift; sourceTree = "<group>"; };
+		MMKF044 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		MMKF045 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		MMKF200 /* Monetization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
+		MMKF301 /* Fredoka.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fredoka.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				MMKG010 /* Theme */,
+				MMKG020 /* DesignSystem */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -198,6 +213,7 @@
 				MMKF012 /* HapticManager.swift */,
 				MMKF013 /* ProgressStore.swift */,
 				MMKF200 /* Monetization.swift */,
+				MMKF045 /* NotificationManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -235,8 +251,26 @@
 				MMKG015 /* Result */,
 				MMKG016 /* Achievement */,
 				MMKG017 /* Settings */,
+				MMKG021 /* Levels */,
+				MMKG022 /* Onboarding */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		MMKG021 /* Levels */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF043 /* LevelsView.swift */,
+			);
+			path = Levels;
+			sourceTree = "<group>";
+		};
+		MMKG022 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF044 /* WelcomeView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		MMKG010 /* Theme */ = {
@@ -291,8 +325,19 @@
 			isa = PBXGroup;
 			children = (
 				MMKF033 /* LaunchSplash.gif */,
+				MMKF301 /* Fredoka.ttf */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		MMKG020 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF040 /* DesignTokens.swift */,
+				MMKF041 /* DSControls.swift */,
+				MMKF042 /* DSContainers.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -362,6 +407,7 @@
 				04E503692FD088C300A6BE32 /* Preview Assets.xcassets in Resources */,
 				04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */,
 				MMK033 /* LaunchSplash.gif in Resources */,
+				MMK301 /* Fredoka.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +420,12 @@
 			files = (
 				04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */,
 				MMK001 /* AppTheme.swift in Sources */,
+				MMK040 /* DesignTokens.swift in Sources */,
+				MMK041 /* DSControls.swift in Sources */,
+				MMK042 /* DSContainers.swift in Sources */,
+				MMK043 /* LevelsView.swift in Sources */,
+				MMK044 /* WelcomeView.swift in Sources */,
+				MMK045 /* NotificationManager.swift in Sources */,
 				MMK002 /* GameEnums.swift in Sources */,
 				MMK003 /* CardModel.swift in Sources */,
 				MMK004 /* CategoryModel.swift in Sources */,
@@ -542,7 +594,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoryGame/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match Kids";
+				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -572,7 +624,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoryGame/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match Kids";
+				INFOPLIST_KEY_CFBundleDisplayName = "Memory Match";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

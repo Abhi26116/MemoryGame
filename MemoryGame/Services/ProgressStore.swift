@@ -42,6 +42,8 @@ final class ProgressStore: ObservableObject {
 
     var totalStars: Int { settings?.totalStars ?? 0 }
     var completedLevels: Int { levelProgress.values.filter { $0.completedCount > 0 }.count }
+    var goldLevels: Int { levelProgress.values.filter { $0.stars >= 3 }.count }
+    var achievementsUnlocked: Int { settings?.unlockedAchievementIds.count ?? 0 }
     var dailyStreak: Int { settings?.dailyStreak ?? 0 }
 
     func progress(for levelId: String) -> LevelProgressEntity? {
@@ -135,20 +137,21 @@ final class ProgressStore: ObservableObject {
             if unlocked.contains(achievement.id) { continue }
             let earned: Bool
             switch achievement.id {
-            case "first_match":
-                earned = completedLevels >= 1
-            case "star_collector":
-                earned = totalStars >= achievement.requiredStars
-            case "memory_master", "half_way":
+            case "first_match", "five_levels", "ten_levels", "twentyfive_levels", "memory_master":
                 earned = completedLevels >= achievement.requiredLevels
+            case "rising_star", "star_collector":
+                earned = totalStars >= achievement.requiredStars
+            case "perfectionist", "perfect_gold":
+                earned = goldCount >= achievement.requiredLevels
             case "speed_demon":
                 earned = lastLevelWon && lastLevelTimed && lastElapsed > 0 && lastElapsed < 60
-            case "perfect_gold":
-                earned = goldCount >= achievement.requiredLevels
             default:
                 earned = false
             }
             if earned { unlocked.insert(achievement.id) }
+        }
+        if unlocked.count > settings.unlockedAchievementIds.count {
+            HapticManager.achievement(enabled: settings.hapticsEnabled)
         }
         settings.unlockedAchievementIds = Array(unlocked)
     }

@@ -6,7 +6,7 @@
 import SwiftUI
 
 enum AppTheme {
-    static let appName = "Memory Match Kids"
+    static let appName = "Memory Match"
 
     static let cornerRadius: CGFloat = 20
     static let cardCornerRadius: CGFloat = 16
@@ -36,10 +36,16 @@ enum AppTheme {
     static let preschoolPurple = Color(hex: "AF52DE")
     static let learnerBlue = Color(hex: "5AC8FA")
 
-    static let titleFont = Font.system(.largeTitle, design: .rounded, weight: .bold)
-    static let headlineFont = Font.system(.title2, design: .rounded, weight: .semibold)
+    // Fredoka (rounded display font) for titles & headings; SF Rounded stays for body.
+    static let titleFont = Font.custom("Fredoka-Bold", size: 34, relativeTo: .largeTitle)
+    static let headlineFont = Font.custom("Fredoka-SemiBold", size: 22, relativeTo: .title2)
     static let bodyFont = Font.system(.body, design: .rounded)
     static let captionFont = Font.system(.caption, design: .rounded, weight: .medium)
+
+    /// Fredoka display font at a custom size (falls back to system if unavailable).
+    static func display(_ size: CGFloat, relativeTo style: Font.TextStyle = .largeTitle) -> Font {
+        .custom("Fredoka-Bold", size: size, relativeTo: style)
+    }
 
     // MARK: - Adaptive palette (light / dark)
 
@@ -99,6 +105,36 @@ enum AppTheme {
     static let cardSurface = cardSurface(for: .light)
     static let chipUnselected = chipUnselected(for: .light)
     static let progressTrack = progressTrack(for: .light)
+}
+
+enum CardBackStyle: String, CaseIterable, Identifiable {
+    case classic, ocean, sunset, forest, candy
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .classic: return "Classic"
+        case .ocean: return "Ocean"
+        case .sunset: return "Sunset"
+        case .forest: return "Forest"
+        case .candy: return "Candy"
+        }
+    }
+
+    var gradient: LinearGradient {
+        LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    private var colors: [Color] {
+        switch self {
+        case .classic: return [Color(hex: "5B8DEF"), Color(hex: "7B5BEF"), Color(hex: "9B4DEF")]
+        case .ocean:   return [Color(hex: "2BC0E4"), Color(hex: "1A6FB5")]
+        case .sunset:  return [Color(hex: "FF9500"), Color(hex: "FF5E3A"), Color(hex: "FF2D55")]
+        case .forest:  return [Color(hex: "34C759"), Color(hex: "1A8F50")]
+        case .candy:   return [Color(hex: "FF6B9D"), Color(hex: "C44DFF")]
+        }
+    }
 }
 
 extension Color {

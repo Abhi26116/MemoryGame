@@ -25,6 +25,18 @@ final class HomeViewModel: ObservableObject {
 
     var levels: [LevelModel] { LevelCatalog.allLevels }
 
+    /// Only the levels the player has reached, plus the next locked one as a teaser —
+    /// so the total number of levels stays a mystery and the list grows as they play.
+    var visibleLevels: [LevelModel] {
+        if Self.allLevelsUnlocked { return levels }
+        var result: [LevelModel] = []
+        for level in levels {
+            result.append(level)
+            if !isUnlocked(level) { break }   // include the first locked level, then stop
+        }
+        return result
+    }
+
     var totalStars: Int { progressStore.totalStars }
     var completedLevels: Int { progressStore.completedLevels }
     var totalLevels: Int { LevelCatalog.levelCount }
@@ -58,5 +70,21 @@ final class HomeViewModel: ObservableObject {
     /// Next unlocked level the player hasn't finished yet (for Continue).
     var suggestedLevel: LevelModel? {
         levels.first { isUnlocked($0) && !isCompleted($0.id) }
+    }
+
+    /// Offline "Daily Highlight" — a memory tip that rotates once per calendar day.
+    /// Deterministic (no network, no storage) so it's stable for the whole day.
+    var dailyTip: String {
+        let tips = [
+            "Glance at the whole board first — your eyes remember more than you think.",
+            "Match in a steady pattern, like left to right, to track what you've seen.",
+            "Say each card out loud in your head — naming it helps it stick.",
+            "Group cards by what they have in common to recall them faster.",
+            "Slow down on the first few flips; speed comes once you've mapped the board.",
+            "Take a breath before a tricky pair — calm focus beats rushing.",
+            "Chain your matches! A combo streak shows off real memory power."
+        ]
+        let day = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        return tips[day % tips.count]
     }
 }

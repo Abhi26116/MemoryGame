@@ -17,6 +17,9 @@ final class GameEngine {
     private(set) var matchedPairs: Int = 0
     private(set) var sequenceProgress: Int = 0
     private(set) var mazeRevealedPath: Set<Int> = []
+    /// Longest run of consecutive matches without a mismatch.
+    private(set) var maxCombo: Int = 0
+    private var currentCombo: Int = 0
 
     let config: GameEngineConfig
     private let strategy: MatchStrategy
@@ -93,6 +96,8 @@ final class GameEngine {
         matchedPairs = 0
         sequenceProgress = 0
         mazeRevealedPath = []
+        maxCombo = 0
+        currentCombo = 0
 
         totalPairs = switch level.matchMode {
         case .triple: max(1, slotCount / 3)
@@ -138,12 +143,15 @@ final class GameEngine {
             let matchedIndices = flippedIndices
             markMatched(indices: matchedIndices)
             matchedPairs += 1
+            currentCombo += 1
+            maxCombo = max(maxCombo, currentCombo)
             flippedIndices = []
             if isComplete { return .levelComplete }
             return .match(indices: matchedIndices)
         } else {
             let mismatchIndices = flippedIndices
             flippedIndices = []
+            currentCombo = 0
             return .mismatch(indices: mismatchIndices)
         }
     }

@@ -11,8 +11,10 @@ struct MemoryCardView: View {
     var largeText: Bool = false
     var highContrast: Bool = false
     var colorBlindMode: Bool = false
+    var cardBackStyle: CardBackStyle = .classic
     let onTap: () -> Void
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var flipDegrees: Double = 0
     @State private var pulseScale: CGFloat = 1
@@ -30,25 +32,24 @@ struct MemoryCardView: View {
             }
             .frame(width: size, height: size * 1.15)
             .scaleEffect(pulseScale)
-            .modifier(ShakeEffect(shakes: card.isShaking ? 3 : 0))
+            .modifier(ShakeEffect(shakes: (card.isShaking && !reduceMotion) ? 3 : 0))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(card.voiceOverLabel)
         .accessibilityHint(card.isMatched ? "Matched pair" : "Double tap to flip")
         .disabled(card.isMatched)
         .onChange(of: card.isFaceUp) { _, faceUp in
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
+            withAnimation(DS.Motion.respecting(reduceMotion, DS.Motion.spring)) {
                 flipDegrees = faceUp || card.isMatched ? 180 : 0
             }
         }
         .onChange(of: card.isMatched) { _, matched in
-            if matched {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) {
-                    pulseScale = 1.08
-                }
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.6).delay(0.15)) {
-                    pulseScale = 1
-                }
+            guard matched, !reduceMotion else { return }
+            withAnimation(DS.Motion.bouncy) {
+                pulseScale = 1.12
+            }
+            withAnimation(DS.Motion.spring.delay(0.15)) {
+                pulseScale = 1
             }
         }
         .onAppear {
@@ -59,16 +60,17 @@ struct MemoryCardView: View {
     private var cardBack: some View {
         ZStack {
             RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                .fill(AppTheme.cardBackGradient)
+                .fill(cardBackStyle.gradient)
             RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
                 .stroke(.white.opacity(0.35), lineWidth: 2)
             VStack(spacing: 6) {
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: size * 0.22, weight: .bold))
                     .foregroundStyle(.white)
-                Text("MMK")
-                    .font(.system(size: size * 0.12, weight: .black, design: .rounded))
+                Text("MM")
+                    .font(.system(size: size * 0.14, weight: .black, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
+                    .tracking(1)
             }
             ShineOverlay()
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
@@ -154,6 +156,7 @@ struct ShakeEffect: GeometryEffect {
 
 struct ShineOverlay: View {
     @State private var phase: CGFloat = -1
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         LinearGradient(
@@ -162,6 +165,7 @@ struct ShineOverlay: View {
             endPoint: UnitPoint(x: phase + 0.3, y: 1)
         )
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: false)) {
                 phase = 1.5
             }

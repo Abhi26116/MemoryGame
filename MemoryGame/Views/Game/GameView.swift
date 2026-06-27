@@ -11,7 +11,12 @@ struct GameView: View {
     @State private var showResult = false
     @State private var activeLevel: LevelModel
     @State private var previewTickScale: CGFloat = 1
-    @Environment(\.colorScheme) private var colorScheme
+    @State private var livesShake = 0
+    @State private var showTutorial = false
+    @AppStorage("hasSeenTutorial") private var hasSeenTutorial = false
+    @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
+    private var cardBackStyle: CardBackStyle { CardBackStyle(rawValue: cardBackRaw) ?? .classic }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let progressStore: ProgressStore
 
@@ -32,34 +37,44 @@ struct GameView: View {
         viewModel.levelWon && nextLevel != nil
     }
 
+    private var milestoneMessage: String? {
+        guard viewModel.levelWon else { return nil }
+        switch activeLevel.levelNumber {
+        case 10: return "🔥 10 levels done — you're on a roll!"
+        case 25: return "⭐️ 25 levels complete — amazing!"
+        case 50: return "🏆 Memory Master! You beat every level!"
+        default: return nil
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
-            let spacing: CGFloat = 8
+            let spacing: CGFloat = DS.Spacing.sm
             let cols = CGFloat(viewModel.columns)
-            let horizontalPad: CGFloat = 20
+            let horizontalPad: CGFloat = DS.Layout.screenPadding
             let cardWidth = (geo.size.width - horizontalPad * 2 - spacing * (cols - 1)) / cols
 
             ZStack {
-                gameBackground
+                DSScreenBackground()
 
                 VStack(spacing: 0) {
                     gameHud
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-                        .padding(.bottom, viewModel.isPreviewPhase ? 8 : 12)
+                        .padding(.horizontal, DS.Spacing.lg)
+                        .padding(.top, DS.Spacing.sm)
+                        .padding(.bottom, viewModel.isPreviewPhase ? DS.Spacing.sm : DS.Spacing.md)
 
                     if viewModel.isPreviewPhase {
                         previewBanner
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 10)
+                            .padding(.horizontal, DS.Spacing.lg)
+                            .padding(.bottom, DS.Spacing.sm + 2)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     } else {
                         objectiveBanner
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 10)
+                            .padding(.horizontal, DS.Spacing.lg)
+                            .padding(.bottom, DS.Spacing.sm + 2)
                     }
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: DS.Spacing.md)
 
                     LazyVGrid(
                         columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: viewModel.columns),
@@ -71,7 +86,8 @@ struct GameView: View {
                                 size: cardWidth,
                                 largeText: viewModel.accessibilityLargeText,
                                 highContrast: viewModel.highContrast,
-                                colorBlindMode: viewModel.colorBlindMode
+                                colorBlindMode: viewModel.colorBlindMode,
+                                cardBackStyle: cardBackStyle
                             ) {
                                 if viewModel.canInteract {
                                     viewModel.tapCard(at: index)
@@ -82,7 +98,7 @@ struct GameView: View {
                     }
                     .padding(.horizontal, horizontalPad)
 
-                    Spacer(minLength: 12)
+                    Spacer(minLength: DS.Spacing.md)
                 }
 
                 if viewModel.isPaused {
@@ -96,19 +112,29 @@ struct GameView: View {
                 if viewModel.gameFinished {
                     Color.black.opacity(0.2).ignoresSafeArea()
                 }
+
+                if showTutorial {
+                    tutorialOverlay
+                }
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.isPreviewPhase)
+        .animation(DS.Motion.respecting(reduceMotion, DS.Motion.spring), value: viewModel.isPreviewPhase)
+        .onAppear {
+            if activeLevel.levelNumber == 1 && !hasSeenTutorial {
+                showTutorial = true
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .kidBackButton()
         .toolbar {
             ToolbarItem(placement: .principal) {
-                VStack(spacing: 2) {
+                VStack(spacing: DS.Spacing.xxs) {
                     Text(activeLevel.title)
                         .font(.system(.headline, design: .rounded, weight: .bold))
                     Text(activeLevel.subtitle)
                         .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                        .foregroundStyle(DS.Color.textSecondary)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -118,7 +144,7 @@ struct GameView: View {
                     Image(systemName: viewModel.isPaused ? "play.circle.fill" : "pause.circle.fill")
                         .font(.title2)
                         .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
+                        .foregroundStyle(DS.Color.link)
                 }
                 .accessibilityLabel(viewModel.isPaused ? "Resume" : "Pause")
             }
@@ -143,7 +169,12 @@ struct GameView: View {
                 stars: viewModel.earnedStars,
                 moves: viewModel.moves,
                 elapsed: viewModel.elapsed,
+                accuracy: viewModel.accuracy,
+                maxCombo: viewModel.maxCombo,
+                bestTime: viewModel.bestTime,
+                isNewBestTime: viewModel.isNewBestTime,
                 lossReasonText: viewModel.lossReasonText,
+                milestoneText: milestoneMessage,
                 nextLevelUnlocked: nextLevelJustUnlocked,
                 nextLevelTitle: nextLevel?.title,
                 onPlayAgain: {
@@ -164,35 +195,15 @@ struct GameView: View {
         }
     }
 
-    // MARK: - Background
-
-    private var gameBackground: some View {
-        ZStack {
-            AppTheme.skyGradient(for: colorScheme).ignoresSafeArea()
-            Circle()
-                .fill(Color(hex: "5B8DEF").opacity(0.12))
-                .frame(width: 200, height: 200)
-                .blur(radius: 30)
-                .offset(x: -100, y: -80)
-            Circle()
-                .fill(Color(hex: "FF6B9D").opacity(0.1))
-                .frame(width: 180, height: 180)
-                .blur(radius: 28)
-                .offset(x: 120, y: geoBottomGlowOffset)
-        }
-    }
-
-    private var geoBottomGlowOffset: CGFloat { 280 }
-
     // MARK: - HUD
 
     private var gameHud: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 10) {
+        VStack(spacing: DS.Spacing.sm + 2) {
+            HStack(spacing: DS.Spacing.sm + 2) {
                 if showsMovesHud {
                     hudTile(
                         icon: "arrow.left.arrow.right",
-                        tint: "5B8DEF",
+                        tint: DS.Color.brand,
                         label: "Moves",
                         value: movesText
                     )
@@ -200,14 +211,14 @@ struct GameView: View {
 
                 hudTile(
                     icon: viewModel.rules.hasTimer ? "timer" : "clock.fill",
-                    tint: "FF6B9D",
+                    tint: DS.Color.accent,
                     label: viewModel.rules.hasTimer ? "Time left" : "Time",
                     value: timeText
                 )
 
                 hudTile(
                     icon: "square.grid.2x2.fill",
-                    tint: "34C759",
+                    tint: DS.Color.success,
                     label: "Pairs",
                     value: "\(viewModel.matchedPairs)/\(viewModel.totalPairs)"
                 )
@@ -217,57 +228,61 @@ struct GameView: View {
                 livesRow
             }
         }
-        .padding(10)
+        .padding(DS.Spacing.sm + 2)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                .fill(AppTheme.cardSurface(for: colorScheme))
-                .shadow(color: Color(hex: "5B8DEF").opacity(0.1), radius: 12, y: 4)
+            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
+                .fill(DS.Color.surface)
+                .dsShadow(.card)
         )
     }
 
     private var livesRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.sm) {
             Text("Lives")
                 .font(.system(.caption, design: .rounded, weight: .semibold))
-                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                .foregroundStyle(DS.Color.textSecondary)
 
             HStack(spacing: 5) {
                 ForEach(0..<viewModel.maxLives, id: \.self) { index in
                     let alive = index < viewModel.livesRemaining
                     Image(systemName: alive ? "heart.fill" : "heart")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(alive
-                                         ? Color(hex: "FF3B30")
-                                         : AppTheme.progressTrack(for: colorScheme))
+                        .foregroundStyle(alive ? DS.Color.danger : DS.Color.track)
                         .scaleEffect(alive ? 1 : 0.85)
                 }
             }
-            .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.livesRemaining)
+            .animation(DS.Motion.respecting(reduceMotion, DS.Motion.snappy), value: viewModel.livesRemaining)
+            .modifier(ShakeEffect(shakes: livesShake))
         }
         .frame(maxWidth: .infinity)
+        .onChange(of: viewModel.livesRemaining) { old, new in
+            if new < old, !reduceMotion {
+                withAnimation(.linear(duration: 0.4)) { livesShake += 2 }
+            }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(viewModel.livesRemaining) of \(viewModel.maxLives) lives left")
     }
 
     private var objectiveBanner: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.sm) {
             Image(systemName: "target")
                 .font(.caption.bold())
-                .foregroundStyle(Color(hex: "5B8DEF"))
+                .foregroundStyle(DS.Color.brand)
             Text(activeLevel.objective)
                 .font(.system(.caption, design: .rounded, weight: .semibold))
-                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                .foregroundStyle(DS.Color.textPrimary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DS.Spacing.md)
+        .padding(.vertical, DS.Spacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(hex: "5B8DEF").opacity(colorScheme == .dark ? 0.18 : 0.1))
+            RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                .fill(DS.Color.brand.opacity(0.12))
         )
         .accessibilityLabel("Goal: \(activeLevel.objective)")
     }
@@ -290,32 +305,34 @@ struct GameView: View {
         return formatTime(Int(viewModel.elapsed))
     }
 
-    private func hudTile(icon: String, tint: String, label: String, value: String) -> some View {
-        VStack(spacing: 6) {
+    private func hudTile(icon: String, tint: Color, label: String, value: String) -> some View {
+        VStack(spacing: DS.Spacing.xs + 2) {
             Image(systemName: icon)
                 .font(.body.bold())
-                .foregroundStyle(Color(hex: tint))
+                .foregroundStyle(tint)
 
             Text(label)
                 .font(.system(size: 10, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                .foregroundStyle(DS.Color.textSecondary)
                 .lineLimit(1)
 
             Text(value)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                .foregroundStyle(DS.Color.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .padding(.horizontal, 4)
+        .padding(.vertical, DS.Spacing.sm + 2)
+        .padding(.horizontal, DS.Spacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(hex: tint).opacity(0.1))
+            RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                .fill(tint.opacity(0.1))
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label), \(value.replacingOccurrences(of: "/", with: " of "))")
     }
 
     // MARK: - Preview
@@ -327,28 +344,22 @@ struct GameView: View {
     }
 
     private var previewBanner: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: DS.Spacing.lg - 2) {
             previewCountdownRing
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
+                HStack(spacing: DS.Spacing.xs + 2) {
                     Image(systemName: "eye.fill")
                         .font(.subheadline.weight(.bold))
-                        .foregroundStyle(Color(hex: "5B8DEF"))
+                        .foregroundStyle(DS.Color.brand)
                     Text("Memorize!")
                         .font(.system(.headline, design: .rounded, weight: .heavy))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color(hex: "FF6B9D"), Color(hex: "5B8DEF")],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .foregroundStyle(DS.Gradient.accent)
                 }
 
                 Text(activeLevel.objective)
                     .font(.system(.caption, design: .rounded, weight: .medium))
-                    .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
+                    .foregroundStyle(DS.Color.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 previewSecondDots
@@ -356,19 +367,18 @@ struct GameView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(14)
+        .padding(DS.Spacing.lg - 2)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                .fill(AppTheme.cardSurface(for: colorScheme))
-                .shadow(color: Color(hex: "FF6B9D").opacity(0.15), radius: 14, y: 5)
+            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
+                .fill(DS.Color.surface)
+                .dsShadow(.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
+            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [Color(hex: "FF6B9D").opacity(0.35), Color(hex: "5B8DEF").opacity(0.25)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [DS.Color.accent.opacity(0.35), DS.Color.brand.opacity(0.25)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
                     ),
                     lineWidth: 2
                 )
@@ -376,6 +386,7 @@ struct GameView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Memorize the cards. \(viewModel.previewSecondsLeft) seconds remaining")
         .onChange(of: viewModel.previewSecondsLeft) { _, _ in
+            guard !reduceMotion else { return }
             withAnimation(.spring(response: 0.28, dampingFraction: 0.55)) {
                 previewTickScale = 1.12
             }
@@ -386,27 +397,19 @@ struct GameView: View {
     }
 
     private var previewCountdownRing: some View {
-        ZStack {
-            Circle()
-                .stroke(AppTheme.progressTrack(for: colorScheme), lineWidth: 7)
-
-            Circle()
-                .trim(from: 0, to: previewProgress)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color(hex: "FF9500"), Color(hex: "FF6B9D"), Color(hex: "5B8DEF")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    style: StrokeStyle(lineWidth: 7, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.95), value: viewModel.previewSecondsLeft)
-
+        ProgressRing(
+            progress: Double(previewProgress),
+            lineWidth: 7,
+            gradient: LinearGradient(
+                colors: [DS.Color.warning, DS.Color.accent, DS.Color.brand],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            ),
+            animation: DS.Motion.respecting(reduceMotion, .linear(duration: 0.95))
+        ) {
             Text("\(viewModel.previewSecondsLeft)")
-                .font(.system(size: 28, weight: .black, design: .rounded))
+                .font(.DSText.timer)
                 .monospacedDigit()
-                .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
+                .foregroundStyle(DS.Color.textPrimary)
                 .contentTransition(.numericText())
                 .scaleEffect(previewTickScale)
         }
@@ -418,43 +421,48 @@ struct GameView: View {
             ForEach(0..<viewModel.rules.previewSeconds, id: \.self) { index in
                 Capsule()
                     .fill(index < viewModel.previewSecondsLeft
-                          ? AnyShapeStyle(AppTheme.playButtonGradient)
-                          : AnyShapeStyle(AppTheme.progressTrack(for: colorScheme)))
+                          ? AnyShapeStyle(DS.Gradient.cta)
+                          : AnyShapeStyle(DS.Color.track))
                     .frame(width: index < viewModel.previewSecondsLeft ? 13 : 6, height: 7)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.75), value: viewModel.previewSecondsLeft)
+                    .animation(DS.Motion.respecting(reduceMotion, DS.Motion.snappy), value: viewModel.previewSecondsLeft)
             }
         }
     }
 
-    // MARK: - Pause
+    // MARK: - Overlays
+
+    private var tutorialOverlay: some View {
+        Dialog {
+            Text("👋")
+                .font(.system(size: 54))
+            Text("How to play")
+                .font(.system(.title2, design: .rounded, weight: .heavy))
+                .foregroundStyle(DS.Color.textPrimary)
+            Text("Tap two cards to flip them over and find the matching pairs. Match them all to win!")
+                .font(.system(.body, design: .rounded, weight: .medium))
+                .foregroundStyle(DS.Color.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            PrimaryButton(title: "Got it!", gradient: DS.Gradient.cta) {
+                withAnimation(.easeInOut) { showTutorial = false }
+                hasSeenTutorial = true
+            }
+            .padding(.top, DS.Spacing.xs)
+        }
+        .transition(.opacity)
+    }
 
     private var pauseOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.35).ignoresSafeArea()
-            VStack(spacing: 16) {
-                Image(systemName: "pause.circle.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.white)
-                Text("Paused")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                    .foregroundStyle(.white)
-                Button {
-                    viewModel.isPaused = false
-                } label: {
-                    Text("Resume")
-                        .font(.system(.headline, design: .rounded, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 32)
-                        .padding(.vertical, 14)
-                        .background(Capsule().fill(AppTheme.playButtonGradient))
-                }
+        Dialog {
+            Image(systemName: "pause.circle.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(DS.Color.brand)
+            Text("Paused")
+                .font(.system(.title2, design: .rounded, weight: .bold))
+                .foregroundStyle(DS.Color.textPrimary)
+            PrimaryButton(title: "Resume", gradient: DS.Gradient.cta) {
+                viewModel.isPaused = false
             }
-            .padding(32)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                    .fill(AppTheme.cardSurface(for: colorScheme))
-            )
-            .padding(40)
         }
     }
 

@@ -26,6 +26,10 @@ final class GameViewModel: ObservableObject {
     @Published var gameFinished = false
     @Published private(set) var levelWon = false
     @Published var earnedStars = 0
+    @Published var accuracy: Int = 100
+    @Published var maxCombo: Int = 0
+    @Published var bestTime: TimeInterval = 0
+    @Published var isNewBestTime = false
     @Published var mismatchIndices: [Int] = []
     @Published private(set) var livesRemaining = LevelGameRules.defaultLives
     @Published private(set) var failReason: GameOverReason = .won
@@ -84,11 +88,16 @@ final class GameViewModel: ObservableObject {
         gameFinished = false
         levelWon = false
         failReason = .won
+        accuracy = 100
+        maxCombo = 0
+        bestTime = 0
+        isNewBestTime = false
         livesRemaining = rules.maxLives
         showConfetti = false
         isPaused = false
         remainingTime = rules.timerSeconds
 
+        HapticManager.prepare()
         let previewOn = progressStore.memorizePreviewEnabled
         if rules.showInitialPreview && previewOn {
             beginPreviewPhase()
@@ -170,10 +179,10 @@ final class GameViewModel: ObservableObject {
             break
         case .waiting:
             AudioManager.shared.playFlip()
-            HapticManager.light(enabled: hapticsEnabled)
+            HapticManager.cardFlip(enabled: hapticsEnabled)
         case .match:
             AudioManager.shared.playSuccess()
-            HapticManager.success(enabled: hapticsEnabled)
+            HapticManager.match(enabled: hapticsEnabled)
             if engine.isComplete {
                 finishGame()
             } else {
@@ -181,9 +190,11 @@ final class GameViewModel: ObservableObject {
             }
         case .mismatch(let indices):
             AudioManager.shared.playMismatch()
-            HapticManager.error(enabled: hapticsEnabled)
             if livesEnabled {
                 livesRemaining = max(0, livesRemaining - 1)
+                HapticManager.lifeLost(enabled: hapticsEnabled)
+            } else {
+                HapticManager.mismatch(enabled: hapticsEnabled)
             }
             mismatchIndices = indices
             engine.markShaking(indices: indices)
@@ -203,7 +214,7 @@ final class GameViewModel: ObservableObject {
             }
         case .sequenceStep:
             AudioManager.shared.playSuccess()
-            HapticManager.light(enabled: hapticsEnabled)
+            HapticManager.cardFlip(enabled: hapticsEnabled)
         case .levelComplete:
             finishGame()
         }
@@ -231,17 +242,21 @@ final class GameViewModel: ObservableObject {
             elapsed = Date().timeIntervalSince(startDate)
         }
         earnedStars = engine.calculateStars()
+        maxCombo = engine.maxCombo
+        accuracy = moves > 0 ? Int((Double(matchedPairs) / Double(moves) * 100).rounded()) : 100
         showConfetti = levelWon
         if levelWon {
             AudioManager.shared.playComplete()
-            HapticManager.success(enabled: hapticsEnabled)
+            HapticManager.levelComplete(enabled: hapticsEnabled)
         } else {
             AudioManager.shared.playMismatch()
-            HapticManager.error(enabled: hapticsEnabled)
+            HapticManager.levelFailed(enabled: hapticsEnabled)
         }
         // Only a win counts as completing the level — a loss (out of hearts / time)
         // records nothing, so it can't unlock the next level or inflate progress.
         if levelWon {
+            let previousBest = progressStore.progress(for: level.id)?.fastestTime
+            isNewBestTime = previousBest == nil || elapsed < previousBest!
             progressStore.recordCompletion(
                 levelId: level.id,
                 stars: earnedStars,
@@ -249,6 +264,7 @@ final class GameViewModel: ObservableObject {
                 levelWon: true,
                 hasTimer: rules.hasTimer
             )
+            bestTime = progressStore.progress(for: level.id)?.fastestTime ?? elapsed
         }
     }
 
