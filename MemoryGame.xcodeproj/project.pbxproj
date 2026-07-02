@@ -49,6 +49,8 @@
 		MMK043 /* LevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF043 /* LevelsView.swift */; };
 		MMK044 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF044 /* WelcomeView.swift */; };
 		MMK045 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF045 /* NotificationManager.swift */; };
+		MMK046 /* ReviewPromptGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF046 /* ReviewPromptGate.swift */; };
+		MMK047 /* UpdateCheckManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF047 /* UpdateCheckManager.swift */; };
 		MMK200 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF200 /* Monetization.swift */; };
 		MMK301 /* Fredoka.ttf in Resources */ = {isa = PBXBuildFile; fileRef = MMKF301 /* Fredoka.ttf */; };
 /* End PBXBuildFile section */
@@ -97,6 +99,8 @@
 		MMKF043 /* LevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelsView.swift; sourceTree = "<group>"; };
 		MMKF044 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		MMKF045 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		MMKF046 /* ReviewPromptGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptGate.swift; sourceTree = "<group>"; };
+		MMKF047 /* UpdateCheckManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckManager.swift; sourceTree = "<group>"; };
 		MMKF200 /* Monetization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
 		MMKF301 /* Fredoka.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fredoka.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -214,6 +218,8 @@
 				MMKF013 /* ProgressStore.swift */,
 				MMKF200 /* Monetization.swift */,
 				MMKF045 /* NotificationManager.swift */,
+				MMKF046 /* ReviewPromptGate.swift */,
+				MMKF047 /* UpdateCheckManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -255,22 +261,6 @@
 				MMKG022 /* Onboarding */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		MMKG021 /* Levels */ = {
-			isa = PBXGroup;
-			children = (
-				MMKF043 /* LevelsView.swift */,
-			);
-			path = Levels;
-			sourceTree = "<group>";
-		};
-		MMKG022 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				MMKF044 /* WelcomeView.swift */,
-			);
-			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		MMKG010 /* Theme */ = {
@@ -338,6 +328,22 @@
 				MMKF042 /* DSContainers.swift */,
 			);
 			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		MMKG021 /* Levels */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF043 /* LevelsView.swift */,
+			);
+			path = Levels;
+			sourceTree = "<group>";
+		};
+		MMKG022 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF044 /* WelcomeView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -426,6 +432,8 @@
 				MMK043 /* LevelsView.swift in Sources */,
 				MMK044 /* WelcomeView.swift in Sources */,
 				MMK045 /* NotificationManager.swift in Sources */,
+				MMK046 /* ReviewPromptGate.swift in Sources */,
+				MMK047 /* UpdateCheckManager.swift in Sources */,
 				MMK002 /* GameEnums.swift in Sources */,
 				MMK003 /* CardModel.swift in Sources */,
 				MMK004 /* CategoryModel.swift in Sources */,

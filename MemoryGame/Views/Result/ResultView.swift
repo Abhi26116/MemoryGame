@@ -21,12 +21,16 @@ struct ResultView: View {
     var milestoneText: String? = nil
     var nextLevelUnlocked: Bool = false
     var nextLevelTitle: String?
+    /// True when this is a good moment to ask for a rating (a win, with enough
+    /// completed levels behind it). `ReviewPromptGate` still has final say.
+    var eligibleForReviewPrompt: Bool = false
     let onPlayAgain: () -> Void
     var onNextLevel: (() -> Void)?
     let onHome: () -> Void
 
     @State private var showContent = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         ZStack {
@@ -47,6 +51,17 @@ struct ResultView: View {
             withAnimation(DS.Motion.respecting(reduceMotion, DS.Motion.spring)) {
                 showContent = true
             }
+            maybeRequestReview()
+        }
+    }
+
+    /// Fires the system rating prompt at most a couple seconds after a
+    /// celebratory win, once the player has earned enough good moments.
+    private func maybeRequestReview() {
+        guard levelWon, eligibleForReviewPrompt, ReviewPromptGate.shouldRequest() else { return }
+        ReviewPromptGate.markRequested()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            requestReview()
         }
     }
 

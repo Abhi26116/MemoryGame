@@ -177,6 +177,7 @@ struct GameView: View {
                 milestoneText: milestoneMessage,
                 nextLevelUnlocked: nextLevelJustUnlocked,
                 nextLevelTitle: nextLevel?.title,
+                eligibleForReviewPrompt: progressStore.completedLevels >= 5,
                 onPlayAgain: {
                     showResult = false
                     viewModel.reset()

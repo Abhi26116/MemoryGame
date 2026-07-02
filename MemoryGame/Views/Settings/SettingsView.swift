@@ -15,7 +15,7 @@ struct SettingsView: View {
     @State private var showParentalGate = false
     @State private var showNotifDeniedAlert = false
     @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
-    @AppStorage("remindersEnabled") private var remindersEnabled = false
+    @AppStorage("remindersEnabled") private var remindersEnabled = true
 
     init(progressStore: ProgressStore) {
         self.progressStore = progressStore
@@ -82,6 +82,7 @@ struct SettingsView: View {
                 StatCard(value: "\(progressStore.goldLevels)", label: "Gold",
                          icon: "crown.fill", tint: DS.Color.star)
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
 
             HStack(spacing: DS.Spacing.sm) {
                 Image(systemName: "trophy.fill")
@@ -139,6 +140,7 @@ struct SettingsView: View {
                     appearanceButton(mode)
                 }
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }
     }
 
@@ -199,7 +201,6 @@ struct SettingsView: View {
                                         .foregroundStyle(.white)
                                         .opacity(selected ? 1 : 0)
                                 )
-                                .dsShadow(.card)
                             Text(style.label)
                                 .font(.system(.caption2, design: .rounded, weight: .semibold))
                                 .foregroundStyle(selected ? DS.Color.textPrimary : DS.Color.textSecondary)
@@ -214,6 +215,7 @@ struct SettingsView: View {
                     .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
                 }
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }
     }
 
@@ -438,6 +440,7 @@ struct SettingsView: View {
                 .font(.system(.caption, design: .rounded, weight: .semibold))
                 .foregroundStyle(DS.Color.textPrimary)
                 .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

@@ -238,10 +238,7 @@ struct SplashView: View {
                 .font(.system(size: 17, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
 
-            HStack(spacing: 16) {
-                tagPill(icon: "star.fill", text: "50 Levels", color: "FFD60A")
-                tagPill(icon: "brain.head.profile", text: "Brain Boost", color: "5B8DEF")
-            }
+            tagPill(icon: "brain.head.profile", text: "Brain Boost", color: "5B8DEF")
         }
     }
 

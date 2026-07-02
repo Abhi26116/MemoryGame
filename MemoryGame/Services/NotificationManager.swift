@@ -80,14 +80,28 @@ final class NotificationManager: ObservableObject {
         center.add(request)
     }
 
-    /// Re-arms reminders on launch if enabled and still authorized (and resets the
-    /// inactivity clock). Keeps state consistent after permission changes.
-    func refreshReminders(enabled: Bool) async {
-        guard enabled, await authorizationStatus() == .authorized else {
-            if !enabled { cancelAll() }
-            return
+    /// Re-arms reminders on launch if enabled (and resets the inactivity clock).
+    /// Reminders default to on, so if permission hasn't been decided yet this
+    /// requests it here rather than waiting for a manual Settings toggle.
+    /// Returns whether reminders ended up active, so callers can keep a stored
+    /// "enabled" flag honest if the player declines the system prompt.
+    @discardableResult
+    func refreshReminders(enabled: Bool) async -> Bool {
+        guard enabled else {
+            cancelAll()
+            return false
         }
-        scheduleReminders()
+        switch await authorizationStatus() {
+        case .authorized, .provisional:
+            scheduleReminders()
+            return true
+        case .notDetermined:
+            guard await requestAuthorization() else { return false }
+            scheduleReminders()
+            return true
+        default:
+            return false
+        }
     }
 
     func cancelAll() {
