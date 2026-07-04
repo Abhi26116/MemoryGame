@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showNotifDeniedAlert = false
     @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
     @AppStorage("remindersEnabled") private var remindersEnabled = true
+    @Environment(\.openURL) private var openURL
 
     init(progressStore: ProgressStore) {
         self.progressStore = progressStore
@@ -35,14 +36,22 @@ struct SettingsView: View {
                 accessibilitySection
                 dataSection
                 aboutSection
+                legalSection
             }
+            .frame(maxWidth: DS.Layout.contentMaxWidth)
             .padding(.horizontal, DS.Layout.screenPadding)
             .padding(.vertical, DS.Spacing.lg)
+            .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
         .navigationTitle("Settings")
         .tint(DS.Color.link)
         .onAppear { viewModel.syncFromStore() }
+        .task {
+            if store.removeAdsProduct == nil {
+                await store.loadProduct()
+            }
+        }
         .sheet(isPresented: $showParentalGate) {
             ParentalGateView {
                 Task { await store.purchaseRemoveAds() }
@@ -106,7 +115,7 @@ struct SettingsView: View {
                     Image(systemName: "list.number")
                         .font(.title3)
                         .foregroundStyle(DS.Color.link)
-                        .frame(width: 28)
+                        .frame(width: DS.Layout.isPad ? 34 : 28)
                     VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                         Text("All Levels")
                             .font(.system(.body, design: .rounded, weight: .bold))
@@ -320,6 +329,7 @@ struct SettingsView: View {
                 }
             } else {
                 Button {
+                    store.clearStatus()
                     showParentalGate = true
                 } label: {
                     HStack(spacing: DS.Spacing.md) {
@@ -328,7 +338,8 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                             Text("Remove Ads")
                                 .font(.system(.body, design: .rounded, weight: .bold))
-                            Text("One-time purchase — no more ads")
+                            Text(store.removeAdsProduct.map { "One-time purchase — \($0.displayPrice), no more ads" }
+                                 ?? "One-time purchase — no more ads")
                                 .font(.DSText.caption)
                                 .foregroundStyle(DS.Color.textSecondary)
                         }
@@ -342,6 +353,8 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.pressable)
                 .disabled(store.isWorking)
+
+                StoreStatusBanner(store: store)
 
                 Button {
                     Task { await store.restore() }
@@ -399,6 +412,45 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Legal
+
+    private static let siteBaseURL = "https://tinygeniushubmemorymatch.netlify.app"
+    private static let privacyPolicyURL = URL(string: "\(siteBaseURL)/privacy-policy.html")!
+    private static let termsURL = URL(string: "\(siteBaseURL)/terms-and-conditions.html")!
+    private static let supportURL = URL(string: "\(siteBaseURL)/")!
+
+    private var legalSection: some View {
+        DSCard {
+            SectionHeader(title: "Support & Privacy", icon: "hand.raised.fill")
+            legalLink(title: "Privacy Policy", icon: "lock.doc.fill", url: Self.privacyPolicyURL)
+            legalLink(title: "Terms & Conditions", icon: "doc.text.fill", url: Self.termsURL)
+            legalLink(title: "Contact Support", icon: "questionmark.circle.fill", url: Self.supportURL)
+        }
+    }
+
+    private func legalLink(title: String, icon: String, url: URL) -> some View {
+        Button {
+            openURL(url)
+        } label: {
+            HStack(spacing: DS.Spacing.md) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundStyle(DS.Color.link)
+                    .frame(width: DS.Layout.isPad ? 34 : 28)
+                Text(title)
+                    .font(.system(.body, design: .rounded, weight: .semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.footnote)
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.vertical, DS.Spacing.xs)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.pressable)
+    }
+
     // MARK: - Components
 
     private func settingsToggle(
@@ -413,7 +465,7 @@ struct SettingsView: View {
                 Image(systemName: icon)
                     .font(.body)
                     .foregroundStyle(DS.Color.link)
-                    .frame(width: 28)
+                    .frame(width: DS.Layout.isPad ? 34 : 28)
                 VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(title)
                         .font(.system(.body, design: .rounded, weight: .semibold))

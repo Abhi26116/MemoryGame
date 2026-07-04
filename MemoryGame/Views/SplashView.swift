@@ -404,6 +404,6 @@ private struct SplashSparkle {
     let wobble: Double
 }
 
-#Preview {
-    SplashView()
-}
+//#Preview {
+//    SplashView()
+//}

@@ -25,7 +25,7 @@ struct AchievementView: View {
                                 .fill(unlocked
                                       ? AnyShapeStyle(DS.Gradient.brand)
                                       : AnyShapeStyle(Color.gray.opacity(0.3)))
-                                .frame(width: 52, height: 52)
+                                .frame(width: DS.Layout.isPad ? 62 : 52, height: DS.Layout.isPad ? 62 : 52)
                             Image(systemName: achievement.icon)
                                 .font(.title2)
                                 .foregroundStyle(unlocked ? .white : .gray)
@@ -48,7 +48,9 @@ struct AchievementView: View {
                     .accessibilityLabel("\(achievement.title). \(achievement.description). \(unlocked ? "Unlocked" : "Locked")")
                 }
             }
+            .frame(maxWidth: DS.Layout.contentMaxWidth)
             .padding(DS.Layout.screenPadding)
+            .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
         .navigationTitle("Achievements")

@@ -153,7 +153,7 @@ struct StatCard: View {
         Image(systemName: icon)
             .font(.headline)
             .foregroundStyle(tint)
-            .frame(width: 40, height: 40)
+            .frame(width: DS.Layout.isPad ? 48 : 40, height: DS.Layout.isPad ? 48 : 40)
             .background(Circle().fill(tint.opacity(0.16)))
     }
 
@@ -261,6 +261,10 @@ struct Dialog<Content: View>: View {
                     .fill(DS.Color.surfaceElevated)
                     .dsShadow(.elevated)
             )
+            // Alert-like cap so the card doesn't stretch across wide screens
+            // (iPad / landscape); no-op on iPhone portrait widths. Slightly
+            // roomier on iPad to fit the larger type scale.
+            .frame(maxWidth: DS.Layout.isPad ? 540 : 480)
             .padding(DS.Spacing.xxxl)
             .scaleEffect(appeared ? 1 : 0.9)
             .opacity(appeared ? 1 : 0)

@@ -51,6 +51,9 @@
 		MMK045 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF045 /* NotificationManager.swift */; };
 		MMK046 /* ReviewPromptGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF046 /* ReviewPromptGate.swift */; };
 		MMK047 /* UpdateCheckManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF047 /* UpdateCheckManager.swift */; };
+		MMK048 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = MMKF048 /* PrivacyInfo.xcprivacy */; };
+		MMK049 /* RemoveAdsPromptGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF049 /* RemoveAdsPromptGate.swift */; };
+		MMK050 /* RemoveAdsShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF050 /* RemoveAdsShowcaseView.swift */; };
 		MMK200 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF200 /* Monetization.swift */; };
 		MMK301 /* Fredoka.ttf in Resources */ = {isa = PBXBuildFile; fileRef = MMKF301 /* Fredoka.ttf */; };
 /* End PBXBuildFile section */
@@ -101,6 +104,9 @@
 		MMKF045 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		MMKF046 /* ReviewPromptGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptGate.swift; sourceTree = "<group>"; };
 		MMKF047 /* UpdateCheckManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckManager.swift; sourceTree = "<group>"; };
+		MMKF048 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		MMKF049 /* RemoveAdsPromptGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveAdsPromptGate.swift; sourceTree = "<group>"; };
+		MMKF050 /* RemoveAdsShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveAdsShowcaseView.swift; sourceTree = "<group>"; };
 		MMKF200 /* Monetization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
 		MMKF301 /* Fredoka.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fredoka.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -137,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				04E503612FD088C000A6BE32 /* MemoryGameApp.swift */,
+				MMKF048 /* PrivacyInfo.xcprivacy */,
 				MMKG001 /* Core */,
 				MMKG002 /* Models */,
 				MMKG003 /* Data */,
@@ -220,6 +227,7 @@
 				MMKF045 /* NotificationManager.swift */,
 				MMKF046 /* ReviewPromptGate.swift */,
 				MMKF047 /* UpdateCheckManager.swift */,
+				MMKF049 /* RemoveAdsPromptGate.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -259,6 +267,7 @@
 				MMKG017 /* Settings */,
 				MMKG021 /* Levels */,
 				MMKG022 /* Onboarding */,
+				MMKG023 /* Monetization */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -346,6 +355,14 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		MMKG023 /* Monetization */ = {
+			isa = PBXGroup;
+			children = (
+				MMKF050 /* RemoveAdsShowcaseView.swift */,
+			);
+			path = Monetization;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -414,6 +431,7 @@
 				04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */,
 				MMK033 /* LaunchSplash.gif in Resources */,
 				MMK301 /* Fredoka.ttf in Resources */,
+				MMK048 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +483,8 @@
 				MMK030 /* SettingsView.swift in Sources */,
 				MMK031 /* SplashView.swift in Sources */,
 				MMK034 /* AnimatedGIFView.swift in Sources */,
+				MMK049 /* RemoveAdsPromptGate.swift in Sources */,
+				MMK050 /* RemoveAdsShowcaseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -596,7 +616,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;
@@ -614,6 +634,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.memogame.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -626,7 +650,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;
@@ -644,6 +668,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.memogame.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

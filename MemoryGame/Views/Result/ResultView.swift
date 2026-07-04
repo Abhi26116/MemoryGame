@@ -44,7 +44,9 @@ struct ResultView: View {
                 resultStack(compact: false)
                 resultStack(compact: true)
             }
+            .frame(maxWidth: DS.Layout.contentMaxWidth)
             .padding(.horizontal, DS.Layout.screenPadding)
+            .dsIPadTypeScale()
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }
         .onAppear {
@@ -101,7 +103,7 @@ struct ResultView: View {
                         .animation(DS.Motion.respecting(reduceMotion, DS.Motion.bouncy).delay(0.05), value: showContent)
                 }
                 Text(levelWon ? "🎉" : "😅")
-                    .font(.system(size: compact ? 44 : 60))
+                    .font(.system(size: DS.Layout.isPad ? 78 : (compact ? 44 : 60)))
                     .scaleEffect(showContent ? 1 : 0.5)
                     .animation(DS.Motion.respecting(reduceMotion, DS.Motion.bouncy).delay(0.05), value: showContent)
             }
@@ -130,7 +132,7 @@ struct ResultView: View {
             HStack(spacing: DS.Spacing.sm + 2) {
                 ForEach(0..<3, id: \.self) { i in
                     Image(systemName: i < stars ? "star.fill" : "star")
-                        .font(.system(size: compact ? 30 : 36))
+                        .font(.system(size: DS.Layout.isPad ? 46 : (compact ? 30 : 36)))
                         .foregroundStyle(i < stars ? DS.Color.star : DS.Color.track)
                         .shadow(color: i < stars ? DS.Color.star.opacity(0.5) : .clear, radius: 6, y: 2)
                         .scaleEffect(showContent ? 1 : 0.3)

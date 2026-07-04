@@ -145,6 +145,14 @@ enum DS {
         /// HIG-friendly minimum tappable size.
         static let minTouchTarget: CGFloat = 56
         static let screenPadding: CGFloat = 20
+        /// Caps content width on iPad so cards read as a column instead of
+        /// stretching full-bleed. No effect on iPhone, whose screens are
+        /// narrower than this.
+        static let contentMaxWidth: CGFloat = 760
+        /// True on iPad. Used to scale up fixed-size elements (emojis, icon
+        /// badges, HUD numbers) that Dynamic Type can't reach. Deliberately an
+        /// idiom check, not a size-class one, so iPhone landscape stays put.
+        static var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     }
 
     // MARK: - Shadow
@@ -193,6 +201,18 @@ extension View {
     func dsShadow(_ shadow: DS.Shadow) -> some View {
         self.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
     }
+
+    /// On iPad, floors Dynamic Type at `.xxLarge` so text (and text-style SF
+    /// icons) render at an iPad-appropriate scale. No effect on iPhone, and
+    /// players who pick an even larger accessibility size still get it.
+    @ViewBuilder
+    func dsIPadTypeScale() -> some View {
+        if DS.Layout.isPad {
+            self.dynamicTypeSize(DynamicTypeSize.xxLarge...)
+        } else {
+            self
+        }
+    }
 }
 
 // MARK: - Typography
@@ -209,6 +229,8 @@ extension Font {
         static let button = Font.system(.headline, design: .rounded, weight: .bold)
         /// Tabular display numbers for score / counters.
         static let score = Font.custom("Fredoka-Bold", size: 26, relativeTo: .title)
-        static let timer = Font.system(size: 28, weight: .black, design: .rounded)
+        static var timer: Font {
+            .system(size: DS.Layout.isPad ? 34 : 28, weight: .black, design: .rounded)
+        }
     }
 }

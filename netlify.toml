@@ -1,0 +1,12 @@
+[build]
+  publish = "docs"
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy-policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms-and-conditions.html"
+  status = 200

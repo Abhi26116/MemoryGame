@@ -16,11 +16,13 @@ import GoogleMobileAds
 final class AdsManager: NSObject, ObservableObject {
     static let shared = AdsManager()
 
-    /// While `true`, EVERY build (including TestFlight / App Store) uses Google's TEST
-    /// ads — safe to tap, never real money. Flip to `false` only when the app is live
-    /// and your AdMob app is approved, to serve your real ads. (App ID in Info.plist
-    /// is always the real one.)
+    /// Debug builds use Google's test ad units (safe to tap). Release / TestFlight /
+    /// App Store builds use live ad units. App ID in Info.plist is always the real one.
+    #if DEBUG
     static let useTestAds = true
+    #else
+    static let useTestAds = false
+    #endif
 
     private static let testInterstitialUnitID = "ca-app-pub-3940256099942544/4411468910"
     private static let testBannerUnitID = "ca-app-pub-3940256099942544/2934735716"
@@ -35,17 +37,34 @@ final class AdsManager: NSObject, ObservableObject {
     private let showEveryNGames = 3
     private var onInterstitialDismissed: (() -> Void)?
 
+    /// True only after a banner actually loads — keeps the tab bar flush at the
+    /// bottom when ads are removed or the request fails.
+    @Published private(set) var bannerIsVisible = false
+
+    func setBannerVisible(_ visible: Bool) {
+        bannerIsVisible = visible
+    }
+
     /// Call once at app launch.
     func configure() {
         let config = GADMobileAds.sharedInstance().requestConfiguration
         config.tagForChildDirectedTreatment = NSNumber(value: true)   // COPPA: child-directed
         config.maxAdContentRating = GADMaxAdContentRating.general      // G-rated only
         GADMobileAds.sharedInstance().start(completionHandler: nil)
+        #if DEBUG
+        print("[Ads] Mode: \(Self.useTestAds ? "TEST (Debug build)" : "LIVE (Release build)")")
+        #endif
         loadInterstitial()
     }
 
     func loadInterstitial() {
-        GADInterstitialAd.load(withAdUnitID: Self.interstitialUnitID, request: GADRequest()) { [weak self] ad, _ in
+        GADInterstitialAd.load(withAdUnitID: Self.interstitialUnitID, request: GADRequest()) { [weak self] ad, error in
+            if let error {
+                #if DEBUG
+                print("[Ads] Interstitial failed: \(error.localizedDescription)")
+                #endif
+                return
+            }
             self?.interstitial = ad
             ad?.fullScreenContentDelegate = self
         }
@@ -90,17 +109,37 @@ extension AdsManager: GADFullScreenContentDelegate {
     }
 }
 
-/// Standard banner for SwiftUI. Show only off the game board (e.g. bottom of Home).
+/// Standard banner for SwiftUI. Sits above the tab bar on the main screen.
 struct BannerAdView: UIViewRepresentable {
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeUIView(context: Context) -> GADBannerView {
         let banner = GADBannerView(adSize: GADAdSizeBanner)
         banner.adUnitID = AdsManager.bannerUnitID
         banner.rootViewController = AdsManager.rootViewController
+        banner.delegate = context.coordinator
         banner.load(GADRequest())
         return banner
     }
 
     func updateUIView(_ uiView: GADBannerView, context: Context) {}
+
+    final class Coordinator: NSObject, GADBannerViewDelegate {
+        func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
+            Task { @MainActor in
+                AdsManager.shared.setBannerVisible(true)
+            }
+        }
+
+        func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+            Task { @MainActor in
+                AdsManager.shared.setBannerVisible(false)
+                #if DEBUG
+                print("[Ads] Banner failed: \(error.localizedDescription)")
+                #endif
+            }
+        }
+    }
 }
 
 // MARK: - Remove-Ads purchase (StoreKit 2)
@@ -112,8 +151,20 @@ final class StoreManager: ObservableObject {
 
     @Published private(set) var adsRemoved = false
     @Published private(set) var isWorking = false
+    @Published private(set) var removeAdsProduct: Product?
+    @Published private(set) var statusMessage: String?
+    @Published private(set) var isStatusError = false
 
     private var updatesTask: Task<Void, Never>?
+
+    /// Localized App Store price, e.g. "$2.99" or "₹249".
+    var removeAdsDisplayPrice: String? { removeAdsProduct?.displayPrice }
+
+    /// Primary CTA label with localized price once StoreKit has loaded it.
+    var removeAdsButtonTitle: String {
+        guard let price = removeAdsDisplayPrice else { return "Remove Ads" }
+        return "Remove Ads — \(price)"
+    }
 
     private init() {
         updatesTask = Task { [weak self] in
@@ -123,6 +174,21 @@ final class StoreManager: ObservableObject {
                     await transaction.finish()
                 }
             }
+        }
+        Task { [weak self] in await self?.loadProduct() }
+    }
+
+    func clearStatus() {
+        statusMessage = nil
+        isStatusError = false
+    }
+
+    func loadProduct() async {
+        do {
+            let products = try await Product.products(for: [Self.removeAdsProductID])
+            removeAdsProduct = products.first
+        } catch {
+            // Price may appear on retry when the screen is shown again.
         }
     }
 
@@ -138,22 +204,133 @@ final class StoreManager: ObservableObject {
         adsRemoved = owned
     }
 
-    func purchaseRemoveAds() async {
+    @discardableResult
+    func purchaseRemoveAds() async -> Bool {
         isWorking = true
+        clearStatus()
         defer { isWorking = false }
-        guard let product = try? await Product.products(for: [Self.removeAdsProductID]).first else { return }
-        guard let result = try? await product.purchase() else { return }
-        if case .success(let verification) = result, case .verified(let transaction) = verification {
-            adsRemoved = true            // flip the UI immediately — we know it's owned
-            await transaction.finish()
+
+        do {
+            var product = removeAdsProduct
+            if product == nil {
+                let products = try await Product.products(for: [Self.removeAdsProductID])
+                product = products.first
+                removeAdsProduct = product
+            }
+            guard let product else {
+                setError("Couldn't load the purchase price. Check your connection and try again.")
+                return false
+            }
+
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                switch verification {
+                case .verified(let transaction):
+                    adsRemoved = true
+                    await transaction.finish()
+                    return true
+                case .unverified:
+                    setError("Purchase couldn't be verified. Please try again or contact support.")
+                    return false
+                }
+            case .userCancelled:
+                return false
+            case .pending:
+                setError("Purchase is waiting for approval. You'll get ad-free access once it's approved.")
+                return false
+            @unknown default:
+                setError("Something went wrong. Please try again.")
+                return false
+            }
+        } catch {
+            let message = friendlyMessage(for: error, context: .purchase)
+            if !message.isEmpty { setError(message) }
+            return false
         }
     }
 
-    func restore() async {
+    @discardableResult
+    func restore() async -> Bool {
         isWorking = true
+        clearStatus()
         defer { isWorking = false }
-        try? await AppStore.sync()
-        await refresh()
+
+        do {
+            try await AppStore.sync()
+            await refresh()
+            if adsRemoved {
+                return true
+            }
+            setError("No previous Remove Ads purchase was found for this Apple ID.")
+            return false
+        } catch {
+            let message = friendlyMessage(for: error, context: .restore)
+            if !message.isEmpty { setError(message) }
+            return false
+        }
+    }
+
+    private enum ActionContext { case purchase, restore }
+
+    private func setError(_ message: String) {
+        statusMessage = message
+        isStatusError = true
+    }
+
+    private func friendlyMessage(for error: Error, context: ActionContext) -> String {
+        if let storeError = error as? StoreKitError {
+            switch storeError {
+            case .networkError:
+                return "Network error. Check your connection and try again."
+            case .notAvailableInStorefront:
+                return "This purchase isn't available in your App Store region."
+            case .notEntitled:
+                return context == .restore
+                    ? "No previous Remove Ads purchase was found for this Apple ID."
+                    : "Purchase isn't available right now. Please try again later."
+            case .userCancelled:
+                return ""
+            default:
+                break
+            }
+        }
+        if (error as NSError).domain == NSURLErrorDomain {
+            return "Network error. Check your connection and try again."
+        }
+        switch context {
+        case .purchase:
+            return "Purchase couldn't be completed. Please try again."
+        case .restore:
+            return "Couldn't restore purchases. Please try again."
+        }
+    }
+}
+
+/// Inline purchase / restore feedback for Remove Ads screens.
+struct StoreStatusBanner: View {
+    @ObservedObject var store: StoreManager
+
+    var body: some View {
+        if let message = store.statusMessage, !message.isEmpty {
+            HStack(alignment: .top, spacing: DS.Spacing.sm) {
+                Image(systemName: store.isStatusError ? "exclamationmark.circle.fill" : "info.circle.fill")
+                    .foregroundStyle(store.isStatusError ? DS.Color.danger : DS.Color.brand)
+                Text(message)
+                    .font(.DSText.caption)
+                    .foregroundStyle(store.isStatusError ? DS.Color.danger : DS.Color.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(DS.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                    .fill(store.isStatusError
+                          ? DS.Color.danger.opacity(0.12)
+                          : DS.Color.brand.opacity(0.12))
+            )
+            .accessibilityElement(children: .combine)
+        }
     }
 }
 
@@ -212,6 +389,7 @@ struct ParentalGateView: View {
                 .padding(.top, 4)
         }
         .padding(28)
+        .dsIPadTypeScale()
         .onAppear { regenerate(showWrong: false) }
     }
 

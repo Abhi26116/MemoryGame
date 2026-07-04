@@ -35,8 +35,10 @@ struct LevelsView: View {
                     }
                 }
             }
+            .frame(maxWidth: DS.Layout.contentMaxWidth)
             .padding(.horizontal, DS.Layout.screenPadding)
             .padding(.vertical, DS.Spacing.lg)
+            .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
         .navigationTitle("Levels")
@@ -106,7 +108,7 @@ struct LevelsView: View {
                         ? LinearGradient(colors: [.gray.opacity(0.5)], startPoint: .top, endPoint: .bottom)
                         : levelGradient(level.levelNumber)
                 )
-                .frame(width: 44, height: 44)
+                .frame(width: DS.Layout.isPad ? 54 : 44, height: DS.Layout.isPad ? 54 : 44)
             if locked {
                 Image(systemName: "lock.fill")
                     .font(.subheadline.bold())
@@ -121,7 +123,7 @@ struct LevelsView: View {
 
     private func levelTrailingActions(level: LevelModel) -> some View {
         VStack(spacing: DS.Spacing.xs + 2) {
-            StarRatingView(stars: viewModel.stars(for: level.id), size: 11)
+            StarRatingView(stars: viewModel.stars(for: level.id), size: DS.Layout.isPad ? 14 : 11)
             if viewModel.isCompleted(level.id) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.body)

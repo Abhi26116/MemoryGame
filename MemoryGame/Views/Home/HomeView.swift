@@ -11,87 +11,49 @@ struct HomeView: View {
     /// Observed (not a plain `let`) so the level list re-renders the moment a win
     /// updates progress — otherwise the next level stays visually locked until relaunch.
     @ObservedObject var progressStore: ProgressStore
-    @State private var showRemoveAdsPrompt = false
-    @State private var showParentalGate = false
+    @State private var showRemoveAdsShowcase = false
     /// Soft Remove-Ads nudge is shown at most once, after the player has gotten
-    /// some value from the game. Never repeats or blocks play.
+    /// some value from the game. Never repeats or blocks play. Shares
+    /// `RemoveAdsPromptGate`'s daily mark with the recurring showcase (RootView)
+    /// so a player is never shown two ad-free pitches on the same day.
     @AppStorage("hasSeenRemoveAdsPrompt") private var hasSeenRemoveAdsPrompt = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: DS.Spacing.xl) {
-                header
-                progressCard
-                if let next = viewModel.suggestedLevel {
-                    playNextLevel(next)
+        // On iPad the dashboard is a readable-width column, centered both ways —
+        // full-bleed cards on a 10"+ canvas left a big dead zone below the Tip
+        // card. On iPhone this changes nothing: the column cap exceeds the
+        // screen width and the content already fills the height.
+        GeometryReader { geo in
+            ScrollView {
+                VStack(spacing: DS.Spacing.xl) {
+                    header
+                    progressCard
+                    if let next = viewModel.suggestedLevel {
+                        playNextLevel(next)
+                    }
+                    dailyHighlightCard
                 }
-                dailyHighlightCard
+                .frame(maxWidth: DS.Layout.contentMaxWidth)
+                .padding(.horizontal, DS.Layout.screenPadding)
+                .padding(.top, DS.Spacing.lg)
+                .padding(.bottom, DS.Spacing.lg)
+                .frame(maxWidth: .infinity, minHeight: geo.size.height, alignment: .center)
             }
-            .padding(.horizontal, DS.Layout.screenPadding)
-            .padding(.top, DS.Spacing.lg)
-            .padding(.bottom, DS.Spacing.xxxl)
         }
         .dsScreenBackground()
-        .safeAreaInset(edge: .bottom) {
-            if !store.adsRemoved {
-                BannerAdView()
-                    .frame(height: 50)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, DS.Spacing.xs)
-                    .background(DS.Color.surface)
-            }
-        }
-        .overlay {
-            if showRemoveAdsPrompt {
-                removeAdsPrompt
-            }
-        }
-        .sheet(isPresented: $showParentalGate) {
-            ParentalGateView {
-                Task { await store.purchaseRemoveAds() }
-            }
-            .presentationDetents([.medium])
+        .fullScreenCover(isPresented: $showRemoveAdsShowcase) {
+            RemoveAdsShowcaseView { showRemoveAdsShowcase = false }
         }
         .onAppear(perform: maybeShowRemoveAdsPrompt)
     }
 
     private func maybeShowRemoveAdsPrompt() {
         guard !store.adsRemoved, !hasSeenRemoveAdsPrompt,
-              progressStore.completedLevels >= 3 else { return }
+              progressStore.completedLevels >= 3,
+              !RemoveAdsPromptGate.shownToday() else { return }
         hasSeenRemoveAdsPrompt = true   // mark immediately so it never nags
-        showRemoveAdsPrompt = true
-    }
-
-    private var removeAdsPrompt: some View {
-        Dialog {
-            Image(systemName: "heart.slash.fill")
-                .font(.system(size: 44))
-                .foregroundStyle(DS.Color.accent)
-            Text("Enjoying \(AppTheme.appName)?")
-                .font(.system(.title3, design: .rounded, weight: .heavy))
-                .foregroundStyle(DS.Color.textPrimary)
-                .multilineTextAlignment(.center)
-            Text("Remove ads forever with a one-time purchase and keep the focus on play.")
-                .font(.DSText.callout)
-                .foregroundStyle(DS.Color.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-            PrimaryButton(title: "Remove Ads", icon: "heart.slash.fill") {
-                showRemoveAdsPrompt = false
-                showParentalGate = true
-            }
-            Button {
-                showRemoveAdsPrompt = false
-            } label: {
-                Text("Maybe Later")
-                    .font(.DSText.button)
-                    .foregroundStyle(DS.Color.link)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.pressable)
-        }
-        .transition(.opacity)
+        RemoveAdsPromptGate.markShownToday()
+        showRemoveAdsShowcase = true
     }
 
     private var header: some View {
@@ -107,10 +69,10 @@ struct HomeView: View {
                 Circle()
                     .stroke(DS.Gradient.accent, lineWidth: 2.5)
                 Text("🧠")
-                    .font(.system(size: 48))
+                    .font(.system(size: DS.Layout.isPad ? 62 : 48))
                     .accessibilityHidden(true)
             }
-            .frame(width: 96, height: 96)
+            .frame(width: DS.Layout.isPad ? 124 : 96, height: DS.Layout.isPad ? 124 : 96)
             .dsShadow(.card)
 
             VStack(spacing: DS.Spacing.xs) {

@@ -51,25 +51,46 @@ struct GameView: View {
         GeometryReader { geo in
             let spacing: CGFloat = DS.Spacing.sm
             let cols = CGFloat(viewModel.columns)
+            let rows = CGFloat(viewModel.rows)
             let horizontalPad: CGFloat = DS.Layout.screenPadding
-            let cardWidth = (geo.size.width - horizontalPad * 2 - spacing * (cols - 1)) / cols
+            let widthBasedCardSize = (geo.size.width - horizontalPad * 2 - spacing * (cols - 1)) / cols
+            // Cards are also capped by available HEIGHT (card height = width *
+            // 1.15), not just width — otherwise low-row-count grids (2x2, 2x3)
+            // render oversized cards that overflow off the bottom of the screen
+            // on large devices like iPad, where width alone leaves a lot of
+            // room. `reservedChromeHeight` approximates the HUD, banner, and
+            // spacers above/below the grid.
+            let reservedChromeHeight: CGFloat = viewModel.isPreviewPhase ? 340 : 300
+            let availableGridHeight = max(0, geo.size.height - reservedChromeHeight)
+            let heightBasedCardSize = (availableGridHeight - spacing * (rows - 1)) / rows / 1.15
+            // Absolute cap too: sparse grids (2x2, 2x3) on iPad would otherwise
+            // produce comically huge cards. 200pt is above anything an iPhone's
+            // width can yield, so phones are unaffected by the cap.
+            let maxCardSize: CGFloat = 200
+            let cardWidth = max(44, min(widthBasedCardSize, heightBasedCardSize, maxCardSize))
+            // Constrain the grid to its natural width so capped cards form a
+            // tight centered block instead of spreading across the screen.
+            let gridWidth = cardWidth * cols + spacing * (cols - 1)
 
             ZStack {
                 DSScreenBackground()
 
                 VStack(spacing: 0) {
                     gameHud
+                        .frame(maxWidth: DS.Layout.contentMaxWidth)
                         .padding(.horizontal, DS.Spacing.lg)
                         .padding(.top, DS.Spacing.sm)
                         .padding(.bottom, viewModel.isPreviewPhase ? DS.Spacing.sm : DS.Spacing.md)
 
                     if viewModel.isPreviewPhase {
                         previewBanner
+                            .frame(maxWidth: DS.Layout.contentMaxWidth)
                             .padding(.horizontal, DS.Spacing.lg)
                             .padding(.bottom, DS.Spacing.sm + 2)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     } else {
                         objectiveBanner
+                            .frame(maxWidth: DS.Layout.contentMaxWidth)
                             .padding(.horizontal, DS.Spacing.lg)
                             .padding(.bottom, DS.Spacing.sm + 2)
                     }
@@ -96,6 +117,7 @@ struct GameView: View {
                         }
                         .allowsHitTesting(viewModel.canInteract)
                     }
+                    .frame(maxWidth: gridWidth)
                     .padding(.horizontal, horizontalPad)
 
                     Spacer(minLength: DS.Spacing.md)
@@ -247,7 +269,7 @@ struct GameView: View {
                 ForEach(0..<viewModel.maxLives, id: \.self) { index in
                     let alive = index < viewModel.livesRemaining
                     Image(systemName: alive ? "heart.fill" : "heart")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: DS.Layout.isPad ? 20 : 16, weight: .bold))
                         .foregroundStyle(alive ? DS.Color.danger : DS.Color.track)
                         .scaleEffect(alive ? 1 : 0.85)
                 }
@@ -313,12 +335,12 @@ struct GameView: View {
                 .foregroundStyle(tint)
 
             Text(label)
-                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .font(.system(size: DS.Layout.isPad ? 13 : 10, weight: .medium, design: .rounded))
                 .foregroundStyle(DS.Color.textSecondary)
                 .lineLimit(1)
 
             Text(value)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: DS.Layout.isPad ? 19 : 15, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(DS.Color.textPrimary)
                 .lineLimit(1)
@@ -414,7 +436,7 @@ struct GameView: View {
                 .contentTransition(.numericText())
                 .scaleEffect(previewTickScale)
         }
-        .frame(width: 76, height: 76)
+        .frame(width: DS.Layout.isPad ? 96 : 76, height: DS.Layout.isPad ? 96 : 76)
     }
 
     private var previewSecondDots: some View {

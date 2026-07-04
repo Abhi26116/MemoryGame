@@ -21,23 +21,58 @@ struct WelcomeView: View {
         ZStack {
             DSScreenBackground()
 
-            TabView(selection: $page) {
-                welcomePage.tag(0)
-                removeAdsPage.tag(1)
+            Group {
+                if page == 0 {
+                    welcomePage
+                } else {
+                    removeAdsPage
+                }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(.easeInOut(duration: 0.25), value: page)
+
+            VStack {
+                Spacer()
+                pageIndicator
+                    .padding(.bottom, DS.Spacing.lg)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .dsIPadTypeScale()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+        .task {
+            if store.removeAdsProduct == nil {
+                await store.loadProduct()
+            }
+        }
         .sheet(isPresented: $showParentalGate) {
             ParentalGateView {
-                Task { await store.purchaseRemoveAds() }
+                Task {
+                    if await store.purchaseRemoveAds(), store.adsRemoved {
+                        onFinish()
+                    }
+                }
             }
             .presentationDetents([.medium])
         }
-        .onChange(of: store.adsRemoved) { _, removed in
-            if removed { onFinish() }
+    }
+
+    private var pageIndicator: some View {
+        HStack(spacing: DS.Spacing.sm) {
+            ForEach(0..<2, id: \.self) { index in
+                Circle()
+                    .fill(index == page ? DS.Color.brand : DS.Color.textSecondary.opacity(0.35))
+                    .frame(width: 8, height: 8)
+            }
         }
+        .accessibilityLabel("Page \(page + 1) of 2")
+    }
+
+    private var removeAdsSubtitle: String {
+        if let price = store.removeAdsDisplayPrice {
+            return "One-time purchase — \(price). Remove all ads and keep the focus on play. You can always do this later in Settings."
+        }
+        return "Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings."
     }
 
     // MARK: - Page 1 — welcome
@@ -56,10 +91,10 @@ struct WelcomeView: View {
                     )
                 Circle().stroke(DS.Gradient.accent, lineWidth: 2.5)
                 Text("🧠")
-                    .font(.system(size: 58))
+                    .font(.system(size: DS.Layout.isPad ? 72 : 58))
                     .accessibilityHidden(true)
             }
-            .frame(width: 112, height: 112)
+            .frame(width: DS.Layout.isPad ? 140 : 112, height: DS.Layout.isPad ? 140 : 112)
             .dsShadow(.card)
 
             VStack(spacing: DS.Spacing.sm) {
@@ -92,10 +127,11 @@ struct WelcomeView: View {
                 withAnimation { page = 1 }
             }
         }
+        .frame(maxWidth: DS.Layout.contentMaxWidth)
         .padding(.horizontal, DS.Layout.screenPadding)
         .padding(.top, DS.Spacing.xxl)
         .padding(.bottom, DS.Spacing.xxxl + DS.Spacing.md)
-        .tag(0)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Page 2 — go ad-free (skippable)
@@ -107,18 +143,20 @@ struct WelcomeView: View {
             ZStack {
                 Circle()
                     .fill(DS.Color.accent.opacity(0.16))
-                Image(systemName: "heart.slash.fill")
+                Image(systemName: store.adsRemoved ? "checkmark.seal.fill" : "heart.slash.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(DS.Color.accent)
+                    .foregroundStyle(store.adsRemoved ? DS.Color.success : DS.Color.accent)
             }
             .frame(width: 112, height: 112)
 
             VStack(spacing: DS.Spacing.sm) {
-                Text("Play Ad-Free")
+                Text(store.adsRemoved ? "You're Ad-Free!" : "Play Ad-Free")
                     .font(.DSText.title)
                     .foregroundStyle(DS.Gradient.accent)
                     .multilineTextAlignment(.center)
-                Text("Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings.")
+                Text(store.adsRemoved
+                     ? "Your Remove Ads purchase is active. Enjoy uninterrupted play!"
+                     : removeAdsSubtitle)
                     .font(.DSText.callout)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
@@ -128,33 +166,49 @@ struct WelcomeView: View {
             Spacer(minLength: 0)
 
             VStack(spacing: DS.Spacing.sm) {
-                PrimaryButton(title: "Remove Ads", icon: "heart.slash.fill") {
-                    showParentalGate = true
-                }
-                Button { Task { await store.restore() } } label: {
-                    Text("Restore Purchases")
-                        .font(.DSText.caption)
-                        .foregroundStyle(DS.Color.link)
-                        .frame(maxWidth: .infinity, minHeight: 36)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.pressable)
-                .disabled(store.isWorking)
+                if store.adsRemoved {
+                    PrimaryButton(title: "Continue", icon: "arrow.right", action: onFinish)
+                } else {
+                    StoreStatusBanner(store: store)
 
-                Button(action: onFinish) {
-                    Text("Skip for now")
-                        .font(.DSText.button)
-                        .foregroundStyle(DS.Color.textSecondary)
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .contentShape(Rectangle())
+                    PrimaryButton(title: store.removeAdsButtonTitle, icon: "heart.slash.fill") {
+                        store.clearStatus()
+                        showParentalGate = true
+                    }
+                    .disabled(store.isWorking)
+
+                    Button {
+                        Task {
+                            if await store.restore(), store.adsRemoved {
+                                onFinish()
+                            }
+                        }
+                    } label: {
+                        Text("Restore Purchases")
+                            .font(.DSText.caption)
+                            .foregroundStyle(DS.Color.link)
+                            .frame(maxWidth: .infinity, minHeight: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.pressable)
+                    .disabled(store.isWorking)
+
+                    Button(action: onFinish) {
+                        Text("Skip for now")
+                            .font(.DSText.button)
+                            .foregroundStyle(DS.Color.textSecondary)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.pressable)
                 }
-                .buttonStyle(.pressable)
             }
         }
+        .frame(maxWidth: DS.Layout.contentMaxWidth)
         .padding(.horizontal, DS.Layout.screenPadding)
         .padding(.top, DS.Spacing.xxl)
         .padding(.bottom, DS.Spacing.xxxl + DS.Spacing.md)
-        .tag(1)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func featureRow(icon: String, tint: Color, title: String, subtitle: String) -> some View {
@@ -162,7 +216,7 @@ struct WelcomeView: View {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundStyle(tint)
-                .frame(width: 44, height: 44)
+                .frame(width: DS.Layout.isPad ? 52 : 44, height: DS.Layout.isPad ? 52 : 44)
                 .background(Circle().fill(tint.opacity(0.16)))
             VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(title)
