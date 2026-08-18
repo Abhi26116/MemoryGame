@@ -12,6 +12,12 @@ struct MemoryCardView: View {
     var highContrast: Bool = false
     var colorBlindMode: Bool = false
     var cardBackStyle: CardBackStyle = .classic
+    /// Font size for the label under an emoji/symbol, shared across every
+    /// card in the grid (computed once from the longest label in play) so
+    /// cards don't each shrink their own text independently based on their
+    /// own word length — that made shorter words render visibly bigger than
+    /// longer ones sitting right next to them.
+    var labelFontSize: CGFloat = 11
     let onTap: () -> Void
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -28,8 +34,20 @@ struct MemoryCardView: View {
 
                 cardFront
                     .opacity(card.isFaceUp || card.isMatched ? 1 : 0)
-                    .rotation3DEffect(.degrees(flipDegrees + 180), axis: (x: 0, y: 1, z: 0))
+                    // NOT `flipDegrees + 180`: at rest (flipDegrees == 180)
+                    // that put the front at an effective 360°, which is only
+                    // *mathematically* equivalent to 0° — `cos`/`sin` of a
+                    // 360°-converted angle aren't perfectly 1/0 in floating
+                    // point, so Core Animation still composited it through a
+                    // (near-imperceptibly) skewed transform matrix, forcing
+                    // GPU-interpolated rendering that read as soft/blurry
+                    // text. `flipDegrees - 180` settles at a TRUE 0° — no
+                    // transform residue — while animating identically.
+                    .rotation3DEffect(.degrees(flipDegrees - 180), axis: (x: 0, y: 1, z: 0))
             }
+            // NOT `.drawingGroup()` — it rasterized the corners/border at a
+            // fixed bitmap size, so they lost their crisp vector edge (looked
+            // like the card design itself had changed) once transformed.
             .frame(width: size, height: size * 1.15)
             .scaleEffect(pulseScale)
             .modifier(ShakeEffect(shakes: (card.isShaking && !reduceMotion) ? 3 : 0))
@@ -68,7 +86,7 @@ struct MemoryCardView: View {
                     .font(.system(size: size * 0.22, weight: .bold))
                     .foregroundStyle(.white)
                 Text("MM")
-                    .font(.system(size: size * 0.14, weight: .black, design: .rounded))
+                    .font(.system(size: (size * 0.14).rounded(), weight: .black, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
                     .tracking(1)
             }
@@ -86,10 +104,12 @@ struct MemoryCardView: View {
 
     private var textSize: CGFloat {
         let base = largeText ? size * 0.34 : size * 0.28
+        // Rounded to a whole point — Retina rendering looks visibly soft when
+        // the font size doesn't land on a pixel boundary.
         switch card.content.label.count {
-        case 0...3: return base          // "A", "12", "USA"
-        case 4...6: return base * 0.72    // "SHARK", "Japan"
-        default: return base * 0.55       // "CROCODILE", "South Africa"
+        case 0...3: return base.rounded()          // "A", "12", "USA"
+        case 4...6: return (base * 0.72).rounded()  // "SHARK", "Japan"
+        default: return (base * 0.55).rounded()     // "CROCODILE", "South Africa"
         }
     }
 
@@ -103,10 +123,10 @@ struct MemoryCardView: View {
             VStack(spacing: 4) {
                 if let emoji = card.content.emoji {
                     Text(emoji)
-                        .font(.system(size: largeText ? size * 0.42 : size * 0.36))
+                        .font(.system(size: (largeText ? size * 0.42 : size * 0.36).rounded()))
                     if !card.content.label.isEmpty, card.content.label != emoji {
                         Text(card.content.label)
-                            .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
+                            .font(.system(size: labelFontSize, weight: .bold, design: .rounded))
                             .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
                             .lineLimit(2)
                             .minimumScaleFactor(0.6)
@@ -127,7 +147,7 @@ struct MemoryCardView: View {
                         .foregroundStyle(accent)
                     if !card.content.label.isEmpty {
                         Text(card.content.label)
-                            .font(.system(size: largeText ? 14 : 11, weight: .bold, design: .rounded))
+                            .font(.system(size: labelFontSize, weight: .bold, design: .rounded))
                             .foregroundStyle(highContrast ? .black : AppTheme.textPrimary(for: colorScheme))
                             .lineLimit(2)
                             .minimumScaleFactor(0.6)

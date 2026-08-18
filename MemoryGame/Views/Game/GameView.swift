@@ -7,6 +7,8 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var viewModel: GameViewModel
+    @ObservedObject private var ads = AdsManager.shared
+    @ObservedObject private var store = StoreManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showResult = false
     @State private var activeLevel: LevelModel
@@ -17,6 +19,15 @@ struct GameView: View {
     @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
     private var cardBackStyle: CardBackStyle { CardBackStyle(rawValue: cardBackRaw) ?? .classic }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+    // Returning from the lock screen (or Control Center / notification pull-
+    // down) can leave `cardGrid`'s GeometryReader holding a stale size from
+    // right before the app went to the background — cards would visibly
+    // resize a beat later, but only once SOME other interaction (e.g. a
+    // scroll) forced SwiftUI to recompute layout. Changing this `.id()` on
+    // scenePhase becoming active again forces `cardGrid` to be torn down and
+    // freshly measured immediately, instead of waiting on an unrelated nudge.
+    @State private var layoutRefreshID = UUID()
 
     let progressStore: ProgressStore
 
@@ -48,97 +59,61 @@ struct GameView: View {
     }
 
     var body: some View {
-        GeometryReader { geo in
-            let spacing: CGFloat = DS.Spacing.sm
-            let cols = CGFloat(viewModel.columns)
-            let rows = CGFloat(viewModel.rows)
-            let horizontalPad: CGFloat = DS.Layout.screenPadding
-            let widthBasedCardSize = (geo.size.width - horizontalPad * 2 - spacing * (cols - 1)) / cols
-            // Cards are also capped by available HEIGHT (card height = width *
-            // 1.15), not just width — otherwise low-row-count grids (2x2, 2x3)
-            // render oversized cards that overflow off the bottom of the screen
-            // on large devices like iPad, where width alone leaves a lot of
-            // room. `reservedChromeHeight` approximates the HUD, banner, and
-            // spacers above/below the grid.
-            let reservedChromeHeight: CGFloat = viewModel.isPreviewPhase ? 340 : 300
-            let availableGridHeight = max(0, geo.size.height - reservedChromeHeight)
-            let heightBasedCardSize = (availableGridHeight - spacing * (rows - 1)) / rows / 1.15
-            // Absolute cap too: sparse grids (2x2, 2x3) on iPad would otherwise
-            // produce comically huge cards. 200pt is above anything an iPhone's
-            // width can yield, so phones are unaffected by the cap.
-            let maxCardSize: CGFloat = 200
-            let cardWidth = max(44, min(widthBasedCardSize, heightBasedCardSize, maxCardSize))
-            // Constrain the grid to its natural width so capped cards form a
-            // tight centered block instead of spreading across the screen.
-            let gridWidth = cardWidth * cols + spacing * (cols - 1)
+        ZStack {
+            DSScreenBackground()
 
-            ZStack {
-                DSScreenBackground()
+            VStack(spacing: 0) {
+                gameHud
+                    .frame(maxWidth: DS.Layout.contentMaxWidth)
+                    .padding(.horizontal, DS.Spacing.lg)
+                    .padding(.top, DS.Spacing.sm)
+                    .padding(.bottom, viewModel.isPreviewPhase ? DS.Spacing.sm : DS.Spacing.md)
 
-                VStack(spacing: 0) {
-                    gameHud
+                if viewModel.isPreviewPhase {
+                    previewBanner
                         .frame(maxWidth: DS.Layout.contentMaxWidth)
                         .padding(.horizontal, DS.Spacing.lg)
-                        .padding(.top, DS.Spacing.sm)
-                        .padding(.bottom, viewModel.isPreviewPhase ? DS.Spacing.sm : DS.Spacing.md)
-
-                    if viewModel.isPreviewPhase {
-                        previewBanner
-                            .frame(maxWidth: DS.Layout.contentMaxWidth)
-                            .padding(.horizontal, DS.Spacing.lg)
-                            .padding(.bottom, DS.Spacing.sm + 2)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    } else {
-                        objectiveBanner
-                            .frame(maxWidth: DS.Layout.contentMaxWidth)
-                            .padding(.horizontal, DS.Spacing.lg)
-                            .padding(.bottom, DS.Spacing.sm + 2)
-                    }
-
-                    Spacer(minLength: DS.Spacing.md)
-
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: viewModel.columns),
-                        spacing: spacing
-                    ) {
-                        ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
-                            MemoryCardView(
-                                card: card,
-                                size: cardWidth,
-                                largeText: viewModel.accessibilityLargeText,
-                                highContrast: viewModel.highContrast,
-                                colorBlindMode: viewModel.colorBlindMode,
-                                cardBackStyle: cardBackStyle
-                            ) {
-                                if viewModel.canInteract {
-                                    viewModel.tapCard(at: index)
-                                }
-                            }
-                        }
-                        .allowsHitTesting(viewModel.canInteract)
-                    }
-                    .frame(maxWidth: gridWidth)
-                    .padding(.horizontal, horizontalPad)
-
-                    Spacer(minLength: DS.Spacing.md)
+                        .padding(.bottom, DS.Spacing.sm + 2)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                } else {
+                    objectiveBanner
+                        .frame(maxWidth: DS.Layout.contentMaxWidth)
+                        .padding(.horizontal, DS.Spacing.lg)
+                        .padding(.bottom, DS.Spacing.sm + 2)
                 }
 
-                if viewModel.isPaused {
-                    pauseOverlay
-                }
-
-                ConfettiView(isActive: viewModel.showConfetti)
-                    .allowsHitTesting(false)
-                    .ignoresSafeArea()
-
-                if viewModel.gameFinished {
-                    Color.black.opacity(0.2).ignoresSafeArea()
-                }
-
-                if showTutorial {
-                    tutorialOverlay
-                }
+                cardGrid
             }
+
+            if viewModel.isPaused {
+                pauseOverlay
+            }
+
+            ConfettiView(isActive: viewModel.showConfetti)
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+
+            if viewModel.gameFinished {
+                Color.black.opacity(0.2).ignoresSafeArea()
+            }
+
+            if showTutorial {
+                tutorialOverlay
+            }
+        }
+        // Forces the WHOLE main content (including cardGrid's GeometryReader)
+        // to be torn down and freshly remeasured whenever layoutRefreshID
+        // changes — deliberately scoped to just this ZStack, NOT the
+        // `.safeAreaInset` content below: that hosts the live `BannerAdView`,
+        // and resetting ITS identity would tear down and reload the ad that
+        // just finished loading (repeating forever, since a fresh load would
+        // re-trigger the same refresh).
+        .id(layoutRefreshID)
+        // Reserves space at the bottom BEFORE the grid above it is measured, so
+        // the GeometryReader's height already excludes the banner — cards never
+        // size themselves into the space the ad ends up occupying.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AdBannerSlot(adsRemoved: store.adsRemoved)
         }
         .animation(DS.Motion.respecting(reduceMotion, DS.Motion.spring), value: viewModel.isPreviewPhase)
         .onAppear {
@@ -146,7 +121,28 @@ struct GameView: View {
                 showTutorial = true
             }
         }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                layoutRefreshID = UUID()
+            }
+        }
+        // Deliberately NOT reacting to `ads.bannerIsVisible` here anymore —
+        // `AdBannerSlot` now reserves its 50pt immediately regardless of
+        // whether the ad has actually loaded (see its doc comment), so the
+        // grid's available height no longer changes when the ad comes in.
+        // This used to force a full `cardGrid` remount at that exact moment,
+        // which was the actual glitch: cards visibly popping/shrinking ~1.3s
+        // after the screen appeared, right as the ad loaded in.
         .navigationBarTitleDisplayMode(.inline)
+        // Reverted from a custom `TabBarHider` (UIViewControllerRepresentable
+        // walking up to `tabBarController`) back to this — SwiftUI's TabView
+        // isn't guaranteed to be backed by a real UITabBarController, so that
+        // walk-up could silently resolve to nil and hide NOTHING, which is
+        // almost certainly why the tab bar was visibly showing on the game
+        // screen (and fighting the grid/banner for space, explaining a lot of
+        // the layout jumping). This is the official, reliably-working API;
+        // its only downside is a brief blank gap where the tab bar should be
+        // right after popping back to Home — a much smaller problem.
         .toolbar(.hidden, for: .tabBar)
         .kidBackButton()
         .toolbar {
@@ -160,21 +156,26 @@ struct GameView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    viewModel.isPaused.toggle()
-                } label: {
-                    Image(systemName: viewModel.isPaused ? "play.circle.fill" : "pause.circle.fill")
-                        .font(.title2)
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(DS.Color.link)
+                // Hidden during the memorize countdown — there's nothing to
+                // pause yet (the gameplay timer hasn't started), so the
+                // button had no real function there.
+                if !viewModel.isPreviewPhase {
+                    Button {
+                        viewModel.isPaused.toggle()
+                    } label: {
+                        Image(systemName: viewModel.isPaused ? "play.circle.fill" : "pause.circle.fill")
+                            .font(.title2)
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(DS.Color.link)
+                    }
+                    .accessibilityLabel(viewModel.isPaused ? "Resume" : "Pause")
                 }
-                .accessibilityLabel(viewModel.isPaused ? "Resume" : "Pause")
             }
         }
         .onChange(of: viewModel.gameFinished) { _, finished in
             if finished {
                 AdsManager.shared.handleLevelFinished(
-                    adsRemoved: StoreManager.shared.adsRemoved
+                    adsRemoved: store.adsRemoved
                 ) {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                         showResult = true
@@ -204,6 +205,12 @@ struct GameView: View {
                     showResult = false
                     viewModel.reset()
                 },
+                onWatchAdToContinue: (viewModel.canWatchAdToContinue && ads.rewardedAdAvailable) ? {
+                    AdsManager.shared.showRewardedAd(onReward: {
+                        viewModel.continueAfterAd()
+                        showResult = false
+                    }, onClosed: {})
+                } : nil,
                 onNextLevel: nextLevelJustUnlocked ? {
                     guard let next = nextLevel else { return }
                     showResult = false
@@ -215,6 +222,70 @@ struct GameView: View {
                     dismiss()
                 }
             )
+        }
+    }
+
+    // MARK: - Grid
+
+    /// Sized from the ACTUAL leftover space below the HUD/banner — measured
+    /// via `GeometryReader` here, rather than the whole screen's height minus
+    /// a hand-picked "how much chrome is above the grid" estimate. The old
+    /// estimate had to be one fixed number for both the compact objective
+    /// banner AND the taller preview banner, so it was never quite right for
+    /// both — cards (and their card-scaled fonts) ended up sized differently
+    /// between the two, which read as preview text being smaller/blurrier
+    /// than gameplay for the exact same level. Measuring what's actually left
+    /// makes that impossible: whatever real height the HUD + banner take,
+    /// this is exactly what's left, every time.
+    private var cardGrid: some View {
+        GeometryReader { geo in
+            let spacing: CGFloat = DS.Spacing.sm
+            let cols = CGFloat(viewModel.columns)
+            let rows = CGFloat(viewModel.rows)
+            let horizontalPad: CGFloat = DS.Layout.screenPadding
+            let verticalPad: CGFloat = DS.Spacing.md
+            let availableWidth = max(0, geo.size.width - horizontalPad * 2)
+            let availableHeight = max(0, geo.size.height - verticalPad * 2)
+            let widthBasedCardSize = (availableWidth - spacing * (cols - 1)) / cols
+            let heightBasedCardSize = (availableHeight - spacing * (rows - 1)) / rows / 1.15
+            // Absolute cap too: sparse grids (2x2, 2x3) on iPad would otherwise
+            // produce comically huge cards. 200pt is above anything an iPhone's
+            // width can yield, so phones are unaffected by the cap.
+            let maxCardSize: CGFloat = 200
+            let cardWidth = max(44, min(widthBasedCardSize, heightBasedCardSize, maxCardSize))
+            // Constrain the grid to its natural width so capped cards form a
+            // tight centered block instead of spreading across the screen.
+            let gridWidth = cardWidth * cols + spacing * (cols - 1)
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: viewModel.columns),
+                spacing: spacing
+            ) {
+                ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
+                    MemoryCardView(
+                        card: card,
+                        size: cardWidth,
+                        largeText: viewModel.accessibilityLargeText,
+                        highContrast: viewModel.highContrast,
+                        colorBlindMode: viewModel.colorBlindMode,
+                        cardBackStyle: cardBackStyle,
+                        labelFontSize: cardLabelFontSize
+                    ) {
+                        if viewModel.canInteract {
+                            viewModel.tapCard(at: index)
+                        }
+                    }
+                }
+                .allowsHitTesting(viewModel.canInteract)
+            }
+            .frame(width: gridWidth)
+            .frame(width: geo.size.width, height: geo.size.height)
+            // Re-added on request. Note this animates the card frame/emoji
+            // size, NOT the label caption anymore — `cardLabelFontSize` is a
+            // flat constant now (see below), independent of cardWidth, so
+            // "Carousel"/"Dice" etc. no longer resize or interpolate through
+            // this transition at all either way.
+            .animation(DS.Motion.respecting(reduceMotion, DS.Motion.smooth), value: cardWidth)
         }
     }
 
@@ -299,6 +370,16 @@ struct GameView: View {
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
+            // Always laid out (never conditionally inserted/removed) — an
+            // `if` here made the objective text reflow to a different number
+            // of lines depending on whether the chip was competing for
+            // width, which changed the WHOLE banner's height every time hint
+            // availability toggled (i.e. constantly during play) and made
+            // the card grid below it resize along with it. Hiding via
+            // opacity keeps the reserved width constant either way.
+            hintButton
+                .opacity(viewModel.canUseHint && ads.rewardedAdAvailable ? 1 : 0)
+                .allowsHitTesting(viewModel.canUseHint && ads.rewardedAdAvailable)
         }
         .padding(.horizontal, DS.Spacing.md)
         .padding(.vertical, DS.Spacing.sm)
@@ -308,6 +389,48 @@ struct GameView: View {
                 .fill(DS.Color.brand.opacity(0.12))
         )
         .accessibilityLabel("Goal: \(activeLevel.objective)")
+    }
+
+    private var hintButton: some View {
+        Button {
+            AdsManager.shared.showRewardedAd(onReward: {
+                viewModel.revealHint()
+            }, onClosed: {})
+        } label: {
+            HStack(spacing: DS.Spacing.xs) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 12, weight: .bold))
+                // Always a single digit (max 4 hints) — the count showing
+                // or changing never affects this chip's width/height, which
+                // matters here since the whole objective banner reflows
+                // around it (see the `hintButton` call site's note).
+                Text("Hint ×\(max(1, viewModel.hintsRemaining))")
+                    .font(.system(.caption2, design: .rounded, weight: .bold))
+            }
+            .foregroundStyle(DS.Color.warning)
+            .padding(.horizontal, DS.Spacing.sm + 2)
+            .padding(.vertical, DS.Spacing.xs + 2)
+            .background(Capsule().fill(DS.Color.warning.opacity(0.18)))
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel("Watch an ad for a hint, \(viewModel.hintsRemaining) remaining")
+    }
+
+    /// One label font size for the WHOLE grid, sized to the longest label
+    /// among the dealt cards — otherwise each card shrinks its own text
+    /// independently based on its own word length, so a short word like
+    /// "Dice" renders visibly bigger than "Carousel" right next to it.
+    // A fixed size for every card's label — NOT reduced based on the
+    // longest label on the board. That tiered reduction was overly
+    // cautious: on a board like "Toys" (longest label "Carousel", 8
+    // letters), it dragged EVERY card's label down from 11pt to 9pt, even
+    // short ones like "Dice" that never needed to shrink — 8-letter bold
+    // rounded text fits a card's width fine at 11pt without wrapping. That
+    // unnecessary shrink read as the whole board's text going blurry/small.
+    // `MemoryCardView`'s own `.lineLimit(2)` + `.minimumScaleFactor(0.6)`
+    // is still there as a per-card safety net for a genuinely long label.
+    private var cardLabelFontSize: CGFloat {
+        viewModel.accessibilityLargeText ? 14 : 11
     }
 
     private var showsMovesHud: Bool {

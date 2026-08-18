@@ -176,6 +176,22 @@ final class GameEngine {
         }
     }
 
+    /// Given exactly one card the player has already selected themselves
+    /// (mid-selection, waiting on its match), finds an unmatched, still-
+    /// hidden card that completes its pair/group — for a rewarded hint that
+    /// resolves the player's OWN pending pick rather than picking a fresh
+    /// one for them. Returns nil unless the player is genuinely mid-
+    /// selection (exactly one card flipped, none yet matched for it).
+    func hintPartnerIndex() -> Int? {
+        guard flippedIndices.count == 1, let selected = flippedIndices.first,
+              cards.indices.contains(selected) else { return nil }
+        let target = cards[selected].groupId ?? cards[selected].matchingPairId
+        return cards.indices.first { i in
+            i != selected && !cards[i].isMatched && !cards[i].isFaceUp &&
+                (cards[i].groupId ?? cards[i].matchingPairId) == target
+        }
+    }
+
     /// Stars are based on move efficiency only (not time).
     func calculateStars() -> Int {
         StarRatingRules.stars(

@@ -77,9 +77,6 @@ struct RootView: View {
             NavigationStack {
                 HomeView(viewModel: homeViewModel, progressStore: progressStore)
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                bannerAdSlot
-            }
             .tabItem { Label("Play", systemImage: "gamecontroller.fill") }
 
             NavigationStack {
@@ -98,24 +95,6 @@ struct RootView: View {
         .onChange(of: store.adsRemoved) { _, removed in
             if removed { ads.setBannerVisible(false) }
         }
-    }
-
-    /// Banner sits above the tab bar on the Play tab only. Mounted always so the
-    /// ad can load; inset height expands once visible. Must NOT be on TabView
-    /// itself — that hides the tab bar on iPad.
-    @ViewBuilder
-    private var bannerAdSlot: some View {
-        Group {
-            if !store.adsRemoved {
-                BannerAdView()
-                    .frame(height: 50)
-                    .frame(maxWidth: .infinity)
-                    .background(DS.Color.surface)
-                    .opacity(ads.bannerIsVisible ? 1 : 0)
-            }
-        }
-        .frame(height: (!store.adsRemoved && ads.bannerIsVisible) ? 50 : 0)
-        .clipped()
     }
 
     private func finishSplash() {

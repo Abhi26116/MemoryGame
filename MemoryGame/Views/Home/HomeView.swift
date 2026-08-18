@@ -17,6 +17,15 @@ struct HomeView: View {
     /// `RemoveAdsPromptGate`'s daily mark with the recurring showcase (RootView)
     /// so a player is never shown two ad-free pitches on the same day.
     @AppStorage("hasSeenRemoveAdsPrompt") private var hasSeenRemoveAdsPrompt = false
+    // Captured from GeometryReader, but only re-adopted when the WIDTH also
+    // changes (a real rotation/size-class change — the app supports
+    // landscape). The tab bar's reserved space taking a moment to settle on
+    // every pop back to Home only ever perturbs HEIGHT, never width, so
+    // gating on width change makes the centering below immune to that
+    // transient reflow (which used to visibly re-center/slide this content)
+    // while still adapting correctly on an actual rotation.
+    @State private var stableContentHeight: CGFloat = 0
+    @State private var stableContentWidth: CGFloat = 0
 
     var body: some View {
         // On iPad the dashboard is a readable-width column, centered both ways —
@@ -24,7 +33,7 @@ struct HomeView: View {
         // card. On iPhone this changes nothing: the column cap exceeds the
         // screen width and the content already fills the height.
         GeometryReader { geo in
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: DS.Spacing.xl) {
                     header
                     progressCard
@@ -37,7 +46,20 @@ struct HomeView: View {
                 .padding(.horizontal, DS.Layout.screenPadding)
                 .padding(.top, DS.Spacing.lg)
                 .padding(.bottom, DS.Spacing.lg)
-                .frame(maxWidth: .infinity, minHeight: geo.size.height, alignment: .center)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: stableContentHeight > 0 ? stableContentHeight : geo.size.height,
+                    alignment: .center
+                )
+            }
+            .onAppear {
+                stableContentHeight = geo.size.height
+                stableContentWidth = geo.size.width
+            }
+            .onChange(of: geo.size.width) { _, newWidth in
+                guard newWidth != stableContentWidth else { return }
+                stableContentWidth = newWidth
+                stableContentHeight = geo.size.height
             }
         }
         .dsScreenBackground()

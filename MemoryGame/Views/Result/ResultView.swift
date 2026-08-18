@@ -25,6 +25,7 @@ struct ResultView: View {
     /// completed levels behind it). `ReviewPromptGate` still has final say.
     var eligibleForReviewPrompt: Bool = false
     let onPlayAgain: () -> Void
+    var onWatchAdToContinue: (() -> Void)?
     var onNextLevel: (() -> Void)?
     let onHome: () -> Void
 
@@ -276,6 +277,11 @@ struct ResultView: View {
 
     private var actionButtons: some View {
         VStack(spacing: DS.Spacing.md) {
+            if !levelWon, let onWatchAdToContinue {
+                PrimaryButton(title: "Watch Ad to Continue", icon: "video.fill",
+                              gradient: DS.Gradient.accent, action: onWatchAdToContinue)
+            }
+
             if nextLevelUnlocked, let onNextLevel {
                 PrimaryButton(title: "Next Level", icon: "arrow.right.circle.fill",
                               gradient: DS.Gradient.accent, action: onNextLevel)

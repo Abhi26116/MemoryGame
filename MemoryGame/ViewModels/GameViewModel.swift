@@ -15,6 +15,10 @@ enum GameOverReason: Equatable {
 
 @MainActor
 final class GameViewModel: ObservableObject {
+    /// Extra seconds granted by a rewarded "continue" after an out-of-time loss.
+    private static let continueExtraTimeSeconds = 20
+
+
     @Published private(set) var cards: [CardModel] = []
     @Published private(set) var moves: Int = 0
     @Published private(set) var matchedPairs: Int = 0
@@ -47,6 +51,40 @@ final class GameViewModel: ObservableObject {
     private var timerTask: Task<Void, Never>?
     private var previewTask: Task<Void, Never>?
     private var startDate = Date()
+
+    // Rewarded-ad grants: capped per attempt so watching ads can't turn into
+    // free infinite replays or trivially solve the whole board.
+    private var hasUsedContinueThisAttempt = false
+    private(set) var hintsUsedThisAttempt = 0
+
+    /// True while a lost game can still be resumed via a rewarded "continue".
+    var canWatchAdToContinue: Bool {
+        gameFinished && !levelWon && !hasUsedContinueThisAttempt
+    }
+
+    /// How many rewarded hints this attempt gets, scaled to board size —
+    /// bigger boards mean more to remember, so they earn more help. Levels
+    /// 1–8 top out at 2×4 (≤4 pairs); 9–14 are 3×4 (6 pairs); 15+ are 4×4
+    /// and up (8+ pairs). Matches `LevelCatalog.gridSize(for:)`'s progression.
+    var maxHintsAllowed: Int {
+        switch level.totalPairsOnBoard {
+        case ...3: return 1
+        case 4...6: return 2
+        case 7...10: return 3
+        default: return 4
+        }
+    }
+
+    var hintsRemaining: Int { max(0, maxHintsAllowed - hintsUsedThisAttempt) }
+
+    /// True while the player has flipped exactly one card themselves and is
+    /// waiting on its match — a hint only ever resolves the player's OWN
+    /// pending pick (never picks a fresh pair for them), so it isn't offered
+    /// until they're actually mid-selection.
+    var canUseHint: Bool {
+        canInteract && !isPreviewPhase && !gameFinished && !isPaused && !moveLimitReached &&
+            hintsUsedThisAttempt < maxHintsAllowed && engine.flippedIndices.count == 1
+    }
 
     var rows: Int { gridSize.gridRows }
     var columns: Int { gridSize.gridColumns }
@@ -96,6 +134,8 @@ final class GameViewModel: ObservableObject {
         showConfetti = false
         isPaused = false
         remainingTime = rules.timerSeconds
+        hasUsedContinueThisAttempt = false
+        hintsUsedThisAttempt = 0
 
         HapticManager.prepare()
         let previewOn = progressStore.memorizePreviewEnabled
@@ -266,6 +306,37 @@ final class GameViewModel: ObservableObject {
             )
             bestTime = progressStore.progress(for: level.id)?.fastestTime ?? elapsed
         }
+    }
+
+    /// Called once a rewarded ad grants a continue: resumes the SAME board
+    /// (matched pairs stay matched) instead of restarting the level.
+    func continueAfterAd() {
+        guard canWatchAdToContinue else { return }
+        hasUsedContinueThisAttempt = true
+        switch failReason {
+        case .outOfLives: livesRemaining = max(livesRemaining, 1)
+        case .outOfTime: remainingTime = max(remainingTime, Self.continueExtraTimeSeconds)
+        default: break
+        }
+        gameFinished = false
+        showConfetti = false
+        canInteract = true
+        // Keep elapsed continuous across the pause rather than jumping.
+        startDate = Date().addingTimeInterval(-elapsed)
+        startGameplayTimer()
+    }
+
+    /// Called once a rewarded ad grants a hint: completes the pair/group the
+    /// player has ALREADY started selecting themselves — the ad never picks
+    /// a fresh pair for them, it only resolves their own pending pick, and
+    /// it plays out through the exact same `tapCard` flow a real tap would
+    /// (still counts as a move, still runs the normal win/combo/lives logic;
+    /// it can never mismatch since the partner is the correct one by
+    /// construction).
+    func revealHint() {
+        guard canUseHint, let partnerIndex = engine.hintPartnerIndex() else { return }
+        hintsUsedThisAttempt += 1
+        tapCard(at: partnerIndex)
     }
 
     func reset() {

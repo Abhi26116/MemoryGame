@@ -26,20 +26,35 @@ final class AdsManager: NSObject, ObservableObject {
 
     private static let testInterstitialUnitID = "ca-app-pub-3940256099942544/4411468910"
     private static let testBannerUnitID = "ca-app-pub-3940256099942544/2934735716"
+    private static let testRewardedUnitID = "ca-app-pub-3940256099942544/1712485313"
     private static let liveInterstitialUnitID = "ca-app-pub-9350608203842553/5602694936"
     private static let liveBannerUnitID = "ca-app-pub-9350608203842553/6247738364"
+    // TODO: fill with the real iOS rewarded ad unit once created in AdMob (App →
+    // Tiny Genius Hub: Memory Match — iOS). Blank falls back to the test unit
+    // even if useTestAds is flipped to false, so this can't dead-end release builds.
+    private static let liveRewardedUnitID = ""
 
     static var interstitialUnitID: String { useTestAds ? testInterstitialUnitID : liveInterstitialUnitID }
     static var bannerUnitID: String { useTestAds ? testBannerUnitID : liveBannerUnitID }
+    static var rewardedUnitID: String {
+        (useTestAds || liveRewardedUnitID.isEmpty) ? testRewardedUnitID : liveRewardedUnitID
+    }
 
     private var interstitial: GADInterstitialAd?
     private var gamesSinceLastAd = 0
     private let showEveryNGames = 3
     private var onInterstitialDismissed: (() -> Void)?
 
+    private var rewardedAd: GADRewardedAd?
+    private var onRewardedAdClosed: (() -> Void)?
+
     /// True only after a banner actually loads — keeps the tab bar flush at the
     /// bottom when ads are removed or the request fails.
     @Published private(set) var bannerIsVisible = false
+
+    /// True once a rewarded ad is actually loaded and ready to show — callers
+    /// gate their "Watch Ad" buttons on this so tapping one never dead-ends.
+    @Published private(set) var rewardedAdAvailable = false
 
     func setBannerVisible(_ visible: Bool) {
         bannerIsVisible = visible
@@ -55,6 +70,7 @@ final class AdsManager: NSObject, ObservableObject {
         print("[Ads] Mode: \(Self.useTestAds ? "TEST (Debug build)" : "LIVE (Release build)")")
         #endif
         loadInterstitial()
+        loadRewardedAd()
     }
 
     func loadInterstitial() {
@@ -67,6 +83,37 @@ final class AdsManager: NSObject, ObservableObject {
             }
             self?.interstitial = ad
             ad?.fullScreenContentDelegate = self
+        }
+    }
+
+    func loadRewardedAd() {
+        GADRewardedAd.load(withAdUnitID: Self.rewardedUnitID, request: GADRequest()) { [weak self] ad, error in
+            if let error {
+                self?.rewardedAd = nil
+                self?.rewardedAdAvailable = false
+                #if DEBUG
+                print("[Ads] Rewarded failed: \(error.localizedDescription)")
+                #endif
+                return
+            }
+            self?.rewardedAd = ad
+            self?.rewardedAdAvailable = true
+            ad?.fullScreenContentDelegate = self
+        }
+    }
+
+    /// Shows the rewarded ad if one is ready. `onReward` fires only when the
+    /// player actually earns the reward (never grant it just for opening the
+    /// ad — that's AdMob policy); `onClosed` always fires once the ad flow
+    /// ends, whether or not a reward was earned, so callers can clean up.
+    func showRewardedAd(onReward: @escaping () -> Void, onClosed: @escaping () -> Void) {
+        guard let ad = rewardedAd, let root = Self.rootViewController else {
+            onClosed()
+            return
+        }
+        onRewardedAdClosed = onClosed
+        ad.present(fromRootViewController: root) {
+            onReward()
         }
     }
 
@@ -85,31 +132,105 @@ final class AdsManager: NSObject, ObservableObject {
         interstitial?.present(fromRootViewController: root)
     }
 
+    /// The topmost presented view controller — NOT just the window's base
+    /// rootViewController. Ads must present from whichever VC is actually on
+    /// screen: the rewarded "Watch Ad to Continue" button is tapped while
+    /// ResultView is already showing as a `.fullScreenCover`, so presenting
+    /// from the base root VC (which already has that cover presented on it)
+    /// silently fails to show anything.
     static var rootViewController: UIViewController? {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first { $0.isKeyWindow }?.rootViewController
+        guard let base = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?.rootViewController else { return nil }
+        var top = base
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
     }
 }
 
 extension AdsManager: GADFullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        interstitial = nil
-        loadInterstitial()
-        let callback = onInterstitialDismissed
-        onInterstitialDismissed = nil
-        callback?()
+        if ad is GADRewardedAd {
+            rewardedAd = nil
+            rewardedAdAvailable = false
+            loadRewardedAd()
+            let callback = onRewardedAdClosed
+            onRewardedAdClosed = nil
+            callback?()
+        } else {
+            interstitial = nil
+            loadInterstitial()
+            let callback = onInterstitialDismissed
+            onInterstitialDismissed = nil
+            callback?()
+        }
     }
 
     func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        let callback = onInterstitialDismissed
-        onInterstitialDismissed = nil
-        callback?()
+        if ad is GADRewardedAd {
+            rewardedAd = nil
+            rewardedAdAvailable = false
+            let callback = onRewardedAdClosed
+            onRewardedAdClosed = nil
+            callback?()
+        } else {
+            let callback = onInterstitialDismissed
+            onInterstitialDismissed = nil
+            callback?()
+        }
     }
 }
 
-/// Standard banner for SwiftUI. Sits above the tab bar on the main screen.
+/// Fixed-height slot for `BannerAdView` — 0-height until the ad actually
+/// loads (`AdsManager.bannerIsVisible`), so a screen doesn't reserve dead
+/// space while a request is in flight or ads are removed.
+///
+/// (Tried reserving the 50pt immediately regardless of load state, to stop
+/// `cardGrid` resizing out from under itself once the ad landed — that DID
+/// stop the resize, but permanently shrank cards enough that their labels
+/// looked noticeably worse/blurrier, which was the bigger complaint. Back to
+/// grow-on-load; the brief resize when the ad lands is the smaller problem.)
+///
+/// Apply via `.safeAreaInset(edge: .bottom)` on the hosting screen so
+/// `cardGrid`'s `GeometryReader` sees the reduced height and never overlaps
+/// the banner. The ad's own reserved frame is a plain fixed 50pt (kept
+/// simple on purpose — that's what makes it sit in the same spot every
+/// time); only its background bleeds further down to reach the true screen
+/// edge.
+struct AdBannerSlot: View {
+    @ObservedObject private var ads = AdsManager.shared
+    let adsRemoved: Bool
+
+    var body: some View {
+        Group {
+            if !adsRemoved {
+                BannerAdView()
+                    .frame(height: 50)
+                    .frame(maxWidth: .infinity)
+                    // The ad's own reserved frame stays a plain, fixed 50pt —
+                    // that's what kept its position stable last time. Only
+                    // the BACKGROUND color bleeds through the home-indicator
+                    // zone below it (a background is allowed to be a
+                    // different size than the view it's attached to, and
+                    // nothing here clips it back), so there's no visible gap
+                    // at the true screen edge without the ad itself being
+                    // resized/repositioned.
+                    .background(DS.Color.surface.ignoresSafeArea(edges: .bottom))
+                    .opacity(ads.bannerIsVisible ? 1 : 0)
+            }
+        }
+        .frame(height: (!adsRemoved && ads.bannerIsVisible) ? 50 : 0)
+        // NOT `.clipped()` — it would cut the background bleed above right
+        // back down to this 50pt reservation, undoing the flush-to-edge fix.
+        // Nothing here has any other reason to overflow, so there's nothing
+        // else for clipping to guard against.
+    }
+}
+
+/// Standard banner for SwiftUI. Hosted inside `AdBannerSlot` on the game screen.
 struct BannerAdView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 

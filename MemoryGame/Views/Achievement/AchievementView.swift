@@ -16,7 +16,7 @@ struct AchievementView: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: DS.Spacing.lg) {
                 ForEach(viewModel.achievements, id: \.0.id) { achievement, unlocked in
                     HStack(spacing: DS.Spacing.lg) {
