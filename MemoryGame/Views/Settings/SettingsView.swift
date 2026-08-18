@@ -25,7 +25,7 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: DS.Spacing.xl) {
+            LazyVStack(spacing: DS.Spacing.xl) {
                 progressSection
                 levelsSection
                 appearanceSection
