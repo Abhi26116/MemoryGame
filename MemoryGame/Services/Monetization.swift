@@ -29,10 +29,7 @@ final class AdsManager: NSObject, ObservableObject {
     private static let testRewardedUnitID = "ca-app-pub-3940256099942544/1712485313"
     private static let liveInterstitialUnitID = "ca-app-pub-9350608203842553/5602694936"
     private static let liveBannerUnitID = "ca-app-pub-9350608203842553/6247738364"
-    // TODO: fill with the real iOS rewarded ad unit once created in AdMob (App →
-    // Tiny Genius Hub: Memory Match — iOS). Blank falls back to the test unit
-    // even if useTestAds is flipped to false, so this can't dead-end release builds.
-    private static let liveRewardedUnitID = ""
+    private static let liveRewardedUnitID = "ca-app-pub-9350608203842553/7384774761"
 
     static var interstitialUnitID: String { useTestAds ? testInterstitialUnitID : liveInterstitialUnitID }
     static var bannerUnitID: String { useTestAds ? testBannerUnitID : liveBannerUnitID }
