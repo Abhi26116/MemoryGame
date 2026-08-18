@@ -105,6 +105,40 @@ final class GameEngine {
         }
     }
 
+    // SHOT-TEMP
+    func isMatchForScreenshot(_ group: [CardModel]) -> Bool {
+        strategy.isMatch(cards: group, mode: config.level.matchMode)
+    }
+
+    // SHOT-TEMP
+    func screenshotPoseBoard(matchPairs: Int, faceUpExtra: Int) {
+        let n = strategy.requiredSelectionCount(mode: config.level.matchMode)
+        var matched = 0
+        var used = Set<Int>()
+        func combos(_ pool: [Int], _ k: Int) -> [[Int]] {
+            guard k > 0 else { return [[]] }
+            guard pool.count >= k else { return [] }
+            var out: [[Int]] = []
+            for (idx, v) in pool.enumerated() {
+                for rest in combos(Array(pool[(idx + 1)...]), k - 1) { out.append([v] + rest) }
+            }
+            return out
+        }
+        while matched < matchPairs {
+            let pool = cards.indices.filter { !used.contains($0) }
+            guard let hit = combos(pool, n).first(where: { g in
+                strategy.isMatch(cards: g.map { cards[$0] }, mode: config.level.matchMode)
+            }) else { break }
+            for i in hit { cards[i].isMatched = true; cards[i].isFaceUp = true; used.insert(i) }
+            matched += 1
+        }
+        var extra = 0
+        for i in cards.indices where !cards[i].isMatched && extra < faceUpExtra {
+            cards[i].isFaceUp = true; extra += 1
+        }
+        matchedPairs = matched
+    }
+
     func revealAllCards() {
         for index in cards.indices where !cards[index].isMatched {
             cards[index].isFaceUp = true

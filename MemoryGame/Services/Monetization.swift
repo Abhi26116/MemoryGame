@@ -203,7 +203,7 @@ struct AdBannerSlot: View {
 
     var body: some View {
         Group {
-            if !adsRemoved {
+            if !adsRemoved && !UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE") {  // SHOT-TEMP
                 BannerAdView()
                     .frame(height: 50)
                     .frame(maxWidth: .infinity)

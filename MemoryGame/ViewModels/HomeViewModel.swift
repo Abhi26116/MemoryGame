@@ -9,7 +9,7 @@ import Foundation
 final class HomeViewModel: ObservableObject {
     /// Testing override: set true to play every level without earning stars first.
     /// Off in production — only Level 1 is open; each level unlocks by earning 2★ on the previous one.
-    static let allLevelsUnlocked = false
+    static let allLevelsUnlocked = UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE")  // SHOT-TEMP
 
     private let progressStore: ProgressStore
 

@@ -172,6 +172,13 @@ struct GameView: View {
                 }
             }
         }
+        .onAppear {
+            // SHOT-TEMP
+            if ProcessInfo.processInfo.environment["SHOT_AUTOPLAY"] != nil { viewModel.startAutoPlay() }
+            if ProcessInfo.processInfo.environment["SHOT_WIN"] != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { showResult = true }
+            }
+        }
         .onChange(of: viewModel.gameFinished) { _, finished in
             if finished {
                 AdsManager.shared.handleLevelFinished(
@@ -246,46 +253,80 @@ struct GameView: View {
             let verticalPad: CGFloat = DS.Spacing.md
             let availableWidth = max(0, geo.size.width - horizontalPad * 2)
             let availableHeight = max(0, geo.size.height - verticalPad * 2)
+            // A card renders taller than it is wide (art plus its caption).
+            // This is the ratio the height-based sizing budgets for; naming it
+            // matters because anything else that reasons about total grid
+            // height has to use the same figure or the bottom row overflows.
+            let cardAspect: CGFloat = 1.15
             let widthBasedCardSize = (availableWidth - spacing * (cols - 1)) / cols
-            let heightBasedCardSize = (availableHeight - spacing * (rows - 1)) / rows / 1.15
+            let heightBasedCardSize = (availableHeight - spacing * (rows - 1)) / rows / cardAspect
             // Absolute cap too: sparse grids (2x2, 2x3) on iPad would otherwise
             // produce comically huge cards. 200pt is above anything an iPhone's
             // width can yield, so phones are unaffected by the cap.
             let maxCardSize: CGFloat = 200
+            // Floored to a whole point so sub-pixel changes in the space above
+            // the grid can't retrigger a relayout of every card.
             let cardWidth = max(44, min(widthBasedCardSize, heightBasedCardSize, maxCardSize))
+                .rounded(.down)
             // Constrain the grid to its natural width so capped cards form a
             // tight centered block instead of spreading across the screen.
             let gridWidth = cardWidth * cols + spacing * (cols - 1)
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: viewModel.columns),
-                spacing: spacing
-            ) {
-                ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
-                    MemoryCardView(
-                        card: card,
-                        size: cardWidth,
-                        largeText: viewModel.accessibilityLargeText,
-                        highContrast: viewModel.highContrast,
-                        colorBlindMode: viewModel.colorBlindMode,
-                        cardBackStyle: cardBackStyle,
-                        labelFontSize: cardLabelFontSize
-                    ) {
-                        if viewModel.canInteract {
-                            viewModel.tapCard(at: index)
+            // Row and column gaps are deliberately the SAME value. An earlier
+            // attempt padded the row gaps out to absorb the leftover vertical
+            // space, which did fill the board area but made the grid read as
+            // separated rows rather than one block — worse than the gap it
+            // removed. A board is width-constrained on these aspect ratios, so
+            // some leftover height is unavoidable; it stays centered below.
+            // Explicit VStack-of-HStacks, NOT a LazyVGrid.
+            //
+            // LazyVGrid derives its row heights from cell content it measures
+            // lazily, so while anything above the board was still settling it
+            // could place rows closer together than the cards were tall — the
+            // bottom row drew straight over the labels of the row above. It was
+            // intermittent, which made it survive several rounds of "fixed".
+            //
+            // A board is at most 30 cards, so laziness buys nothing here. Here
+            // every row is pinned to exactly `cardWidth * cardAspect` and every
+            // gap to exactly `spacing`, in both directions, so the rows cannot
+            // collide no matter what the surrounding layout is doing.
+            VStack(spacing: spacing) {
+                ForEach(0..<viewModel.rows, id: \.self) { row in
+                    HStack(spacing: spacing) {
+                        ForEach(0..<viewModel.columns, id: \.self) { column in
+                            let index = row * viewModel.columns + column
+                            if index < viewModel.cards.count {
+                                MemoryCardView(
+                                    card: viewModel.cards[index],
+                                    size: cardWidth,
+                                    largeText: viewModel.accessibilityLargeText,
+                                    highContrast: viewModel.highContrast,
+                                    colorBlindMode: viewModel.colorBlindMode,
+                                    cardBackStyle: cardBackStyle,
+                                    labelFontSize: cardLabelFontSize
+                                ) {
+                                    if viewModel.canInteract {
+                                        viewModel.tapCard(at: index)
+                                    }
+                                }
+                                .id(viewModel.cards[index].id)
+                            } else {
+                                Color.clear
+                                    .frame(width: cardWidth, height: cardWidth * cardAspect)
+                            }
                         }
                     }
+                    .frame(height: cardWidth * cardAspect)
                 }
-                .allowsHitTesting(viewModel.canInteract)
             }
+            .allowsHitTesting(viewModel.canInteract)
             .frame(width: gridWidth)
             .frame(width: geo.size.width, height: geo.size.height)
-            // Re-added on request. Note this animates the card frame/emoji
-            // size, NOT the label caption anymore — `cardLabelFontSize` is a
-            // flat constant now (see below), independent of cardWidth, so
-            // "Carousel"/"Dice" etc. no longer resize or interpolate through
-            // this transition at all either way.
-            .animation(DS.Motion.respecting(reduceMotion, DS.Motion.smooth), value: cardWidth)
+            // NO implicit animation on `cardWidth`. The grid resizes once per
+            // level, when the taller memorize banner gives way to the one-line
+            // objective banner; animating every card's frame through that made
+            // the resize a moving target for layout. It now happens in one step.
+            // Per-card flip, pulse and shake animations are unaffected — they
+            // live in MemoryCardView and don't touch layout.
         }
     }
 
@@ -562,6 +603,20 @@ struct GameView: View {
         .frame(width: DS.Layout.isPad ? 96 : 76, height: DS.Layout.isPad ? 96 : 76)
     }
 
+    /// Reserved width for the dots row: every dot at its ACTIVE width.
+    ///
+    /// A spent dot is narrower than an active one, so without a reservation the
+    /// row shrank by 7pt on every countdown tick. That shrank the banner's
+    /// VStack, which re-wrapped the objective text next to it, which changed the
+    /// banner's HEIGHT, which changed the height left for `cardGrid` — and the
+    /// resulting animated card resize made grid rows visibly overlap each other
+    /// once a second during the memorize phase.
+    private var previewDotsWidth: CGFloat {
+        let count = CGFloat(viewModel.rules.previewSeconds)
+        guard count > 0 else { return 0 }
+        return count * 13 + (count - 1) * 3
+    }
+
     private var previewSecondDots: some View {
         HStack(spacing: 3) {
             ForEach(0..<viewModel.rules.previewSeconds, id: \.self) { index in
@@ -572,7 +627,9 @@ struct GameView: View {
                     .frame(width: index < viewModel.previewSecondsLeft ? 13 : 6, height: 7)
                     .animation(DS.Motion.respecting(reduceMotion, DS.Motion.snappy), value: viewModel.previewSecondsLeft)
             }
+            Spacer(minLength: 0)
         }
+        .frame(width: previewDotsWidth, alignment: .leading)
     }
 
     // MARK: - Overlays

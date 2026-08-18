@@ -72,28 +72,45 @@ struct RootView: View {
         }
     }
 
+    // SHOT-TEMP
+    private var shotLevel: LevelModel? {
+        guard let raw = ProcessInfo.processInfo.environment["SHOT_LEVEL"],
+              let n = Int(raw) else { return nil }
+        return LevelCatalog.level(number: n)
+    }
+    private var shotTabIndex: Int { Int(ProcessInfo.processInfo.environment["SHOT_TAB"] ?? "0") ?? 0 }
+
     private var mainTabView: some View {
-        TabView {
+        Group {
+        if let shotLevel {
+            NavigationStack { GameView(level: shotLevel, progressStore: progressStore) }
+        } else {
+        TabView(selection: .constant(shotTabIndex)) {
             NavigationStack {
                 HomeView(viewModel: homeViewModel, progressStore: progressStore)
             }
             .tabItem { Label("Play", systemImage: "gamecontroller.fill") }
+            .tag(0)
 
             NavigationStack {
                 AchievementView(progressStore: progressStore)
             }
             .tabItem { Label("Awards", systemImage: "trophy.fill") }
+            .tag(1)
 
             NavigationStack {
                 SettingsView(progressStore: progressStore)
             }
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            .tag(2)
         }
         .tint(DS.Color.link)
         .toolbarBackground(DS.Color.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .onChange(of: store.adsRemoved) { _, removed in
             if removed { ads.setBannerVisible(false) }
+        }
+        }
         }
     }
 
@@ -114,6 +131,7 @@ struct RootView: View {
     }
 
     private func runPostOnboardingChecks() async {
+        if UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE") { return }  // SHOT-TEMP
         await syncReminders()
         availableUpdate = await UpdateCheckManager.checkForUpdate(
             bundleID: Bundle.main.bundleIdentifier ?? ""

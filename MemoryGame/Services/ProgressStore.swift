@@ -33,6 +33,32 @@ final class ProgressStore: ObservableObject {
         let progressDescriptor = FetchDescriptor<LevelProgressEntity>()
         let all = (try? modelContext.fetch(progressDescriptor)) ?? []
         levelProgress = Dictionary(uniqueKeysWithValues: all.map { ($0.levelId, $0) })
+        if UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE") { seedForScreenshots() }  // SHOT-TEMP
+    }
+
+    // SHOT-TEMP
+    private func seedForScreenshots() {
+        let starPattern = [3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 2, 3, 3, 3]
+        for (index, stars) in starPattern.enumerated() {
+            let levelId = "level_\(index + 1)"
+            let entity = levelProgress[levelId] ?? {
+                let new = LevelProgressEntity(levelId: levelId)
+                modelContext.insert(new)
+                levelProgress[levelId] = new
+                return new
+            }()
+            entity.stars = stars
+            entity.completedCount = max(entity.completedCount, 1)
+            entity.fastestTime = Double(18 + index)
+            entity.lastPlayed = Date()
+        }
+        settings?.totalStars = starPattern.reduce(0, +)
+        settings?.dailyStreak = 7
+        settings?.unlockedAchievementIds = [
+            "first_match", "five_levels", "ten_levels", "perfectionist",
+            "rising_star", "twentyfive_levels", "speed_demon"
+        ]
+        try? modelContext.save()
     }
 
     func save() {

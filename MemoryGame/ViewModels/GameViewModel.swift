@@ -138,6 +138,42 @@ final class GameViewModel: ObservableObject {
         hintsUsedThisAttempt = 0
 
         HapticManager.prepare()
+
+        // SHOT-TEMP
+        if ProcessInfo.processInfo.environment["SHOT_WIN"] != nil {
+            engine.screenshotPoseBoard(matchPairs: totalPairs, faceUpExtra: 0)
+            cards = engine.cards
+            matchedPairs = engine.matchedPairs
+            moves = totalPairs
+            elapsed = 41
+            gameFinished = true; canInteract = false; levelWon = true; failReason = .won
+            earnedStars = 3; maxCombo = 5; accuracy = 94; bestTime = 41; isNewBestTime = true
+            showConfetti = true
+            return
+        }
+        if let pose = ProcessInfo.processInfo.environment["SHOT_POSE"] {
+            let parts = pose.split(separator: ",").compactMap { Int($0) }
+            if parts.count == 2 {
+                engine.screenshotPoseBoard(matchPairs: parts[0], faceUpExtra: parts[1])
+                cards = engine.cards
+                matchedPairs = engine.matchedPairs
+                moves = engine.matchedPairs + 2
+                livesRemaining = rules.maxLives
+                canInteract = true; isPreviewPhase = false
+                startDate = Date().addingTimeInterval(-23)
+                elapsed = 23
+                remainingTime = max(0, rules.timerSeconds - 23)
+                startGameplayTimer()
+                return
+            }
+        }
+        if ProcessInfo.processInfo.environment["SHOT_PREVIEW"] != nil {
+            engine.revealAllCards()
+            cards = engine.cards
+            isPreviewPhase = true; canInteract = false; previewSecondsLeft = 3
+            return
+        }
+
         let previewOn = progressStore.memorizePreviewEnabled
         if rules.showInitialPreview && previewOn {
             beginPreviewPhase()
@@ -199,6 +235,43 @@ final class GameViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    // SHOT-TEMP
+    func startAutoPlay() {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 900_000_000)
+            while isPreviewPhase { try? await Task.sleep(nanoseconds: 300_000_000) }
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            let need = engine.selectionLimit
+            while !gameFinished {
+                guard canInteract else {
+                    try? await Task.sleep(nanoseconds: 200_000_000); continue
+                }
+                let free = cards.indices.filter { !cards[$0].isMatched && !cards[$0].isFaceUp }
+                guard free.count >= need,
+                      let picked = firstMatchingGroup(among: free, size: need) else { break }
+                for idx in picked {
+                    tapCard(at: idx)
+                    try? await Task.sleep(nanoseconds: 620_000_000)
+                }
+                try? await Task.sleep(nanoseconds: 520_000_000)
+            }
+        }
+    }
+
+    // SHOT-TEMP
+    private func firstMatchingGroup(among pool: [Int], size: Int) -> [Int]? {
+        func combos(_ p: [Int], _ k: Int) -> [[Int]] {
+            guard k > 0 else { return [[]] }
+            guard p.count >= k else { return [] }
+            var out: [[Int]] = []
+            for (i, v) in p.enumerated() {
+                for rest in combos(Array(p[(i + 1)...]), k - 1) { out.append([v] + rest) }
+            }
+            return out
+        }
+        return combos(pool, size).first { g in engine.isMatchForScreenshot(g.map { cards[$0] }) }
     }
 
     func tapCard(at index: Int) {
