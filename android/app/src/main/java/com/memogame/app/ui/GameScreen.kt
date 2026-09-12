@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,6 +66,7 @@ import com.memogame.app.data.LevelCatalog
 import com.memogame.app.services.AdsManager
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.services.StoreManager
+import com.memogame.app.ui.components.BannerAdSlot
 import com.memogame.app.ui.components.ConfettiOverlay
 import com.memogame.app.ui.components.MemoryCard
 import com.memogame.app.viewmodel.GameViewModel
@@ -125,7 +128,9 @@ fun GameScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         DSScreenBackground {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Top bar: back · title · pause
@@ -177,10 +182,22 @@ fun GameScreen(
                         showHint = viewModel.canUseHint && AdsManager.rewardedAdAvailable,
                         hintsRemaining = viewModel.hintsRemaining,
                         onHintClick = {
+                            // Mirror iOS: hint completes the pair the player already
+                            // started. On Android the reward callback fires WHILE the
+                            // ad is still showing, so we reserve the partner first,
+                            // pause the timer, and apply the hint only after dismiss
+                            // — otherwise canUseHint/tapCard no-op and a finishing
+                            // match can try to open an interstitial over the rewarded ad.
+                            val partner = viewModel.reserveHintPartner() ?: return@ObjectiveBanner
+                            viewModel.isPaused = true
+                            var earned = false
                             AdsManager.showRewardedAd(
                                 activity = context.findActivity(),
-                                onReward = { viewModel.revealHint() },
-                                onClosed = {}
+                                onReward = { earned = true },
+                                onClosed = {
+                                    viewModel.isPaused = false
+                                    if (earned) viewModel.revealHint(partner)
+                                }
                             )
                         }
                     )
@@ -242,6 +259,13 @@ fun GameScreen(
                 }
 
                 Spacer(Modifier.height(DS.Spacing.md))
+
+                // iOS parity: banner lives only on the game screen (GameView's
+                // safeAreaInset), never on Home / Awards / Settings.
+                BannerAdSlot(
+                    adsRemoved = storeManager.adsRemoved,
+                    modifier = Modifier.navigationBarsPadding()
+                )
             }
         }
 

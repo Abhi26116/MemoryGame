@@ -20,9 +20,10 @@ android {
     defaultConfig {
         applicationId = "com.tinygeniushub.memorymatch"
         minSdk = 26
+        // Play requires API 36 for updates from 31 Aug 2026.
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.1"
+        versionCode = 6
+        versionName = "1.2"
     }
 
     signingConfigs {
@@ -55,13 +56,16 @@ android {
         buildConfig = true
     }
 
+    // Prefer compilerOptions on Kotlin 2.2+, keep jvmTarget aligned with Java 17.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
 
-    kotlinOptions {
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -80,8 +84,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.4")
 
     // Monetization: AdMob (kid-safe config) + Play Billing (Remove Ads) + in-app review
+    // Billing 8+ required by Play from 31 Aug 2026 (7.x will be rejected).
     implementation("com.google.android.gms:play-services-ads:23.5.0")
-    implementation("com.android.billingclient:billing-ktx:7.1.1")
+    implementation("com.android.billingclient:billing-ktx:8.3.0")
     implementation("com.google.android.play:review-ktx:2.0.2")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")

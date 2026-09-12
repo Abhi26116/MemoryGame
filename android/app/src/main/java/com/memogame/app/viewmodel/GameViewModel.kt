@@ -110,7 +110,7 @@ class GameViewModel(
     // Rewarded-ad grants: capped per attempt so watching ads can't turn into
     // free infinite replays or trivially solve the whole board.
     private var hasUsedContinueThisAttempt = false
-    var hintsUsedThisAttempt = 0
+    var hintsUsedThisAttempt by mutableStateOf(0)
         private set
 
     /** True while a lost game can still be resumed via a rewarded "continue". */
@@ -138,11 +138,26 @@ class GameViewModel(
      * waiting on its match — a hint only ever resolves the player's OWN
      * pending pick (never picks a fresh pair for them), so it isn't offered
      * until they're actually mid-selection.
+     *
+     * Reads [cards] so Compose recomposes the hint chip whenever the board
+     * selection changes (engine.flippedCount alone is not observable state).
      */
     val canUseHint: Boolean
-        get() = canInteract && !isPreviewPhase && !gameFinished && !isPaused && !moveLimitReached &&
-            hintsUsedThisAttempt < maxHintsAllowed && engine.flippedCount == 1
+        get() {
+            // Establish a Compose snapshot dependency on the board.
+            cards
+            return canInteract && !isPreviewPhase && !gameFinished && !isPaused && !moveLimitReached &&
+                hintsUsedThisAttempt < maxHintsAllowed && engine.flippedCount == 1
+        }
 
+    /**
+     * Snapshot the matching partner while the player is mid-selection, before
+     * a rewarded ad pauses the board. Returns null if a hint isn't available.
+     */
+    fun reserveHintPartner(): Int? {
+        if (!canUseHint) return null
+        return engine.hintPartnerIndex()
+    }
     init {
         startGame()
     }
@@ -358,14 +373,27 @@ class GameViewModel(
      * (still counts as a move, still runs the normal win/combo/lives logic;
      * it can never mismatch since the partner is the correct one by
      * construction).
+     *
+     * Prefer passing the [partnerIndex] reserved before the ad started —
+     * Android fires the reward callback while the ad activity is still up
+     * (and the game is paused), so re-checking [canUseHint] at that moment
+     * would incorrectly no-op. Apply this after the ad closes.
      */
-    fun revealHint() {
-        if (!canUseHint) return
-        val partnerIndex = engine.hintPartnerIndex() ?: return
-        hintsUsedThisAttempt += 1
-        tapCard(partnerIndex)
-    }
+    fun revealHint(partnerIndex: Int? = null) {
+        if (hintsUsedThisAttempt >= maxHintsAllowed) return
+        if (gameFinished || isPreviewPhase || !canInteract) return
+        val target = partnerIndex ?: engine.hintPartnerIndex() ?: return
+        if (target !in cards.indices) return
+        val partner = cards[target]
+        if (partner.isMatched || partner.isFaceUp) return
+        // Still must be mid-selection on exactly one card (the player's pick).
+        if (engine.flippedCount != 1) return
 
+        hintsUsedThisAttempt += 1
+        // Ad flow pauses the game; clear pause so tapCard isn't ignored.
+        isPaused = false
+        tapCard(target)
+    }
     fun reset() {
         previewJob?.cancel()
         timerJob?.cancel()

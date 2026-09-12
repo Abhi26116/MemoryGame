@@ -10,3 +10,13 @@
   from = "/terms"
   to = "/terms-and-conditions.html"
   status = 200
+
+[[redirects]]
+  from = "/get"
+  to = "/get.html"
+  status = 200
+
+[[redirects]]
+  from = "/download"
+  to = "/get.html"
+  status = 200

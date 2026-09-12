@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Memory Match</title>
+<meta name="description" content="Download Memory Match: Brain Booster on the App Store or Google Play.">
+<meta name="robots" content="noindex">
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 420px; margin: 0 auto; padding: 56px 20px 80px;
+    line-height: 1.5; color: #1e2430; text-align: center;
+    background: linear-gradient(180deg, #eef4ff 0%, #ffffff 45%);
+    min-height: 100vh; box-sizing: border-box;
+  }
+  .icon { font-size: 52px; line-height: 1; }
+  h1 { font-size: 24px; margin: 12px 0 0; }
+  p { color: #6b7789; margin: 8px 0 0; }
+  .actions { margin-top: 28px; display: grid; gap: 12px; }
+  a.store {
+    display: block; text-decoration: none; color: #fff; font-weight: 600;
+    padding: 14px 18px; border-radius: 14px;
+  }
+  a.apple { background: #111827; }
+  a.google { background: #1a73e8; }
+  .hint { margin-top: 20px; font-size: 13px; color: #8a98a8; }
+  .redirecting { display: none; }
+  html.redirect .chooser { display: none; }
+  html.redirect .redirecting { display: block; }
+</style>
+<script>
+(function () {
+  var APP_STORE = "https://apps.apple.com/app/id6776347216";
+  var PLAY_STORE = "https://play.google.com/store/apps/details?id=com.tinygeniushub.memorymatch";
+  var ua = navigator.userAgent || "";
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isAndroid || isIOS) {
+    document.documentElement.className = "redirect";
+    location.replace(isAndroid ? PLAY_STORE : APP_STORE);
+  }
+})();
+</script>
+</head>
+<body>
+  <div class="redirecting">
+    <div class="icon">🧠</div>
+    <h1>Opening the store…</h1>
+    <p>If nothing happens, use a button below.</p>
+  </div>
+
+  <div class="chooser">
+    <div class="icon">🧠</div>
+    <h1>Get Memory Match</h1>
+    <p>Choose your store to download the app.</p>
+    <div class="actions">
+      <a class="store apple" href="https://apps.apple.com/app/id6776347216">Download on the App Store</a>
+      <a class="store google" href="https://play.google.com/store/apps/details?id=com.tinygeniushub.memorymatch">Get it on Google Play</a>
+    </div>
+    <p class="hint">On phone, this page opens the right store automatically.</p>
+  </div>
+</body>
+</html>

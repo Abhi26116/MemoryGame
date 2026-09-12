@@ -63,7 +63,10 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
 
     /** Localized Play Store price, e.g. "$2.99" or "₹249". */
     val removeAdsDisplayPrice: String?
-        get() = removeAdsProduct?.oneTimePurchaseOfferDetails?.formattedPrice
+        get() = removeAdsProduct?.oneTimePurchaseOfferDetailsList
+            ?.firstOrNull()
+            ?.formattedPrice
+            ?: removeAdsProduct?.oneTimePurchaseOfferDetails?.formattedPrice
 
     /** Primary CTA label with localized price once Billing has loaded it. */
     val removeAdsButtonTitle: String
@@ -74,6 +77,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
         .enablePendingPurchases(
             PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
         )
+        .enableAutoServiceReconnection()
         .build()
 
     // Billing callbacks can arrive on binder threads while the UI thread queues
@@ -139,9 +143,10 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
                 )
             )
             .build()
-        billingClient.queryProductDetailsAsync(params) { result, products ->
+        // PBL 8+: callback receives QueryProductDetailsResult (not a bare list).
+        billingClient.queryProductDetailsAsync(params) { result, detailsResult ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                removeAdsProduct = products.firstOrNull()
+                removeAdsProduct = detailsResult.productDetailsList.firstOrNull()
             }
         }
     }
@@ -185,14 +190,19 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
                 isWorking = false
                 return@withConnection
             }
+            // PBL 8+ one-time products can expose multiple offers — pick the
+            // first eligible offer token when launching the flow.
+            val offerToken = product.oneTimePurchaseOfferDetailsList
+                ?.firstOrNull()
+                ?.offerToken
+                ?: product.oneTimePurchaseOfferDetails?.offerToken
+            val productParams = BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(product)
+            if (offerToken != null) {
+                productParams.setOfferToken(offerToken)
+            }
             val params = BillingFlowParams.newBuilder()
-                .setProductDetailsParamsList(
-                    listOf(
-                        BillingFlowParams.ProductDetailsParams.newBuilder()
-                            .setProductDetails(product)
-                            .build()
-                    )
-                )
+                .setProductDetailsParamsList(listOf(productParams.build()))
                 .build()
             val result = billingClient.launchBillingFlow(activity, params)
             if (result.responseCode != BillingClient.BillingResponseCode.OK) {

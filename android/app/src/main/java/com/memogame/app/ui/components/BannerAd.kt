@@ -22,10 +22,16 @@ import com.memogame.app.services.AdsManager
 /**
  * Anchored adaptive banner (full width, no letterboxing). The slot takes ZERO
  * height until THIS AdView instance actually loads an ad — so there is never
- * an empty strip above the tab bar while loading, matching the iOS behaviour.
+ * an empty strip while loading, matching the iOS behaviour.
+ *
+ * Hosted only inside [com.memogame.app.ui.GameScreen] (iOS: GameView
+ * safeAreaInset) — never on Home / Awards / Settings.
  */
 @Composable
-fun BannerAdSlot(adsRemoved: Boolean) {
+fun BannerAdSlot(
+    adsRemoved: Boolean,
+    modifier: Modifier = Modifier
+) {
     if (adsRemoved) return
     val ds = LocalDSColors.current
 
@@ -33,7 +39,7 @@ fun BannerAdSlot(adsRemoved: Boolean) {
     var loadedHeightDp by remember { mutableIntStateOf(0) }
 
     AndroidView(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(loadedHeightDp.dp)
             .background(ds.surface),
@@ -62,10 +68,9 @@ fun BannerAdSlot(adsRemoved: Boolean) {
                 loadAd(AdRequest.Builder().build())
             }
         },
-        // Without this, leaving/re-entering the tab (banner mounts only on
-        // Play/game routes) creates a fresh WebView-backed AdView every time
-        // and never releases the old one — an unbounded leak on repeated
-        // navigation.
+        // Without this, leaving/re-entering the game screen creates a fresh
+        // WebView-backed AdView every time and never releases the old one —
+        // an unbounded leak on repeated navigation.
         onRelease = { adView -> adView.destroy() }
     )
 }

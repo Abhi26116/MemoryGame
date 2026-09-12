@@ -4,11 +4,21 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -24,23 +34,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.memogame.app.core.LocalDSColors
-import com.memogame.app.services.AdsManager
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.services.RemoveAdsPromptGate
 import com.memogame.app.services.ReminderScheduler
 import com.memogame.app.services.StoreManager
-import com.memogame.app.ui.components.BannerAdSlot
 import kotlinx.coroutines.delay
 
 /** Walks up the context chain to the hosting Activity (needed for ads/billing). */
@@ -54,6 +65,12 @@ fun Context.findActivity(): Activity? {
 }
 
 private enum class LaunchPhase { SPLASH, ONBOARDING, MAIN }
+
+/** Full-screen pushes that sit ON TOP of the tab Scaffold (iOS-style). */
+private sealed interface FullScreenDest {
+    data class Game(val levelNumber: Int) : FullScreenDest
+    data object Levels : FullScreenDest
+}
 
 @Composable
 fun MemoryMatchRoot(store: ProgressStore) {
@@ -98,7 +115,11 @@ fun MemoryMatchRoot(store: ProgressStore) {
         }
     }
 
-    Crossfade(targetState = phase, animationSpec = tween(450), label = "launchPhase") { current ->
+    androidx.compose.animation.Crossfade(
+        targetState = phase,
+        animationSpec = tween(450),
+        label = "launchPhase"
+    ) { current ->
         when (current) {
             LaunchPhase.SPLASH -> SplashScreen()
             LaunchPhase.ONBOARDING -> WelcomeScreen(
@@ -134,27 +155,34 @@ private fun MainScaffold(store: ProgressStore, storeManager: StoreManager) {
         TabItem("awards", "Awards", Icons.Rounded.EmojiEvents),
         TabItem("settings", "Settings", Icons.Rounded.Settings)
     )
-    val isTabRoot = tabs.any { it.route == currentRoute }
 
-    // iOS parity: the banner shows ONLY on the game screen, not Home — keeps
-    // the Home tab clean and puts the ad where the player already spends the
-    // most time.
-    val showBanner = currentRoute?.startsWith("game/") == true
+    // Game / Levels push over the tab Scaffold instead of replacing a NavHost
+    // route inside it. Hiding the bottomBar used to change Scaffold content
+    // padding mid-transition, which made Home→Game jump vertically ("up-down"
+    // UI). Keeping the tab chrome mounted underneath matches iOS (tab bar
+    // hidden by covering it, not by resizing the layout).
+    val fullScreenStack = remember { mutableStateListOf<FullScreenDest>() }
+    val topFullScreen = fullScreenStack.lastOrNull()
 
-    Scaffold(
-        containerColor = ds.screen,
-        bottomBar = {
-            // Material3's NavigationBar pads itself above the system nav bar
-            // automatically — but on the game route there's no NavigationBar
-            // to do that, so the banner alone sat flush at the bottom edge
-            // and got hidden behind the system 3-button/gesture bar. Add the
-            // inset explicitly whenever the tab bar isn't there to cover it.
-            val bottomBarModifier = if (isTabRoot) Modifier else Modifier.navigationBarsPadding()
-            Column(modifier = bottomBarModifier) {
-                if (showBanner) {
-                    BannerAdSlot(adsRemoved = storeManager.adsRemoved)
-                }
-                if (isTabRoot) {
+    fun pushFullScreen(dest: FullScreenDest) {
+        fullScreenStack.add(dest)
+    }
+
+    fun popFullScreen() {
+        if (fullScreenStack.isNotEmpty()) {
+            fullScreenStack.removeAt(fullScreenStack.lastIndex)
+        }
+    }
+
+    BackHandler(enabled = fullScreenStack.isNotEmpty()) {
+        popFullScreen()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = ds.screen,
+            bottomBar = {
+                if (topFullScreen == null) {
                     NavigationBar(containerColor = ds.surface) {
                         tabs.forEach { tab ->
                             NavigationBarItem(
@@ -180,47 +208,96 @@ private fun MainScaffold(store: ProgressStore, storeManager: StoreManager) {
                             )
                         }
                     }
+                } else {
+                    // Invisible stand-in for the tab bar: keeps Scaffold content
+                    // padding stable (no Home jump on return) without drawing an
+                    // elevated NavigationBar over Game / Result.
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .height(80.dp)
+                    )
+                }
+            }
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = "home",
+                modifier = Modifier.padding(padding)
+            ) {
+                composable("home") {
+                    HomeScreen(
+                        store = store,
+                        storeManager = storeManager,
+                        onPlayLevel = { level ->
+                            pushFullScreen(FullScreenDest.Game(level.levelNumber))
+                        }
+                    )
+                }
+                composable("awards") {
+                    AchievementScreen(store = store)
+                }
+                composable("settings") {
+                    SettingsScreen(
+                        store = store,
+                        storeManager = storeManager,
+                        onOpenLevels = { pushFullScreen(FullScreenDest.Levels) }
+                    )
                 }
             }
         }
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(padding)
-        ) {
-            composable("home") {
-                HomeScreen(
-                    store = store,
-                    storeManager = storeManager,
-                    onPlayLevel = { level -> navController.navigate("game/${level.levelNumber}") }
-                )
-            }
-            composable("awards") {
-                AchievementScreen(store = store)
-            }
-            composable("settings") {
-                SettingsScreen(
-                    store = store,
-                    storeManager = storeManager,
-                    onOpenLevels = { navController.navigate("levels") }
-                )
-            }
-            composable("levels") {
-                LevelsScreen(
-                    store = store,
-                    onPlayLevel = { level -> navController.navigate("game/${level.levelNumber}") },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable("game/{levelNumber}") { entry ->
-                val levelNumber = entry.arguments?.getString("levelNumber")?.toIntOrNull() ?: 1
-                GameScreen(
-                    levelNumber = levelNumber,
-                    store = store,
-                    storeManager = storeManager,
-                    onExit = { navController.popBackStack() }
-                )
+
+        // Horizontal push over the stable tab Scaffold (no vertical resize).
+        // zIndex keeps this above Scaffold's elevated bottom bar.
+        AnimatedContent(
+            targetState = topFullScreen,
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(1f),
+            transitionSpec = {
+                val opening = initialState == null && targetState != null
+                val closing = initialState != null && targetState == null
+                val deeper = initialState is FullScreenDest.Levels && targetState is FullScreenDest.Game
+                val backFromGame = initialState is FullScreenDest.Game && targetState is FullScreenDest.Levels
+
+                when {
+                    opening || deeper -> {
+                        (slideInHorizontally(animationSpec = tween(320)) { it } + fadeIn(tween(200))) togetherWith
+                            (slideOutHorizontally(animationSpec = tween(320)) { -it / 4 } + fadeOut(tween(200)))
+                    }
+                    closing || backFromGame -> {
+                        (slideInHorizontally(animationSpec = tween(300)) { -it / 4 } + fadeIn(tween(200))) togetherWith
+                            (slideOutHorizontally(animationSpec = tween(300)) { it } + fadeOut(tween(180)))
+                    }
+                    else -> fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                }
+            },
+            label = "fullScreenPush"
+        ) { dest ->
+            when (dest) {
+                is FullScreenDest.Game -> {
+                    GameScreen(
+                        levelNumber = dest.levelNumber,
+                        store = store,
+                        storeManager = storeManager,
+                        onExit = { popFullScreen() }
+                    )
+                }
+                FullScreenDest.Levels -> {
+                    LevelsScreen(
+                        store = store,
+                        onPlayLevel = { level ->
+                            pushFullScreen(FullScreenDest.Game(level.levelNumber))
+                        },
+                        onBack = { popFullScreen() }
+                    )
+                }
+                null -> {
+                    // Must NOT fill the screen — otherwise this layer eats every
+                    // tap on the tab Scaffold underneath after the push pops.
+                    Box(modifier = Modifier)
+                }
             }
         }
     }

@@ -39,6 +39,7 @@ update prompts itself).
      `app/src/main/java/com/memogame/app/services/AdsManager.kt`.
 2. **Play Billing** — create the in-app product `com.memogame.removeads`
    (one-time purchase) in Play Console → Monetize → Products.
+   App uses Play Billing Library **8.3.0** (required 8.0+ from 31 Aug 2026).
 3. **Signing** — add a release keystore + `signingConfig` in `app/build.gradle.kts`.
 4. **Play "Designed for Families"** — the ads are configured child-directed
    (COPPA / G-rated) like iOS; declare the same in the Play Console questionnaire.
