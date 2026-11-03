@@ -25,6 +25,13 @@ information, and basic app-interaction data (for example, how often an ad is sho
 This is used only to serve and measure non-personalized ads, and is handled under
 Google's policies. See Google's Privacy Policy: https://policies.google.com/privacy
 
+At app start the App uses **Google's User Messaging Platform (UMP)** to determine
+whether advertising consent is required in the user's region, and to record the
+answer on the device. Because the App is child-directed, it tells UMP the user is
+under the age of consent, so advertising stays non-personalized either way. Where
+a choice applies, it can be changed later under
+**Settings → Support & Privacy → Privacy Options**.
+
 We do **not** sell or share personal information, and we do **not** build user
 profiles or use data for behavioral advertising.
 

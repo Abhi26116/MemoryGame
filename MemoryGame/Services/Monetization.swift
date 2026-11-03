@@ -53,16 +53,42 @@ final class AdsManager: NSObject, ObservableObject {
     /// gate their "Watch Ad" buttons on this so tapping one never dead-ends.
     @Published private(set) var rewardedAdAvailable = false
 
+    /// True once consent has been settled and the SDK has actually been
+    /// started. `AdBannerSlot` waits on this: a banner builds its own
+    /// `GADRequest` when the view appears, which would otherwise fire before
+    /// the consent flow at launch had finished.
+    @Published private(set) var isReady = false
+
     func setBannerVisible(_ visible: Bool) {
         bannerIsVisible = visible
     }
 
-    /// Call once at app launch.
+    /// Call once at app launch. Gathers UMP consent FIRST, then starts the SDK
+    /// — an ad request made before consent is settled is refused outright in
+    /// the EEA/UK/Switzerland, so the order here is load-bearing, not cosmetic.
     func configure() {
+        ConsentManager.shared.gather { [weak self] in
+            guard let self else { return }
+            guard ConsentManager.shared.canRequestAds else {
+                // Either the user declined or UMP couldn't reach Google. Both
+                // mean "no ad requests" — the banner stays collapsed and the
+                // next launch re-runs the flow.
+                #if DEBUG
+                print("[Ads] canRequestAds = false — SDK not started, no ad requests this launch.")
+                #endif
+                return
+            }
+            self.startAds()
+        }
+    }
+
+    private func startAds() {
+        guard !isReady else { return }
         let config = GADMobileAds.sharedInstance().requestConfiguration
         config.tagForChildDirectedTreatment = NSNumber(value: true)   // COPPA: child-directed
         config.maxAdContentRating = GADMaxAdContentRating.general      // G-rated only
         GADMobileAds.sharedInstance().start(completionHandler: nil)
+        isReady = true
         #if DEBUG
         print("[Ads] Mode: \(Self.useTestAds ? "TEST (Debug build)" : "LIVE (Release build)")")
         #endif
@@ -203,7 +229,9 @@ struct AdBannerSlot: View {
 
     var body: some View {
         Group {
-            if !adsRemoved && !UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE") {  // SHOT-TEMP
+            // `ads.isReady` keeps the banner from building its GADRequest
+            // before the launch consent flow has settled — see AdsManager.
+            if ads.isReady && !adsRemoved && !UserDefaults.standard.bool(forKey: "SCREENSHOT_MODE") {  // SHOT-TEMP
                 BannerAdView()
                     .frame(height: 50)
                     .frame(maxWidth: .infinity)

@@ -14,6 +14,9 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     @State private var showParentalGate = false
     @State private var showNotifDeniedAlert = false
+    /// Re-read on every appearance: the launch consent flow may still have
+    /// been in flight the first time this screen was built.
+    @State private var showPrivacyOptions = false
     @AppStorage("cardBackStyle") private var cardBackRaw = CardBackStyle.classic.rawValue
     @AppStorage("remindersEnabled") private var remindersEnabled = true
     @Environment(\.openURL) private var openURL
@@ -46,7 +49,10 @@ struct SettingsView: View {
         .dsScreenBackground()
         .navigationTitle("Settings")
         .tint(DS.Color.link)
-        .onAppear { viewModel.syncFromStore() }
+        .onAppear {
+            viewModel.syncFromStore()
+            showPrivacyOptions = ConsentManager.shared.privacyOptionsRequired
+        }
         .task {
             if store.removeAdsProduct == nil {
                 await store.loadProduct()
@@ -422,10 +428,43 @@ struct SettingsView: View {
     private var legalSection: some View {
         DSCard {
             SectionHeader(title: "Support & Privacy", icon: "hand.raised.fill")
+            // Only shown where UMP says this user is owed a way back to their
+            // consent answer — elsewhere there is no form to re-present, so the
+            // row would dead-end.
+            if showPrivacyOptions {
+                privacyOptionsRow
+            }
             legalLink(title: "Privacy Policy", icon: "lock.doc.fill", url: Self.privacyPolicyURL)
             legalLink(title: "Terms & Conditions", icon: "doc.text.fill", url: Self.termsURL)
             legalLink(title: "Contact Support", icon: "questionmark.circle.fill", url: Self.supportURL)
         }
+    }
+
+    private var privacyOptionsRow: some View {
+        Button {
+            ConsentManager.shared.presentPrivacyOptions { _ in
+                // UMP owns the form's own error UI; all this needs to do is
+                // re-check whether the row still applies afterwards.
+                showPrivacyOptions = ConsentManager.shared.privacyOptionsRequired
+            }
+        } label: {
+            HStack(spacing: DS.Spacing.md) {
+                Image(systemName: "hand.raised.square.fill")
+                    .font(.body)
+                    .foregroundStyle(DS.Color.link)
+                    .frame(width: DS.Layout.isPad ? 34 : 28)
+                Text("Privacy Options")
+                    .font(.system(.body, design: .rounded, weight: .semibold))
+                    .foregroundStyle(DS.Color.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote)
+                    .foregroundStyle(DS.Color.textSecondary)
+            }
+            .padding(.vertical, DS.Spacing.xs)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.pressable)
     }
 
     private func legalLink(title: String, icon: String, url: URL) -> some View {

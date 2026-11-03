@@ -33,6 +33,9 @@ fun BannerAdSlot(
     modifier: Modifier = Modifier
 ) {
     if (adsRemoved) return
+    // AdsManager.isReady keeps the AdView from building its AdRequest before
+    // the launch consent flow has settled — see AdsManager.configure.
+    if (!AdsManager.isReady) return
     val ds = LocalDSColors.current
 
     // Local to this AdView instance: a fresh slot always starts collapsed.

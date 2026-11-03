@@ -85,10 +85,47 @@ object AdsManager {
         private set
 
     /**
-     * Call once at app launch. SDK init runs on a background thread —
-     * MobileAds.initialize can block for seconds and ANR the app otherwise.
+     * True once consent has been settled and the SDK has actually finished
+     * initializing. [com.memogame.app.ui.components.BannerAdSlot] waits on
+     * this: an AdView builds its own AdRequest the moment it is created, which
+     * would otherwise fire before the launch consent flow had finished.
      */
-    fun configure(context: Context) {
+    var isReady by mutableStateOf(false)
+        private set
+
+    /** Set synchronously so a second [configure] can't start a second init. */
+    private var adsStartRequested = false
+
+    /**
+     * Call once at app launch. Gathers UMP consent FIRST, then initializes the
+     * SDK — an ad request made before consent is settled is refused outright in
+     * the EEA/UK/Switzerland, so the order here is load-bearing, not cosmetic.
+     *
+     * Needs an Activity because that is what UMP's form APIs take.
+     */
+    fun configure(activity: Activity) {
+        ConsentManager.gather(activity) {
+            if (!ConsentManager.canRequestAds(activity)) {
+                // Either the user declined or UMP couldn't reach Google. Both
+                // mean "no ad requests" — the banner stays collapsed and the
+                // next launch re-runs the flow.
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "canRequestAds = false — SDK not initialized, no ad requests this launch.")
+                }
+                return@gather
+            }
+            startAds(activity)
+        }
+    }
+
+    /**
+     * SDK init runs on a background thread — MobileAds.initialize can block for
+     * seconds and ANR the app otherwise.
+     */
+    private fun startAds(context: Context) {
+        if (adsStartRequested) return
+        adsStartRequested = true
+
         val config = RequestConfiguration.Builder()
             .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) // COPPA
             .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G) // G-rated only
@@ -101,6 +138,7 @@ object AdsManager {
         Thread {
             MobileAds.initialize(appContext) {
                 Handler(Looper.getMainLooper()).post {
+                    isReady = true
                     loadInterstitial(appContext)
                     loadRewardedAd(appContext)
                 }

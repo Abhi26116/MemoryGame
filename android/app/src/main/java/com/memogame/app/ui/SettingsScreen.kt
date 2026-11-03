@@ -42,6 +42,7 @@ import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.PhoneAndroid
+import androidx.compose.material.icons.rounded.PrivacyTip
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material.icons.rounded.SportsEsports
@@ -58,6 +59,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,6 +89,8 @@ import com.memogame.app.core.pressableClickable
 import com.memogame.app.engine.StarRatingRules
 import com.memogame.app.model.AppearanceMode
 import com.memogame.app.model.CardBackStyle
+import com.memogame.app.services.AdsManager
+import com.memogame.app.services.ConsentManager
 import com.memogame.app.services.GameAudio
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.services.ReminderScheduler
@@ -103,6 +107,13 @@ fun SettingsScreen(
     var showResetAlert by remember { mutableStateOf(false) }
     var showParentalGate by remember { mutableStateOf(false) }
     var showNotifDeniedAlert by remember { mutableStateOf(false) }
+    var showPrivacyOptions by remember { mutableStateOf(false) }
+
+    // Keyed on isReady so this re-reads once the launch consent flow settles —
+    // it may still have been in flight when this screen was first composed.
+    LaunchedEffect(AdsManager.isReady) {
+        showPrivacyOptions = ConsentManager.privacyOptionsRequired(context)
+    }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -412,6 +423,16 @@ fun SettingsScreen(
             // Legal
             DSCard {
                 SectionHeader("Support & Privacy", Icons.Rounded.Info)
+                // Only shown where UMP says this user is owed a way back to
+                // their consent answer — elsewhere there is no form to
+                // re-present, so the row would dead-end.
+                if (showPrivacyOptions) {
+                    PrivacyOptionsLink(
+                        onDismissed = {
+                            showPrivacyOptions = ConsentManager.privacyOptionsRequired(context)
+                        }
+                    )
+                }
                 LegalLink("Privacy Policy", "$SITE_BASE_URL/privacy-policy.html")
                 LegalLink("Terms & Conditions", "$SITE_BASE_URL/terms-and-conditions.html")
                 LegalLink("Contact Support", "$SITE_BASE_URL/")
@@ -513,6 +534,35 @@ private fun InfoRow(label: String, value: String) {
             color = ds.textPrimary,
             textAlign = TextAlign.End
         )
+    }
+}
+
+@Composable
+private fun PrivacyOptionsLink(onDismissed: () -> Unit) {
+    val ds = LocalDSColors.current
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pressableClickable {
+                // UMP owns the form's own error UI; all this needs to do is
+                // re-check whether the row still applies afterwards.
+                context.findActivity()?.let { activity ->
+                    ConsentManager.showPrivacyOptions(activity) { onDismissed() }
+                }
+            }
+            .padding(vertical = DS.Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.md)
+    ) {
+        Icon(Icons.Rounded.PrivacyTip, contentDescription = null, tint = ds.link, modifier = Modifier.size(20.dp))
+        Text(
+            "Privacy Options",
+            style = DSText.body.copy(fontWeight = FontWeight.SemiBold),
+            color = ds.textPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = ds.textSecondary, modifier = Modifier.size(18.dp))
     }
 }
 

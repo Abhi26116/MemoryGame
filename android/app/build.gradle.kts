@@ -86,6 +86,10 @@ dependencies {
     // Monetization: AdMob (kid-safe config) + Play Billing (Remove Ads) + in-app review
     // Billing 8+ required by Play from 31 Aug 2026 (7.x will be rejected).
     implementation("com.google.android.gms:play-services-ads:23.5.0")
+    // UMP (EEA/UK/CH consent). Ships transitively with play-services-ads, but
+    // pinned here because the consent flow calls it directly — an implicit
+    // transitive version is free to move under us on an ads-SDK bump.
+    implementation("com.google.android.ump:user-messaging-platform:3.2.0")
     implementation("com.android.billingclient:billing-ktx:8.3.0")
     implementation("com.google.android.play:review-ktx:2.0.2")
 

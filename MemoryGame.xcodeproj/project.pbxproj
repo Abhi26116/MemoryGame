@@ -55,6 +55,7 @@
 		MMK049 /* RemoveAdsPromptGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF049 /* RemoveAdsPromptGate.swift */; };
 		MMK050 /* RemoveAdsShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF050 /* RemoveAdsShowcaseView.swift */; };
 		MMK200 /* Monetization.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF200 /* Monetization.swift */; };
+		MMK201 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKF201 /* ConsentManager.swift */; };
 		MMK301 /* Fredoka.ttf in Resources */ = {isa = PBXBuildFile; fileRef = MMKF301 /* Fredoka.ttf */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +109,7 @@
 		MMKF049 /* RemoveAdsPromptGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveAdsPromptGate.swift; sourceTree = "<group>"; };
 		MMKF050 /* RemoveAdsShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveAdsShowcaseView.swift; sourceTree = "<group>"; };
 		MMKF200 /* Monetization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monetization.swift; sourceTree = "<group>"; };
+		MMKF201 /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		MMKF301 /* Fredoka.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fredoka.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -224,6 +226,7 @@
 				MMKF012 /* HapticManager.swift */,
 				MMKF013 /* ProgressStore.swift */,
 				MMKF200 /* Monetization.swift */,
+				MMKF201 /* ConsentManager.swift */,
 				MMKF045 /* NotificationManager.swift */,
 				MMKF046 /* ReviewPromptGate.swift */,
 				MMKF047 /* UpdateCheckManager.swift */,
@@ -467,6 +470,7 @@
 				MMK012 /* HapticManager.swift in Sources */,
 				MMK013 /* ProgressStore.swift in Sources */,
 				MMK200 /* Monetization.swift in Sources */,
+				MMK201 /* ConsentManager.swift in Sources */,
 				MMK014 /* HomeViewModel.swift in Sources */,
 				MMK015 /* ProgressViewModel.swift in Sources */,
 				MMK016 /* GameViewModel.swift in Sources */,
