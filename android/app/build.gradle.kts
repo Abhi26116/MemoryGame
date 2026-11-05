@@ -22,9 +22,13 @@ android {
         minSdk = 26
         // Play requires API 36 for updates from 31 Aug 2026.
         targetSdk = 36
-        versionCode = 7
+        versionCode = 8
         versionName = "1.3"
     }
+
+    // Translation tables are shared with iOS from localization/l10n at the
+    // repo root; they land in the APK as assets/l10n/<lang>.json.
+    sourceSets["main"].assets.srcDir("../../localization")
 
     signingConfigs {
         if (keystorePropertiesFile.exists()) {

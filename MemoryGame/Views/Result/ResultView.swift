@@ -111,13 +111,13 @@ struct ResultView: View {
             .accessibilityHidden(true)
 
             VStack(spacing: DS.Spacing.xs + 2) {
-                Text(levelWon ? "Level Complete!" : "Game Over!")
+                Text(levelWon ? tr("Level Complete!") : tr("Game Over!"))
                     .font(compact ? .DSText.headline : .DSText.title)
                     .foregroundStyle(levelWon ? DS.Gradient.accent : DS.Gradient.cta)
                     .multilineTextAlignment(.center)
 
                 if !levelWon, totalPairs > 0 {
-                    Text("Matched \(matchedPairs) of \(totalPairs) pairs")
+                    Text(tr("Matched {0} of {1} pairs", matchedPairs, totalPairs))
                         .font(.DSText.subheadline)
                         .foregroundStyle(DS.Color.textSecondary)
                 }
@@ -145,7 +145,7 @@ struct ResultView: View {
             }
             .padding(.vertical, DS.Spacing.xs)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(stars) of 3 stars earned")
+            .accessibilityLabel(tr("{0} of 3 stars earned", stars))
         }
         .frame(maxWidth: .infinity)
         .dsCard(padding: compact ? DS.Spacing.md : DS.Spacing.xl, shadow: .elevated)
@@ -183,7 +183,7 @@ struct ResultView: View {
                 Image(systemName: "lock.open.fill")
                     .font(.title3)
                     .foregroundStyle(DS.Color.success)
-                Text("\(nextLevelTitle) is now unlocked!")
+                Text(tr("{0} is now unlocked!", nextLevelTitle))
                     .font(.system(.subheadline, design: .rounded, weight: .bold))
                     .foregroundStyle(DS.Color.textPrimary)
                     .lineLimit(2)
@@ -206,7 +206,7 @@ struct ResultView: View {
             HStack(spacing: DS.Spacing.sm + 2) {
                 Image(systemName: "arrow.counterclockwise.circle.fill")
                     .foregroundStyle(DS.Color.warning)
-                Text(lossReasonText ?? "Out of moves — play again to match all the pairs!")
+                Text(lossReasonText ?? tr("Out of moves — play again to match all the pairs!"))
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(DS.Color.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -225,16 +225,16 @@ struct ResultView: View {
     private func rewardsCard(compact: Bool) -> some View {
         VStack(spacing: compact ? DS.Spacing.sm : DS.Spacing.md) {
             HStack(spacing: DS.Spacing.sm + 2) {
-                StatCard(value: "\(moves)", label: "Moves",
+                StatCard(value: "\(moves)", label: tr("Moves"),
                          icon: "arrow.left.arrow.right.circle.fill", axis: .horizontal)
-                StatCard(value: formatElapsed(elapsed), label: "Time",
+                StatCard(value: formatElapsed(elapsed), label: tr("Time"),
                          icon: "clock.fill", tint: DS.Color.accent, axis: .horizontal)
             }
 
             HStack(spacing: DS.Spacing.sm + 2) {
-                StatCard(value: "\(accuracy)%", label: "Accuracy",
+                StatCard(value: "\(accuracy)%", label: tr("Accuracy"),
                          icon: "scope", tint: DS.Color.success, axis: .horizontal)
-                StatCard(value: "×\(maxCombo)", label: "Combo",
+                StatCard(value: "×\(maxCombo)", label: tr("Combo"),
                          icon: "flame.fill", tint: DS.Color.warning, axis: .horizontal)
             }
 
@@ -253,7 +253,7 @@ struct ResultView: View {
         HStack(spacing: DS.Spacing.sm + 2) {
             Image(systemName: "trophy.fill")
                 .foregroundStyle(DS.Color.star)
-            Text("New Best Time!")
+            Text(tr("New Best Time!"))
                 .font(.system(.subheadline, design: .rounded, weight: .bold))
                 .foregroundStyle(DS.Color.textPrimary)
             Spacer(minLength: 0)
@@ -270,7 +270,7 @@ struct ResultView: View {
                 .fill(DS.Color.star.opacity(0.15))
         )
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("New best time, \(formatElapsed(bestTime))")
+        .accessibilityLabel(tr("New best time, {0}", formatElapsed(bestTime)))
     }
 
     // MARK: - Actions
@@ -278,20 +278,20 @@ struct ResultView: View {
     private var actionButtons: some View {
         VStack(spacing: DS.Spacing.md) {
             if !levelWon, let onWatchAdToContinue {
-                PrimaryButton(title: "Watch Ad to Continue", icon: "video.fill",
+                PrimaryButton(title: tr("Watch Ad to Continue"), icon: "video.fill",
                               gradient: DS.Gradient.accent, action: onWatchAdToContinue)
             }
 
             if nextLevelUnlocked, let onNextLevel {
-                PrimaryButton(title: "Next Level", icon: "arrow.right.circle.fill",
+                PrimaryButton(title: tr("Next Level"), icon: "arrow.right.circle.fill",
                               gradient: DS.Gradient.accent, action: onNextLevel)
             }
 
-            PrimaryButton(title: "Play Again", icon: "arrow.clockwise.circle.fill",
+            PrimaryButton(title: tr("Play Again"), icon: "arrow.clockwise.circle.fill",
                           gradient: DS.Gradient.cta, action: onPlayAgain)
 
             Button(action: onHome) {
-                Text("Back to Home")
+                Text(tr("Back to Home"))
                     .font(.DSText.button)
                     .foregroundStyle(DS.Color.link)
                     .frame(maxWidth: .infinity, minHeight: 44)
@@ -312,12 +312,12 @@ struct ResultView: View {
 
 #Preview {
     ResultView(
-        levelTitle: "Level 1",
+        levelTitle: tr("Level 1"),
         stars: 2,
         moves: 4,
         elapsed: 6,
         nextLevelUnlocked: true,
-        nextLevelTitle: "Level 2",
+        nextLevelTitle: tr("Level 2"),
         onPlayAgain: {},
         onNextLevel: {},
         onHome: {}

@@ -42,6 +42,7 @@ import com.memogame.app.core.DSText
 import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.RoundIconButton
 import com.memogame.app.core.pressableClickable
+import com.memogame.app.core.tr
 import com.memogame.app.model.LevelModel
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.ui.components.StarRating
@@ -74,11 +75,11 @@ fun LevelsScreen(
             ) {
                 RoundIconButton(
                     icon = Icons.Rounded.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = tr("Back"),
                     onClick = onBack
                 )
                 Text(
-                    "Levels",
+                    tr("Levels"),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = ds.textPrimary,

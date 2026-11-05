@@ -151,7 +151,7 @@ struct SplashView: View {
         }
         .frame(height: 340)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(AppTheme.appName) loading")
+        .accessibilityLabel(tr("{0} loading", AppTheme.appName))
     }
 
     private func mainLogoCard(time: TimeInterval, floatY: CGFloat, breathe: CGFloat) -> some View {
@@ -234,11 +234,11 @@ struct SplashView: View {
                 .overlay(shimmerOverlay)
                 .shadow(color: Color(hex: "5B8DEF").opacity(0.25), radius: 8, y: 4)
 
-            Text("Flip · Match · Remember!")
+            Text(tr("Flip · Match · Remember!"))
                 .font(.system(size: 17, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
 
-            tagPill(icon: "brain.head.profile", text: "Brain Boost", color: "5B8DEF")
+            tagPill(icon: "brain.head.profile", text: tr("Brain Boost"), color: "5B8DEF")
         }
     }
 
@@ -292,7 +292,7 @@ struct SplashView: View {
             }
             .frame(height: 8)
 
-            Text("Getting ready…")
+            Text(tr("Getting ready…"))
                 .font(.system(.caption, design: .rounded, weight: .semibold))
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
         }

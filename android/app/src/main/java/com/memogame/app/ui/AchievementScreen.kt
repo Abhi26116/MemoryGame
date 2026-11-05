@@ -45,6 +45,7 @@ import com.memogame.app.core.DSScreenBackground
 import com.memogame.app.core.DSText
 import com.memogame.app.core.InlineTitleBar
 import com.memogame.app.core.LocalDSColors
+import com.memogame.app.core.tr
 import com.memogame.app.model.AchievementModel
 import com.memogame.app.services.ProgressStore
 
@@ -82,7 +83,7 @@ fun AchievementScreen(store: ProgressStore) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InlineTitleBar(title = "Achievements", alpha = collapsedFraction)
+            InlineTitleBar(title = tr("Achievements"), alpha = collapsedFraction)
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -97,7 +98,7 @@ fun AchievementScreen(store: ProgressStore) {
             ) {
                 item {
                     Text(
-                        "Achievements",
+                        tr("Achievements"),
                         style = DSText.title.copy(fontSize = 24.sp),
                         color = ds.textPrimary,
                         modifier = Modifier.graphicsLayer { alpha = 1f - collapsedFraction }
@@ -159,7 +160,7 @@ fun AchievementScreen(store: ProgressStore) {
                             }
                             Icon(
                                 if (unlocked) Icons.Rounded.Verified else Icons.Rounded.Lock,
-                                contentDescription = if (unlocked) "Unlocked" else "Locked",
+                                contentDescription = if (unlocked) tr("Unlocked") else tr("Locked"),
                                 tint = if (unlocked) ds.success else Color.Gray,
                                 modifier = Modifier.size(22.dp)
                             )

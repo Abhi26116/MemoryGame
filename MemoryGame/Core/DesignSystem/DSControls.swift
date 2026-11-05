@@ -151,15 +151,15 @@ struct IconButton: View {
 
 #Preview("Buttons") {
     VStack(spacing: DS.Spacing.lg) {
-        PrimaryButton(title: "Play Again", icon: "arrow.clockwise.circle.fill") {}
-        PrimaryButton(title: "Next Level", icon: "arrow.right.circle.fill",
+        PrimaryButton(title: tr("Play Again"), icon: "arrow.clockwise.circle.fill") {}
+        PrimaryButton(title: tr("Next Level"), icon: "arrow.right.circle.fill",
                       gradient: DS.Gradient.cta) {}
-        SecondaryButton(title: "Back to Home", icon: "house.fill") {}
+        SecondaryButton(title: tr("Back to Home"), icon: "house.fill") {}
         HStack(spacing: DS.Spacing.lg) {
-            IconButton(systemName: "gearshape.fill", accessibilityLabel: "Settings") {}
-            IconButton(systemName: "pause.circle.fill", accessibilityLabel: "Pause") {}
+            IconButton(systemName: "gearshape.fill", accessibilityLabel: tr("Settings")) {}
+            IconButton(systemName: "pause.circle.fill", accessibilityLabel: tr("Pause")) {}
             IconButton(systemName: "trophy.fill", tint: DS.Color.star,
-                       accessibilityLabel: "Achievements") {}
+                       accessibilityLabel: tr("Achievements")) {}
         }
     }
     .padding(DS.Spacing.xl)

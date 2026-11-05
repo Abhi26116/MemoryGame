@@ -51,9 +51,9 @@ struct GameView: View {
     private var milestoneMessage: String? {
         guard viewModel.levelWon else { return nil }
         switch activeLevel.levelNumber {
-        case 10: return "🔥 10 levels done — you're on a roll!"
-        case 25: return "⭐️ 25 levels complete — amazing!"
-        case 50: return "🏆 Memory Master! You beat every level!"
+        case 10: return tr("🔥 10 levels done — you're on a roll!")
+        case 25: return tr("⭐️ 25 levels complete — amazing!")
+        case 50: return tr("🏆 Memory Master! You beat every level!")
         default: return nil
         }
     }
@@ -168,7 +168,7 @@ struct GameView: View {
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(DS.Color.link)
                     }
-                    .accessibilityLabel(viewModel.isPaused ? "Resume" : "Pause")
+                    .accessibilityLabel(viewModel.isPaused ? tr("Resume") : tr("Pause"))
                 }
             }
         }
@@ -339,7 +339,7 @@ struct GameView: View {
                     hudTile(
                         icon: "arrow.left.arrow.right",
                         tint: DS.Color.brand,
-                        label: "Moves",
+                        label: tr("Moves"),
                         value: movesText
                     )
                 }
@@ -347,14 +347,14 @@ struct GameView: View {
                 hudTile(
                     icon: viewModel.rules.hasTimer ? "timer" : "clock.fill",
                     tint: DS.Color.accent,
-                    label: viewModel.rules.hasTimer ? "Time left" : "Time",
+                    label: viewModel.rules.hasTimer ? tr("Time left") : tr("Time"),
                     value: timeText
                 )
 
                 hudTile(
                     icon: "square.grid.2x2.fill",
                     tint: DS.Color.success,
-                    label: "Pairs",
+                    label: tr("Pairs"),
                     value: "\(viewModel.matchedPairs)/\(viewModel.totalPairs)"
                 )
             }
@@ -373,7 +373,7 @@ struct GameView: View {
 
     private var livesRow: some View {
         HStack(spacing: DS.Spacing.sm) {
-            Text("Lives")
+            Text(tr("Lives"))
                 .font(.system(.caption, design: .rounded, weight: .semibold))
                 .foregroundStyle(DS.Color.textSecondary)
 
@@ -396,7 +396,7 @@ struct GameView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(viewModel.livesRemaining) of \(viewModel.maxLives) lives left")
+        .accessibilityLabel(tr("{0} of {1} lives left", viewModel.livesRemaining, viewModel.maxLives))
     }
 
     private var objectiveBanner: some View {
@@ -429,7 +429,7 @@ struct GameView: View {
             RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
                 .fill(DS.Color.brand.opacity(0.12))
         )
-        .accessibilityLabel("Goal: \(activeLevel.objective)")
+        .accessibilityLabel(tr("Goal: {0}", activeLevel.objective))
     }
 
     private var hintButton: some View {
@@ -445,7 +445,7 @@ struct GameView: View {
                 // or changing never affects this chip's width/height, which
                 // matters here since the whole objective banner reflows
                 // around it (see the `hintButton` call site's note).
-                Text("Hint ×\(max(1, viewModel.hintsRemaining))")
+                Text(tr("Hint ×{0}", max(1, viewModel.hintsRemaining)))
                     .font(.system(.caption2, design: .rounded, weight: .bold))
             }
             .foregroundStyle(DS.Color.warning)
@@ -454,7 +454,7 @@ struct GameView: View {
             .background(Capsule().fill(DS.Color.warning.opacity(0.18)))
         }
         .buttonStyle(.pressable)
-        .accessibilityLabel("Watch an ad for a hint, \(viewModel.hintsRemaining) remaining")
+        .accessibilityLabel(tr("Watch an ad for a hint, {0} remaining", viewModel.hintsRemaining))
     }
 
     /// One label font size for the WHOLE grid, sized to the longest label
@@ -519,7 +519,7 @@ struct GameView: View {
                 .fill(tint.opacity(0.1))
         )
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label), \(value.replacingOccurrences(of: "/", with: " of "))")
+        .accessibilityLabel(tr("{0}, {1}", label, value.replacingOccurrences(of: "/", with: tr(" of "))))
     }
 
     // MARK: - Preview
@@ -539,7 +539,7 @@ struct GameView: View {
                     Image(systemName: "eye.fill")
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(DS.Color.brand)
-                    Text("Memorize!")
+                    Text(tr("Memorize!"))
                         .font(.system(.headline, design: .rounded, weight: .heavy))
                         .foregroundStyle(DS.Gradient.accent)
                 }
@@ -571,7 +571,7 @@ struct GameView: View {
                 )
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Memorize the cards. \(viewModel.previewSecondsLeft) seconds remaining")
+        .accessibilityLabel(tr("Memorize the cards. {0} seconds remaining", viewModel.previewSecondsLeft))
         .onChange(of: viewModel.previewSecondsLeft) { _, _ in
             guard !reduceMotion else { return }
             withAnimation(.spring(response: 0.28, dampingFraction: 0.55)) {
@@ -638,15 +638,15 @@ struct GameView: View {
         Dialog {
             Text("👋")
                 .font(.system(size: 54))
-            Text("How to play")
+            Text(tr("How to play"))
                 .font(.system(.title2, design: .rounded, weight: .heavy))
                 .foregroundStyle(DS.Color.textPrimary)
-            Text("Tap two cards to flip them over and find the matching pairs. Match them all to win!")
+            Text(tr("Tap two cards to flip them over and find the matching pairs. Match them all to win!"))
                 .font(.system(.body, design: .rounded, weight: .medium))
                 .foregroundStyle(DS.Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            PrimaryButton(title: "Got it!", gradient: DS.Gradient.cta) {
+            PrimaryButton(title: tr("Got it!"), gradient: DS.Gradient.cta) {
                 withAnimation(.easeInOut) { showTutorial = false }
                 hasSeenTutorial = true
             }
@@ -660,10 +660,10 @@ struct GameView: View {
             Image(systemName: "pause.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(DS.Color.brand)
-            Text("Paused")
+            Text(tr("Paused"))
                 .font(.system(.title2, design: .rounded, weight: .bold))
                 .foregroundStyle(DS.Color.textPrimary)
-            PrimaryButton(title: "Resume", gradient: DS.Gradient.cta) {
+            PrimaryButton(title: tr("Resume"), gradient: DS.Gradient.cta) {
                 viewModel.isPaused = false
             }
         }

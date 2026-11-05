@@ -65,14 +65,14 @@ struct WelcomeView: View {
                     .frame(width: 8, height: 8)
             }
         }
-        .accessibilityLabel("Page \(page + 1) of 2")
+        .accessibilityLabel(tr("Page {0} of 2", page + 1))
     }
 
     private var removeAdsSubtitle: String {
         if let price = store.removeAdsDisplayPrice {
-            return "One-time purchase — \(price). Remove all ads and keep the focus on play. You can always do this later in Settings."
+            return tr("One-time purchase — {0}. Remove all ads and keep the focus on play. You can always do this later in Settings.", price)
         }
-        return "Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings."
+        return tr("Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings.")
     }
 
     // MARK: - Page 1 — welcome
@@ -98,11 +98,11 @@ struct WelcomeView: View {
             .dsShadow(.card)
 
             VStack(spacing: DS.Spacing.sm) {
-                Text("Welcome to \(AppTheme.appName)")
+                Text(tr("Welcome to {0}", AppTheme.appName))
                     .font(.DSText.largeTitle)
                     .foregroundStyle(DS.Gradient.accent)
                     .multilineTextAlignment(.center)
-                Text("Train your memory with delightful, bite-sized levels.")
+                Text(tr("Train your memory with delightful, bite-sized levels."))
                     .font(.DSText.callout)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
@@ -111,19 +111,19 @@ struct WelcomeView: View {
 
             VStack(spacing: DS.Spacing.md) {
                 featureRow(icon: "square.grid.2x2.fill", tint: DS.Color.brand,
-                           title: "Flip & Match",
-                           subtitle: "Find every matching pair to clear a level.")
+                           title: tr("Flip & Match"),
+                           subtitle: tr("Find every matching pair to clear a level."))
                 featureRow(icon: "star.fill", tint: DS.Color.star,
-                           title: "Earn Stars",
-                           subtitle: "Finish fast with few moves to earn 3 stars.")
+                           title: tr("Earn Stars"),
+                           subtitle: tr("Finish fast with few moves to earn 3 stars."))
                 featureRow(icon: "lock.open.fill", tint: DS.Color.success,
-                           title: "Unlock Levels",
-                           subtitle: "Beat a level to open the next challenge.")
+                           title: tr("Unlock Levels"),
+                           subtitle: tr("Beat a level to open the next challenge."))
             }
 
             Spacer(minLength: 0)
 
-            PrimaryButton(title: "Next", icon: "arrow.right") {
+            PrimaryButton(title: tr("Next"), icon: "arrow.right") {
                 withAnimation { page = 1 }
             }
         }
@@ -150,12 +150,12 @@ struct WelcomeView: View {
             .frame(width: 112, height: 112)
 
             VStack(spacing: DS.Spacing.sm) {
-                Text(store.adsRemoved ? "You're Ad-Free!" : "Play Ad-Free")
+                Text(store.adsRemoved ? tr("You're Ad-Free!") : tr("Play Ad-Free"))
                     .font(.DSText.title)
                     .foregroundStyle(DS.Gradient.accent)
                     .multilineTextAlignment(.center)
                 Text(store.adsRemoved
-                     ? "Your Remove Ads purchase is active. Enjoy uninterrupted play!"
+                     ? tr("Your Remove Ads purchase is active. Enjoy uninterrupted play!")
                      : removeAdsSubtitle)
                     .font(.DSText.callout)
                     .foregroundStyle(DS.Color.textSecondary)
@@ -167,7 +167,7 @@ struct WelcomeView: View {
 
             VStack(spacing: DS.Spacing.sm) {
                 if store.adsRemoved {
-                    PrimaryButton(title: "Continue", icon: "arrow.right", action: onFinish)
+                    PrimaryButton(title: tr("Continue"), icon: "arrow.right", action: onFinish)
                 } else {
                     StoreStatusBanner(store: store)
 
@@ -184,7 +184,7 @@ struct WelcomeView: View {
                             }
                         }
                     } label: {
-                        Text("Restore Purchases")
+                        Text(tr("Restore Purchases"))
                             .font(.DSText.caption)
                             .foregroundStyle(DS.Color.link)
                             .frame(maxWidth: .infinity, minHeight: 36)
@@ -194,7 +194,7 @@ struct WelcomeView: View {
                     .disabled(store.isWorking)
 
                     Button(action: onFinish) {
-                        Text("Skip for now")
+                        Text(tr("Skip for now"))
                             .font(.DSText.button)
                             .foregroundStyle(DS.Color.textSecondary)
                             .frame(maxWidth: .infinity, minHeight: 44)

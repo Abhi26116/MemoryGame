@@ -52,6 +52,7 @@ import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.PrimaryButton
 import com.memogame.app.core.StatCard
 import com.memogame.app.core.pressableClickable
+import com.memogame.app.core.tr
 import com.memogame.app.services.ReviewPromptGate
 import com.memogame.app.ui.components.ConfettiOverlay
 import kotlinx.coroutines.delay
@@ -130,7 +131,7 @@ fun ResultScreen(
                             }
 
                             Text(
-                                if (levelWon) "Level Complete!" else "Game Over!",
+                                if (levelWon) tr("Level Complete!") else tr("Game Over!"),
                                 style = DSText.title.copy(
                                     brush = if (levelWon) ds.accentGradient else ds.ctaGradient
                                 ),
@@ -139,7 +140,7 @@ fun ResultScreen(
 
                             if (!levelWon && totalPairs > 0) {
                                 Text(
-                                    "Matched $matchedPairs of $totalPairs pairs",
+                                    tr("Matched {0} of {1} pairs", matchedPairs, totalPairs),
                                     style = DSText.subheadline,
                                     color = ds.textSecondary
                                 )
@@ -196,7 +197,7 @@ fun ResultScreen(
                     ) {
                         Icon(Icons.Rounded.LockOpen, contentDescription = null, tint = ds.success)
                         Text(
-                            "$nextLevelTitle is now unlocked!",
+                            tr("{0} is now unlocked!", nextLevelTitle),
                             style = DSText.subheadline.copy(fontWeight = FontWeight.Bold),
                             color = ds.textPrimary
                         )
@@ -213,7 +214,7 @@ fun ResultScreen(
                     ) {
                         Icon(Icons.Rounded.Replay, contentDescription = null, tint = ds.warning)
                         Text(
-                            lossReasonText ?: "Out of moves — play again to match all the pairs!",
+                            lossReasonText ?: tr("Out of moves — play again to match all the pairs!"),
                             style = DSText.caption.copy(fontWeight = FontWeight.SemiBold),
                             color = ds.textSecondary
                         )
@@ -225,24 +226,24 @@ fun ResultScreen(
                     DSCard {
                         Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm + 2.dp)) {
                             StatCard(
-                                value = "$moves", label = "Moves",
+                                value = "$moves", label = tr("Moves"),
                                 icon = Icons.Rounded.SwapHoriz,
                                 horizontal = true, modifier = Modifier.weight(1f)
                             )
                             StatCard(
-                                value = formatElapsed(elapsed), label = "Time",
+                                value = formatElapsed(elapsed), label = tr("Time"),
                                 icon = Icons.Rounded.AccessTime, tint = ds.accent,
                                 horizontal = true, modifier = Modifier.weight(1f)
                             )
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm + 2.dp)) {
                             StatCard(
-                                value = "$accuracy%", label = "Accuracy",
+                                value = "$accuracy%", label = tr("Accuracy"),
                                 icon = Icons.Rounded.TrackChanges, tint = ds.success,
                                 horizontal = true, modifier = Modifier.weight(1f)
                             )
                             StatCard(
-                                value = "×$maxCombo", label = "Combo",
+                                value = "×$maxCombo", label = tr("Combo"),
                                 icon = Icons.Rounded.LocalFireDepartment, tint = ds.warning,
                                 horizontal = true, modifier = Modifier.weight(1f)
                             )
@@ -260,7 +261,7 @@ fun ResultScreen(
                             ) {
                                 Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = ds.star)
                                 Text(
-                                    "New Best Time!",
+                                    tr("New Best Time!"),
                                     style = DSText.subheadline.copy(fontWeight = FontWeight.Bold),
                                     color = ds.textPrimary
                                 )
@@ -282,22 +283,22 @@ fun ResultScreen(
                 ) {
                     if (!levelWon && onWatchAdToContinue != null) {
                         PrimaryButton(
-                            title = "Watch Ad to Continue", icon = Icons.Rounded.Videocam,
+                            title = tr("Watch Ad to Continue"), icon = Icons.Rounded.Videocam,
                             gradient = ds.accentGradient, onClick = onWatchAdToContinue
                         )
                     }
                     if (nextLevelUnlocked && onNextLevel != null) {
                         PrimaryButton(
-                            title = "Next Level", icon = Icons.Rounded.ArrowForward,
+                            title = tr("Next Level"), icon = Icons.Rounded.ArrowForward,
                             gradient = ds.accentGradient, onClick = onNextLevel
                         )
                     }
                     PrimaryButton(
-                        title = "Play Again", icon = Icons.Rounded.Refresh,
+                        title = tr("Play Again"), icon = Icons.Rounded.Refresh,
                         gradient = ds.ctaGradient, onClick = onPlayAgain
                     )
                     Text(
-                        "Back to Home",
+                        tr("Back to Home"),
                         style = DSText.button,
                         color = ds.link,
                         textAlign = TextAlign.Center,

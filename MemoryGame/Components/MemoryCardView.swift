@@ -54,7 +54,7 @@ struct MemoryCardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(card.voiceOverLabel)
-        .accessibilityHint(card.isMatched ? "Matched pair" : "Double tap to flip")
+        .accessibilityHint(card.isMatched ? tr("Matched pair") : tr("Double tap to flip"))
         .disabled(card.isMatched)
         .onChange(of: card.isFaceUp) { _, faceUp in
             withAnimation(DS.Motion.respecting(reduceMotion, DS.Motion.spring)) {

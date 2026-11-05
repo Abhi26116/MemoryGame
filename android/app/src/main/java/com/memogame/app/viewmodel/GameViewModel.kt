@@ -3,6 +3,7 @@ package com.memogame.app.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.memogame.app.core.tr
 import com.memogame.app.engine.FlipResult
 import com.memogame.app.engine.GameEngine
 import com.memogame.app.model.CardModel
@@ -96,9 +97,9 @@ class GameViewModel(
     val lossReasonText: String?
         get() = when (failReason) {
             GameOverReason.WON -> null
-            GameOverReason.OUT_OF_LIVES -> "Out of hearts — play again to match all the pairs!"
-            GameOverReason.OUT_OF_MOVES -> "Out of moves — play again to match all the pairs!"
-            GameOverReason.OUT_OF_TIME -> "Time's up — play again to match all the pairs!"
+            GameOverReason.OUT_OF_LIVES -> tr("Out of hearts — play again to match all the pairs!")
+            GameOverReason.OUT_OF_MOVES -> tr("Out of moves — play again to match all the pairs!")
+            GameOverReason.OUT_OF_TIME -> tr("Time's up — play again to match all the pairs!")
         }
 
     private lateinit var engine: GameEngine

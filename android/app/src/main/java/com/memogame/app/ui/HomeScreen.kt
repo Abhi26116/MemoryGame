@@ -55,6 +55,7 @@ import com.memogame.app.core.SectionHeader
 import com.memogame.app.core.StatCard
 import com.memogame.app.core.pressableClickable
 import com.memogame.app.core.softShadow
+import com.memogame.app.core.tr
 import com.memogame.app.model.LevelModel
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.services.RemoveAdsPromptGate
@@ -134,7 +135,7 @@ fun HomeScreen(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    "Complete a level to unlock the next one!",
+                    tr("Complete a level to unlock the next one!"),
                     style = DSText.callout,
                     color = ds.textSecondary,
                     textAlign = TextAlign.Center
@@ -144,18 +145,18 @@ fun HomeScreen(
             // Progress card
             Box(modifier = Modifier.widthIn(max = DS.Layout.contentMaxWidth)) {
                 DSCard {
-                    SectionHeader(title = "Your Journey", icon = Icons.Rounded.Map)
+                    SectionHeader(title = tr("Your Journey"), icon = Icons.Rounded.Map)
                     Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm + 2.dp)) {
                         StatCard(
-                            value = "${viewModel.completedLevels}", label = "Completed",
+                            value = "${viewModel.completedLevels}", label = tr("Completed"),
                             icon = Icons.Rounded.Flag, modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            value = "${viewModel.totalStars}", label = "Stars",
+                            value = "${viewModel.totalStars}", label = tr("Stars"),
                             icon = Icons.Rounded.Star, tint = ds.star, modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            value = "${store.goldLevels}", label = "Gold",
+                            value = "${store.goldLevels}", label = tr("Gold"),
                             icon = Icons.Rounded.WorkspacePremium, tint = ds.warning,
                             modifier = Modifier.weight(1f)
                         )
@@ -185,7 +186,7 @@ fun HomeScreen(
                         }
                         Column(verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)) {
                             Text(
-                                "Tip of the Day",
+                                tr("Tip of the Day"),
                                 style = DSText.caption.copy(fontWeight = FontWeight.Bold),
                                 color = ds.sectionTitle
                             )
@@ -229,7 +230,7 @@ private fun ContinueCard(level: LevelModel, onClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)
         ) {
             Text(
-                "CONTINUE",
+                tr("CONTINUE"),
                 style = DSText.caption,
                 color = Color.White.copy(alpha = 0.9f)
             )

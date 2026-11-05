@@ -45,7 +45,7 @@ struct AchievementView: View {
                     .dsCard()
                     .opacity(unlocked ? 1 : 0.75)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(achievement.title). \(achievement.description). \(unlocked ? "Unlocked" : "Locked")")
+                    .accessibilityLabel("\(achievement.title). \(achievement.description). \(unlocked ? tr("Unlocked") : tr("Locked"))")
                 }
             }
             .frame(maxWidth: DS.Layout.contentMaxWidth)
@@ -53,6 +53,6 @@ struct AchievementView: View {
             .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
-        .navigationTitle("Achievements")
+        .navigationTitle(tr("Achievements"))
     }
 }

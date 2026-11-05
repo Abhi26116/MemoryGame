@@ -41,7 +41,7 @@ struct LevelsView: View {
             .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
-        .navigationTitle("Levels")
+        .navigationTitle(tr("Levels"))
         .navigationBarTitleDisplayMode(.inline)
         .kidBackButton()
     }
@@ -84,19 +84,19 @@ struct LevelsView: View {
         .opacity(locked ? 0.65 : 1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel(for: level, locked: locked))
-        .accessibilityHint(locked ? "" : "Double tap to play")
+        .accessibilityHint(locked ? "" : tr("Double tap to play"))
         .accessibilityAddTraits(locked ? [] : .isButton)
     }
 
     private func accessibilityLabel(for level: LevelModel, locked: Bool) -> String {
         if locked {
-            let hint = viewModel.unlockHint(for: level) ?? "Locked"
-            return "\(level.title), locked. \(hint)"
+            let hint = viewModel.unlockHint(for: level) ?? tr("Locked")
+            return tr("{0}, locked. {1}", level.title, hint)
         }
         let stars = viewModel.stars(for: level.id)
         let status = viewModel.isCompleted(level.id)
-            ? "Completed, \(stars) of 3 stars"
-            : "Not played yet"
+            ? tr("Completed, {0} of 3 stars", stars)
+            : tr("Not played yet")
         return "\(level.title). \(status). \(level.objective)"
     }
 

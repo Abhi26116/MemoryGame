@@ -89,19 +89,19 @@ struct RootView: View {
             NavigationStack {
                 HomeView(viewModel: homeViewModel, progressStore: progressStore)
             }
-            .tabItem { Label("Play", systemImage: "gamecontroller.fill") }
+            .tabItem { Label(tr("Play"), systemImage: "gamecontroller.fill") }
             .tag(0)
 
             NavigationStack {
                 AchievementView(progressStore: progressStore)
             }
-            .tabItem { Label("Awards", systemImage: "trophy.fill") }
+            .tabItem { Label(tr("Awards"), systemImage: "trophy.fill") }
             .tag(1)
 
             NavigationStack {
                 SettingsView(progressStore: progressStore)
             }
-            .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            .tabItem { Label(tr("Settings"), systemImage: "gearshape.fill") }
             .tag(2)
         }
         .tint(DS.Color.link)
@@ -156,23 +156,23 @@ struct RootView: View {
             Image(systemName: "arrow.up.circle.fill")
                 .font(.system(size: 48))
                 .foregroundStyle(DS.Color.brand)
-            Text("Update Available")
+            Text(tr("Update Available"))
                 .font(.system(.title3, design: .rounded, weight: .heavy))
                 .foregroundStyle(DS.Color.textPrimary)
                 .multilineTextAlignment(.center)
-            Text("Version \(update.version) of \(AppTheme.appName) is ready, with the latest levels and improvements.")
+            Text(tr("Version {0} of {1} is ready, with the latest levels and improvements.", update.version, AppTheme.appName))
                 .font(.DSText.callout)
                 .foregroundStyle(DS.Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            PrimaryButton(title: "Update Now", icon: "arrow.up.circle.fill") {
+            PrimaryButton(title: tr("Update Now"), icon: "arrow.up.circle.fill") {
                 openURL(update.storeURL)
                 availableUpdate = nil
             }
             Button {
                 availableUpdate = nil
             } label: {
-                Text("Later")
+                Text(tr("Later"))
                     .font(.DSText.button)
                     .foregroundStyle(DS.Color.link)
                     .frame(maxWidth: .infinity, minHeight: 44)

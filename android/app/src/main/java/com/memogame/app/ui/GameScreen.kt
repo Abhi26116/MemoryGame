@@ -62,6 +62,7 @@ import com.memogame.app.core.ProgressRing
 import com.memogame.app.core.RoundIconButton
 import com.memogame.app.core.pressableClickable
 import com.memogame.app.core.softShadow
+import com.memogame.app.core.tr
 import com.memogame.app.data.LevelCatalog
 import com.memogame.app.services.AdsManager
 import com.memogame.app.services.ProgressStore
@@ -118,9 +119,9 @@ fun GameScreen(
     val nextLevelJustUnlocked = viewModel.levelWon && nextLevel != null
     val milestoneMessage = if (viewModel.levelWon) {
         when (activeLevel.levelNumber) {
-            10 -> "🔥 10 levels done — you're on a roll!"
-            25 -> "⭐️ 25 levels complete — amazing!"
-            50 -> "🏆 Memory Master! You beat every level!"
+            10 -> tr("🔥 10 levels done — you're on a roll!")
+            25 -> tr("⭐️ 25 levels complete — amazing!")
+            50 -> tr("🏆 Memory Master! You beat every level!")
             else -> null
         }
     } else null
@@ -142,7 +143,7 @@ fun GameScreen(
                 ) {
                     RoundIconButton(
                         icon = Icons.Rounded.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = tr("Back"),
                         onClick = onExit
                     )
                     Column(
@@ -163,7 +164,7 @@ fun GameScreen(
                     }
                     RoundIconButton(
                         icon = if (viewModel.isPaused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
-                        contentDescription = if (viewModel.isPaused) "Resume" else "Pause",
+                        contentDescription = if (viewModel.isPaused) tr("Resume") else tr("Pause"),
                         onClick = { viewModel.isPaused = !viewModel.isPaused }
                     )
                 }
@@ -281,8 +282,8 @@ fun GameScreen(
                     tint = ds.brand,
                     modifier = Modifier.size(56.dp)
                 )
-                Text("Paused", style = DSText.title.copy(fontSize = 24.sp), color = ds.textPrimary)
-                PrimaryButton(title = "Resume", gradient = ds.ctaGradient) {
+                Text(tr("Paused"), style = DSText.title.copy(fontSize = 24.sp), color = ds.textPrimary)
+                PrimaryButton(title = tr("Resume"), gradient = ds.ctaGradient) {
                     viewModel.isPaused = false
                 }
             }
@@ -291,14 +292,14 @@ fun GameScreen(
         if (showTutorial) {
             DialogCard {
                 Text("👋", fontSize = 54.sp)
-                Text("How to play", style = DSText.title.copy(fontSize = 24.sp), color = ds.textPrimary)
+                Text(tr("How to play"), style = DSText.title.copy(fontSize = 24.sp), color = ds.textPrimary)
                 Text(
-                    "Tap two cards to flip them over and find the matching pairs. Match them all to win!",
+                    tr("Tap two cards to flip them over and find the matching pairs. Match them all to win!"),
                     style = DSText.body,
                     color = ds.textSecondary,
                     textAlign = TextAlign.Center
                 )
-                PrimaryButton(title = "Got it!", gradient = ds.ctaGradient) {
+                PrimaryButton(title = tr("Got it!"), gradient = ds.ctaGradient) {
                     showTutorial = false
                     store.setHasSeenTutorial(true)
                 }
@@ -394,14 +395,14 @@ private fun GameHud(viewModel: GameViewModel) {
                     ?: "${viewModel.moves}"
                 HudTile(
                     icon = Icons.Rounded.SwapHoriz, tint = ds.brand,
-                    label = "Moves", value = movesText,
+                    label = tr("Moves"), value = movesText,
                     modifier = Modifier.weight(1f)
                 )
             }
             HudTile(
                 icon = if (viewModel.rules.hasTimer) Icons.Rounded.Timer else Icons.Rounded.AccessTime,
                 tint = ds.accent,
-                label = if (viewModel.rules.hasTimer) "Time left" else "Time",
+                label = if (viewModel.rules.hasTimer) tr("Time left") else tr("Time"),
                 value = if (viewModel.rules.hasTimer) {
                     formatTime(viewModel.remainingTime)
                 } else {
@@ -411,7 +412,7 @@ private fun GameHud(viewModel: GameViewModel) {
             )
             HudTile(
                 icon = Icons.Rounded.GridView, tint = ds.success,
-                label = "Pairs", value = "${viewModel.matchedPairs}/${viewModel.totalPairs}",
+                label = tr("Pairs"), value = "${viewModel.matchedPairs}/${viewModel.totalPairs}",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -422,7 +423,7 @@ private fun GameHud(viewModel: GameViewModel) {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Lives", style = DSText.caption, color = ds.textSecondary)
+                Text(tr("Lives"), style = DSText.caption, color = ds.textSecondary)
                 Spacer(Modifier.width(DS.Spacing.sm))
                 repeat(viewModel.maxLives) { index ->
                     val alive = index < viewModel.livesRemaining
@@ -517,7 +518,7 @@ private fun ObjectiveBanner(
             // Always a single digit (max 4 hints) — the count showing or
             // changing never affects this chip's width/height.
             Text(
-                "Hint ×${maxOf(1, hintsRemaining)}",
+                tr("Hint ×{0}", maxOf(1, hintsRemaining)),
                 style = DSText.caption2.copy(fontWeight = FontWeight.Bold),
                 color = ds.warning
             )
@@ -570,7 +571,7 @@ private fun PreviewBanner(viewModel: GameViewModel) {
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    "Memorize!",
+                    tr("Memorize!"),
                     style = DSText.headline.copy(brush = ds.accentGradient)
                 )
             }

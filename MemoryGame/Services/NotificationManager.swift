@@ -44,7 +44,7 @@ final class NotificationManager: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = AppTheme.appName
-        content.body = "🧠 Ready for today's challenge? Train your memory and keep your streak going!"
+        content.body = tr("🧠 Ready for today's challenge? Train your memory and keep your streak going!")
         content.sound = .default
 
         var components = DateComponents()
@@ -67,7 +67,7 @@ final class NotificationManager: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = AppTheme.appName
-        content.body = "We miss you! 🧩 Your next memory challenge is waiting."
+        content.body = tr("We miss you! 🧩 Your next memory challenge is waiting.")
         content.sound = .default
 
         let interval = TimeInterval(days) * 24 * 60 * 60

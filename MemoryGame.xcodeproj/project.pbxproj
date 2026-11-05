@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		MMKL001 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = MMKLF01 /* L10n.swift */; };
+		MMKL002 /* l10n in Resources */ = {isa = PBXBuildFile; fileRef = MMKLF02 /* l10n */; };
+		MMKL003 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = MMKLV01 /* InfoPlist.strings */; };
 		0451CA0F2FEC2B5E00B80C82 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 0451CA0E2FEC2B5E00B80C82 /* GoogleMobileAds */; };
 		04E503622FD088C000A6BE32 /* MemoryGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E503612FD088C000A6BE32 /* MemoryGameApp.swift */; };
 		04E503662FD088C300A6BE32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E503652FD088C300A6BE32 /* Assets.xcassets */; };
@@ -60,6 +63,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		MMKLF01 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		MMKLF02 /* l10n */ = {isa = PBXFileReference; lastKnownFileType = folder; name = l10n; path = localization/l10n; sourceTree = SOURCE_ROOT; };
+		MMKLS00 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS01 /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS02 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS03 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt-BR; path = pt-BR.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS04 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS05 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		MMKLS06 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0451CA102FEC33CC00B80C82 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		04E5035E2FD088C000A6BE32 /* MemoryGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E503612FD088C000A6BE32 /* MemoryGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryGameApp.swift; sourceTree = "<group>"; };
@@ -177,6 +189,7 @@
 			children = (
 				MMKG010 /* Theme */,
 				MMKG020 /* DesignSystem */,
+				MMKLF01 /* L10n.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -330,6 +343,8 @@
 			children = (
 				MMKF033 /* LaunchSplash.gif */,
 				MMKF301 /* Fredoka.ttf */,
+				MMKLF02 /* l10n */,
+				MMKLV01 /* InfoPlist.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -413,6 +428,12 @@
 			knownRegions = (
 				en,
 				Base,
+				hi,
+				es,
+				"pt-BR",
+				id,
+				de,
+				fr,
 			);
 			mainGroup = 04E503552FD088C000A6BE32;
 			packageReferences = (
@@ -437,6 +458,8 @@
 				MMK033 /* LaunchSplash.gif in Resources */,
 				MMK301 /* Fredoka.ttf in Resources */,
 				MMK048 /* PrivacyInfo.xcprivacy in Resources */,
+				MMKL002 /* l10n in Resources */,
+				MMKL003 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,11 +513,29 @@
 				MMK031 /* SplashView.swift in Sources */,
 				MMK034 /* AnimatedGIFView.swift in Sources */,
 				MMK049 /* RemoveAdsPromptGate.swift in Sources */,
+				MMKL001 /* L10n.swift in Sources */,
 				MMK050 /* RemoveAdsShowcaseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		MMKLV01 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				MMKLS00 /* en */,
+				MMKLS01 /* hi */,
+				MMKLS02 /* es */,
+				MMKLS03 /* pt-BR */,
+				MMKLS04 /* id */,
+				MMKLS05 /* de */,
+				MMKLS06 /* fr */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		04E5036A2FD088C300A6BE32 /* Debug */ = {
@@ -623,7 +664,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MemoryGame/MemoryGame.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;
@@ -659,7 +700,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MemoryGame/MemoryGame.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_ASSET_PATHS = "\"MemoryGame/Preview Content\"";
 				DEVELOPMENT_TEAM = 46SSZ8CCPX;
 				ENABLE_PREVIEWS = YES;

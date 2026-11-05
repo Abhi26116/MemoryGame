@@ -36,14 +36,14 @@ struct RemoveAdsShowcaseView: View {
 
                 VStack(spacing: DS.Spacing.md) {
                     benefitRow(icon: "bolt.slash.fill", tint: DS.Color.brand,
-                               title: "No Interruptions",
-                               subtitle: "Play level after level without a single ad break.")
+                               title: tr("No Interruptions"),
+                               subtitle: tr("Play level after level without a single ad break."))
                     benefitRow(icon: "heart.fill", tint: DS.Color.accent,
-                               title: "Support the Game",
-                               subtitle: "Your purchase directly funds new levels and features.")
+                               title: tr("Support the Game"),
+                               subtitle: tr("Your purchase directly funds new levels and features."))
                     benefitRow(icon: "checkmark.seal.fill", tint: DS.Color.success,
-                               title: "Pay Once, Keep Forever",
-                               subtitle: "No subscription — a single purchase, forever ad-free.")
+                               title: tr("Pay Once, Keep Forever"),
+                               subtitle: tr("No subscription — a single purchase, forever ad-free."))
                 }
                 .padding(.horizontal, DS.Layout.screenPadding)
 
@@ -87,7 +87,7 @@ struct RemoveAdsShowcaseView: View {
         HStack {
             Spacer()
             IconButton(systemName: "xmark", tint: DS.Color.textSecondary,
-                       size: 36, accessibilityLabel: "Close") {
+                       size: 36, accessibilityLabel: tr("Close")) {
                 onDismiss()
             }
         }
@@ -118,11 +118,11 @@ struct RemoveAdsShowcaseView: View {
             .accessibilityHidden(true)
 
             VStack(spacing: DS.Spacing.xs) {
-                Text("Go Ad-Free")
+                Text(tr("Go Ad-Free"))
                     .font(.DSText.largeTitle)
                     .foregroundStyle(DS.Gradient.accent)
                     .multilineTextAlignment(.center)
-                Text("Unlock the calmest way to play \(AppTheme.appName).")
+                Text(tr("Unlock the calmest way to play {0}.", AppTheme.appName))
                     .font(.DSText.callout)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
@@ -175,7 +175,7 @@ struct RemoveAdsShowcaseView: View {
                 Button {
                     Task { await store.restore() }
                 } label: {
-                    Text("Restore Purchases")
+                    Text(tr("Restore Purchases"))
                         .font(.DSText.caption)
                         .foregroundStyle(DS.Color.link)
                         .frame(minHeight: 36)
@@ -188,7 +188,7 @@ struct RemoveAdsShowcaseView: View {
                     .foregroundStyle(DS.Color.textTertiary)
 
                 Button(action: onDismiss) {
-                    Text("Not Now")
+                    Text(tr("Not Now"))
                         .font(.DSText.caption)
                         .foregroundStyle(DS.Color.textSecondary)
                         .frame(minHeight: 36)

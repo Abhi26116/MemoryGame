@@ -69,8 +69,8 @@ struct CardModel: Identifiable, Equatable {
     }
 
     var voiceOverLabel: String {
-        if isMatched { return "\(content.label), matched" }
+        if isMatched { return tr("{0}, matched", content.label) }
         if isFaceUp { return content.label }
-        return "Hidden card"
+        return tr("Hidden card")
     }
 }

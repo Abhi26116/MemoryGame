@@ -103,7 +103,7 @@ struct HomeView: View {
                     .foregroundStyle(DS.Gradient.accent)
                     .shadow(color: DS.Color.accent.opacity(0.35), radius: 12, y: 4)
                     .multilineTextAlignment(.center)
-                Text("Complete a level to unlock the next one!")
+                Text(tr("Complete a level to unlock the next one!"))
                     .font(.DSText.callout)
                     .foregroundStyle(DS.Color.textSecondary)
                     .multilineTextAlignment(.center)
@@ -114,13 +114,13 @@ struct HomeView: View {
 
     private var progressCard: some View {
         DSCard {
-            SectionHeader(title: "Your Journey", icon: "map.fill")
+            SectionHeader(title: tr("Your Journey"), icon: "map.fill")
             HStack(spacing: DS.Spacing.sm + 2) {
-                StatCard(value: "\(viewModel.completedLevels)", label: "Completed",
+                StatCard(value: "\(viewModel.completedLevels)", label: tr("Completed"),
                          icon: "flag.checkered")
-                StatCard(value: "\(viewModel.totalStars)", label: "Stars",
+                StatCard(value: "\(viewModel.totalStars)", label: tr("Stars"),
                          icon: "star.fill", tint: DS.Color.star)
-                StatCard(value: "\(progressStore.goldLevels)", label: "Gold",
+                StatCard(value: "\(progressStore.goldLevels)", label: tr("Gold"),
                          icon: "crown.fill", tint: DS.Color.warning)
             }
         }
@@ -134,7 +134,7 @@ struct HomeView: View {
                 .frame(width: 44, height: 44)
                 .background(Circle().fill(DS.Color.star.opacity(0.16)))
             VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
-                Text("Tip of the Day")
+                Text(tr("Tip of the Day"))
                     .font(.system(.caption, design: .rounded, weight: .bold))
                     .foregroundStyle(DS.Color.sectionTitle)
                 Text(viewModel.dailyTip)
@@ -146,7 +146,7 @@ struct HomeView: View {
         }
         .dsCard()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Tip of the day. \(viewModel.dailyTip)")
+        .accessibilityLabel(tr("Tip of the day. {0}", viewModel.dailyTip))
     }
 
     private func playNextLevel(_ level: LevelModel) -> some View {
@@ -158,7 +158,7 @@ struct HomeView: View {
                     .font(.system(size: 40))
                     .foregroundStyle(.white)
                 VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
-                    Text("Continue")
+                    Text(tr("Continue"))
                         .font(.DSText.caption)
                         .foregroundStyle(.white.opacity(0.9))
                         .textCase(.uppercase)
@@ -184,8 +184,8 @@ struct HomeView: View {
         }
         .buttonStyle(.pressable)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Continue, \(level.title)")
-        .accessibilityHint("Plays your next level")
+        .accessibilityLabel(tr("Continue, {0}", level.title))
+        .accessibilityHint(tr("Plays your next level"))
         .accessibilityAddTraits(.isButton)
     }
 

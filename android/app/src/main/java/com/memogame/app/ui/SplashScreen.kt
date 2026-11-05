@@ -49,6 +49,7 @@ import com.memogame.app.core.GlowCircle
 import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.colorFromHex
 import com.memogame.app.core.softShadow
+import com.memogame.app.core.tr
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -352,7 +353,7 @@ private fun TitleSection(time: Float) {
         Spacer(Modifier.height(14.dp))
 
         Text(
-            "Flip · Match · Remember!",
+            tr("Flip · Match · Remember!"),
             fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold,
             color = ds.textSecondary
@@ -376,7 +377,7 @@ private fun TitleSection(time: Float) {
                 modifier = Modifier.size(16.dp)
             )
             Text(
-                "Brain Boost",
+                tr("Brain Boost"),
                 style = DSText.caption.copy(fontWeight = FontWeight.Bold),
                 color = colorFromHex("5B8DEF")
             )
@@ -453,6 +454,6 @@ private fun LoadingBar(time: Float) {
             )
         }
         Spacer(Modifier.height(10.dp))
-        Text("Getting ready…", style = DSText.caption, color = ds.textSecondary)
+        Text(tr("Getting ready…"), style = DSText.caption, color = ds.textSecondary)
     }
 }

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
+import com.memogame.app.core.L10n
 import com.memogame.app.core.MemoryMatchTheme
 import com.memogame.app.services.AdsManager
 import com.memogame.app.services.GameAudio
@@ -16,6 +17,7 @@ import com.memogame.app.ui.MemoryMatchRoot
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (L10n.restartIfLanguageChanged(this)) return
         enableEdgeToEdge()
 
         // Deferred here rather than Application.onCreate so a receiver-only

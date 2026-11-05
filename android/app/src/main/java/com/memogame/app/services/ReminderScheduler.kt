@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.memogame.app.MainActivity
 import com.memogame.app.R
+import com.memogame.app.core.tr
 import java.util.Calendar
 
 /**
@@ -30,9 +31,9 @@ object ReminderScheduler {
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
-            CHANNEL_ID, "Reminders", NotificationManager.IMPORTANCE_DEFAULT
+            CHANNEL_ID, tr("Reminders"), NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Daily play reminders"
+            description = tr("Daily play reminders")
         }
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
         manager.createNotificationChannel(channel)
@@ -114,9 +115,9 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val body = when (intent.action) {
             ReminderScheduler.ACTION_INACTIVITY ->
-                "We miss you! 🧩 Your next memory challenge is waiting."
+                tr("We miss you! 🧩 Your next memory challenge is waiting.")
             else ->
-                "🧠 Ready for today's challenge? Train your memory and keep your streak going!"
+                tr("🧠 Ready for today's challenge? Train your memory and keep your streak going!")
         }
 
         val tapIntent = PendingIntent.getActivity(

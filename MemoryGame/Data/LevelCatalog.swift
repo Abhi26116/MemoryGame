@@ -34,7 +34,7 @@ enum LevelCatalog {
         return LevelModel(
             id: "level_\(number)",
             levelNumber: number,
-            title: "Level \(number)",
+            title: tr("Level {0}", number),
             subtitle: "\(theme) · \(grid.rawValue)",
             objective: objective(for: number, mode: mode),
             matchMode: mode,
@@ -137,11 +137,11 @@ enum LevelCatalog {
     }
 
     private static let associationThemeNames = [
-        "Letters", "Animal Match", "Opposites", "Addition", "Word Match", "Countries",
-        "Goes Together", "Baby Animals"
+        tr("Letters"), tr("Animal Match"), tr("Opposites"), tr("Addition"), tr("Word Match"), tr("Countries"),
+        tr("Goes Together"), tr("Baby Animals")
     ]
 
-    private static let tripleThemeNames = ["Colors", "Fruits", "Stars", "Animals", "Vehicles", "Food"]
+    private static let tripleThemeNames = [tr("Colors"), tr("Fruits"), tr("Stars"), tr("Animals"), tr("Vehicles"), tr("Food")]
 
     /// Association level where the mechanic is first introduced.
     private static let firstAssociationLevel = 20
@@ -161,11 +161,11 @@ enum LevelCatalog {
             return associationThemeNames[associationThemeIndex(for: number)]
         }
         if mode == .triple {
-            return "Triple · \(tripleThemeNames[(number - 1) % tripleThemeNames.count])"
+            return tr("Triple · {0}", (tripleThemeNames[(number - 1) % tripleThemeNames.count]))
         }
         let themes = [
-            "Animals", "Colors", "Fruits", "Vehicles", "Shapes",
-            "Faces", "Weather", "Toys", "Nature", "Sports"
+            tr("Animals"), tr("Colors"), tr("Fruits"), tr("Vehicles"), tr("Shapes"),
+            tr("Faces"), tr("Weather"), tr("Toys"), tr("Nature"), tr("Sports")
         ]
         return themes[themeIndex(for: number)]
     }
@@ -174,57 +174,57 @@ enum LevelCatalog {
     private static func objective(for number: Int, mode: MatchMode) -> String {
         switch mode {
         case .triple:
-            return "Find all three cards that are the same!"
+            return tr("Find all three cards that are the same!")
         case .association:
             switch associationThemeIndex(for: number) {
-            case 0: return "Match each capital letter to its small letter."
-            case 1: return "Match each animal to its favorite food."
-            case 2: return "Match each picture to its opposite."
-            case 3: return "Match each sum to the correct answer."
-            case 4: return "Match each animal to its name."
-            case 5: return "Match each flag to its country."
-            case 6: return "Match the things that go together."
-            case 7: return "Match each animal to its baby's name."
-            default: return "Match the two cards that go together!"
+            case 0: return tr("Match each capital letter to its small letter.")
+            case 1: return tr("Match each animal to its favorite food.")
+            case 2: return tr("Match each picture to its opposite.")
+            case 3: return tr("Match each sum to the correct answer.")
+            case 4: return tr("Match each animal to its name.")
+            case 5: return tr("Match each flag to its country.")
+            case 6: return tr("Match the things that go together.")
+            case 7: return tr("Match each animal to its baby's name.")
+            default: return tr("Match the two cards that go together!")
             }
         default:
-            return "Find and match the pairs that look the same!"
+            return tr("Find and match the pairs that look the same!")
         }
     }
 
     // MARK: - Card content pools
 
     private static let identicalSets: [[(String, String)]] = [
-        [("🐶", "Puppy"), ("🐱", "Kitten"), ("🐰", "Bunny"), ("🐥", "Duck"), ("🐻", "Bear"), ("🦊", "Fox"),
-         ("🐼", "Panda"), ("🐨", "Koala"), ("🐯", "Tiger"), ("🦁", "Lion"), ("🐷", "Pig"), ("🐸", "Frog"),
-         ("🐙", "Octopus"), ("🦒", "Giraffe"), ("🐘", "Elephant")],
-        [("🔴", "Red"), ("🔵", "Blue"), ("🟢", "Green"), ("🟡", "Yellow"), ("🟠", "Orange"), ("🟣", "Purple"),
-         ("🟤", "Brown"), ("⚫️", "Black"), ("⚪️", "White"), ("🩷", "Pink"), ("🩵", "Light Blue"), ("💚", "Light Green"),
-         ("💛", "Light Yellow"), ("🧡", "Light Orange"), ("💜", "Light Purple")],
-        [("🍎", "Apple"), ("🍌", "Banana"), ("🍊", "Orange"), ("🍇", "Grapes"), ("🍓", "Strawberry"), ("🍉", "Watermelon"),
-         ("🍑", "Peach"), ("🍒", "Cherry"), ("🥝", "Kiwi"), ("🍍", "Pineapple"), ("🥭", "Mango"), ("🫐", "Blueberry"),
-         ("🍋", "Lemon"), ("🥥", "Coconut"), ("🍈", "Melon")],
-        [("🚗", "Car"), ("🚂", "Train"), ("✈️", "Plane"), ("🚲", "Bike"), ("🚌", "Bus"), ("🚁", "Helicopter"),
-         ("🚢", "Ship"), ("🏍️", "Motorcycle"), ("🛴", "Scooter"), ("🚕", "Taxi"), ("🚑", "Ambulance"), ("🚒", "Fire Truck"),
-         ("🚜", "Tractor"), ("🛸", "UFO"), ("🚀", "Rocket")],
-        [("⭐", "Star"), ("🔴", "Circle"), ("🟦", "Square"), ("🔺", "Triangle"), ("💠", "Diamond"), ("⬛️", "Block"),
-         ("⭕️", "Ring"), ("🔶", "Orange Shape"), ("🔷", "Blue Shape"), ("💟", "Heart"), ("✨", "Sparkle"), ("☀️", "Sun Shape"),
-         ("🌙", "Moon Shape"), ("🌈", "Rainbow"), ("❇️", "Asterisk")],
-        [("😊", "Happy"), ("😢", "Sad"), ("😮", "Wow"), ("🤩", "Excited"), ("😴", "Sleepy"), ("😎", "Cool"),
-         ("🥳", "Party"), ("😇", "Angel"), ("🤔", "Thinking"), ("😍", "Love"), ("😜", "Silly"), ("🤗", "Hug"),
-         ("😱", "Surprised"), ("🥰", "Blush"), ("😋", "Yummy")],
-        [("☀️", "Sun"), ("🌧️", "Rain"), ("❄️", "Snow"), ("☁️", "Cloud"), ("⛈️", "Storm"), ("🌈", "Rainbow"),
-         ("🌪️", "Tornado"), ("🌫️", "Fog"), ("💨", "Wind"), ("🌤️", "Partly Sunny"), ("🌥️", "Cloudy"), ("🌦️", "Sun Shower"),
-         ("🌨️", "Snow Cloud"), ("🌩️", "Lightning"), ("🌬️", "Breeze")],
-        [("🧸", "Teddy"), ("🪀", "Yo-yo"), ("🚙", "Toy Car"), ("🧱", "Blocks"), ("🪁", "Kite"), ("🎲", "Dice"),
-         ("🪆", "Doll"), ("🧩", "Puzzle"), ("🎠", "Carousel"), ("🛼", "Skates"), ("🎯", "Target"), ("🪅", "Piñata"),
-         ("🪩", "Disco"), ("🧵", "Thread"), ("🪄", "Wand")],
-        [("🌸", "Flower"), ("🌳", "Tree"), ("🦋", "Butterfly"), ("🐝", "Bee"), ("🌻", "Sunflower"), ("🍀", "Clover"),
-         ("🌵", "Cactus"), ("🍄", "Mushroom"), ("🌺", "Hibiscus"), ("🌷", "Tulip"), ("🪴", "Plant"), ("🌿", "Leaf"),
-         ("🪺", "Nest"), ("🐚", "Shell"), ("🪸", "Coral")],
-        [("⚽", "Soccer"), ("🏀", "Basketball"), ("🎾", "Tennis"), ("🏈", "Football"), ("🏐", "Volleyball"), ("🏓", "Ping Pong"),
-         ("🏸", "Badminton"), ("🥊", "Boxing"), ("⛳️", "Golf"), ("🎳", "Bowling"), ("🏏", "Cricket"), ("🥏", "Frisbee"),
-         ("🛹", "Skateboard"), ("⛷️", "Skiing"), ("🏊", "Swimming")]
+        [("🐶", tr("Puppy")), ("🐱", tr("Kitten")), ("🐰", tr("Bunny")), ("🐥", tr("Duck")), ("🐻", tr("Bear")), ("🦊", tr("Fox")),
+         ("🐼", tr("Panda")), ("🐨", tr("Koala")), ("🐯", tr("Tiger")), ("🦁", tr("Lion")), ("🐷", tr("Pig")), ("🐸", tr("Frog")),
+         ("🐙", tr("Octopus")), ("🦒", tr("Giraffe")), ("🐘", tr("Elephant"))],
+        [("🔴", tr("Red")), ("🔵", tr("Blue")), ("🟢", tr("Green")), ("🟡", tr("Yellow")), ("🟠", tr("Orange")), ("🟣", tr("Purple")),
+         ("🟤", tr("Brown")), ("⚫️", tr("Black")), ("⚪️", tr("White")), ("🩷", tr("Pink")), ("🩵", tr("Light Blue")), ("💚", tr("Light Green")),
+         ("💛", tr("Light Yellow")), ("🧡", tr("Light Orange")), ("💜", tr("Light Purple"))],
+        [("🍎", tr("Apple")), ("🍌", tr("Banana")), ("🍊", tr("Orange (fruit)")), ("🍇", tr("Grapes")), ("🍓", tr("Strawberry")), ("🍉", tr("Watermelon")),
+         ("🍑", tr("Peach")), ("🍒", tr("Cherry")), ("🥝", tr("Kiwi")), ("🍍", tr("Pineapple")), ("🥭", tr("Mango")), ("🫐", tr("Blueberry")),
+         ("🍋", tr("Lemon")), ("🥥", tr("Coconut")), ("🍈", tr("Melon"))],
+        [("🚗", tr("Car")), ("🚂", tr("Train")), ("✈️", tr("Plane")), ("🚲", tr("Bike")), ("🚌", tr("Bus")), ("🚁", tr("Helicopter")),
+         ("🚢", tr("Ship")), ("🏍️", tr("Motorcycle")), ("🛴", tr("Scooter")), ("🚕", tr("Taxi")), ("🚑", tr("Ambulance")), ("🚒", tr("Fire Truck")),
+         ("🚜", tr("Tractor")), ("🛸", tr("UFO")), ("🚀", tr("Rocket"))],
+        [("⭐", tr("Star")), ("🔴", tr("Circle")), ("🟦", tr("Square")), ("🔺", tr("Triangle")), ("💠", tr("Diamond")), ("⬛️", tr("Block")),
+         ("⭕️", tr("Ring")), ("🔶", tr("Orange Shape")), ("🔷", tr("Blue Shape")), ("💟", tr("Heart")), ("✨", tr("Sparkle")), ("☀️", tr("Sun Shape")),
+         ("🌙", tr("Moon Shape")), ("🌈", tr("Rainbow")), ("❇️", tr("Asterisk"))],
+        [("😊", tr("Happy")), ("😢", tr("Sad")), ("😮", tr("Wow")), ("🤩", tr("Excited")), ("😴", tr("Sleepy")), ("😎", tr("Cool")),
+         ("🥳", tr("Party")), ("😇", tr("Angel")), ("🤔", tr("Thinking")), ("😍", tr("Love")), ("😜", tr("Silly")), ("🤗", tr("Hug")),
+         ("😱", tr("Surprised")), ("🥰", tr("Blush")), ("😋", tr("Yummy"))],
+        [("☀️", tr("Sun")), ("🌧️", tr("Rain")), ("❄️", tr("Snow")), ("☁️", tr("Cloud")), ("⛈️", tr("Storm")), ("🌈", tr("Rainbow")),
+         ("🌪️", tr("Tornado")), ("🌫️", tr("Fog")), ("💨", tr("Wind")), ("🌤️", tr("Partly Sunny")), ("🌥️", tr("Cloudy")), ("🌦️", tr("Sun Shower")),
+         ("🌨️", tr("Snow Cloud")), ("🌩️", tr("Lightning")), ("🌬️", tr("Breeze"))],
+        [("🧸", tr("Teddy")), ("🪀", tr("Yo-yo")), ("🚙", tr("Toy Car")), ("🧱", tr("Blocks")), ("🪁", tr("Kite")), ("🎲", tr("Dice")),
+         ("🪆", tr("Doll")), ("🧩", tr("Puzzle")), ("🎠", tr("Carousel")), ("🛼", tr("Skates")), ("🎯", tr("Target")), ("🪅", tr("Piñata")),
+         ("🪩", tr("Disco")), ("🧵", tr("Thread")), ("🪄", tr("Wand"))],
+        [("🌸", tr("Flower")), ("🌳", tr("Tree")), ("🦋", tr("Butterfly")), ("🐝", tr("Bee")), ("🌻", tr("Sunflower")), ("🍀", tr("Clover")),
+         ("🌵", tr("Cactus")), ("🍄", tr("Mushroom")), ("🌺", tr("Hibiscus")), ("🌷", tr("Tulip")), ("🪴", tr("Plant")), ("🌿", tr("Leaf")),
+         ("🪺", tr("Nest")), ("🐚", tr("Shell")), ("🪸", tr("Coral"))],
+        [("⚽", tr("Soccer")), ("🏀", tr("Basketball")), ("🎾", tr("Tennis")), ("🏈", tr("Football")), ("🏐", tr("Volleyball")), ("🏓", tr("Ping Pong")),
+         ("🏸", tr("Badminton")), ("🥊", tr("Boxing")), ("⛳️", tr("Golf")), ("🎳", tr("Bowling")), ("🏏", tr("Cricket")), ("🥏", tr("Frisbee")),
+         ("🛹", tr("Skateboard")), ("⛷️", tr("Skiing")), ("🏊", tr("Swimming"))]
     ]
 
     private static let associationSets: [[(String, String)]] = [
@@ -239,33 +239,33 @@ enum LevelCatalog {
         [("1+1", "2"), ("2+1", "3"), ("3+1", "4"), ("4+1", "5"), ("5+1", "6"), ("6+1", "7"),
          ("7+1", "8"), ("8+1", "9"), ("9+1", "10"), ("10+1", "11"), ("10+2", "12"), ("10+3", "13"),
          ("10+4", "14"), ("10+5", "15"), ("10+6", "16")],
-        [("🦈", "SHARK"), ("🐋", "WHALE"), ("🦭", "SEAL"), ("🐊", "CROCODILE"), ("🦎", "LIZARD"), ("🐍", "SNAKE"),
-         ("🦘", "KANGAROO"), ("🦏", "RHINO"), ("🦛", "HIPPO"), ("🐪", "CAMEL"), ("🦬", "BISON"), ("🦙", "LLAMA"),
-         ("🦥", "SLOTH"), ("🦨", "SKUNK"), ("🦫", "BEAVER")],
-        [("🇺🇸", "USA"), ("🇬🇧", "UK"), ("🇫🇷", "France"), ("🇯🇵", "Japan"), ("🇮🇳", "India"), ("🇧🇷", "Brazil"),
-         ("🇨🇦", "Canada"), ("🇩🇪", "Germany"), ("🇮🇹", "Italy"), ("🇪🇸", "Spain"), ("🇦🇺", "Australia"), ("🇲🇽", "Mexico"),
-         ("🇰🇷", "Korea"), ("🇨🇳", "China"), ("🇿🇦", "South Africa")],
+        [("🦈", tr("SHARK")), ("🐋", tr("WHALE")), ("🦭", tr("SEAL")), ("🐊", tr("CROCODILE")), ("🦎", tr("LIZARD")), ("🐍", tr("SNAKE")),
+         ("🦘", tr("KANGAROO")), ("🦏", tr("RHINO")), ("🦛", tr("HIPPO")), ("🐪", tr("CAMEL")), ("🦬", tr("BISON")), ("🦙", tr("LLAMA")),
+         ("🦥", tr("SLOTH")), ("🦨", tr("SKUNK")), ("🦫", tr("BEAVER"))],
+        [("🇺🇸", tr("USA")), ("🇬🇧", tr("UK")), ("🇫🇷", tr("France")), ("🇯🇵", tr("Japan")), ("🇮🇳", tr("India")), ("🇧🇷", tr("Brazil")),
+         ("🇨🇦", tr("Canada")), ("🇩🇪", tr("Germany")), ("🇮🇹", tr("Italy")), ("🇪🇸", tr("Spain")), ("🇦🇺", tr("Australia")), ("🇲🇽", tr("Mexico")),
+         ("🇰🇷", tr("Korea")), ("🇨🇳", tr("China")), ("🇿🇦", tr("South Africa"))],
         [("🧦", "👟"), ("🔑", "🔒"), ("✏️", "📓"), ("🪥", "🦷"), ("☂️", "🌧️"), ("🧤", "❄️"),
          ("🐝", "🌻"), ("🐟", "🐠"), ("🍴", "🍽️"), ("🔌", "💡"), ("🎁", "🎀"), ("⚽", "🥅"),
          ("🖍️", "🎨"), ("🧩", "🧠"), ("🌱", "💧")],
-        [("🐶", "Puppy"), ("🐱", "Kitten"), ("🐮", "Calf"), ("🐑", "Lamb"), ("🐴", "Foal"), ("🐻", "Cub"),
-         ("🦌", "Fawn"), ("🐔", "Chick"), ("🦘", "Joey"), ("🐸", "Tadpole"), ("🦢", "Cygnet"), ("🐐", "Kid"),
-         ("🦅", "Eaglet"), ("🐷", "Piglet"), ("🦉", "Owlet")]
+        [("🐶", tr("Puppy")), ("🐱", tr("Kitten")), ("🐮", tr("Calf")), ("🐑", tr("Lamb")), ("🐴", tr("Foal")), ("🐻", tr("Cub")),
+         ("🦌", tr("Fawn")), ("🐔", tr("Chick")), ("🦘", tr("Joey")), ("🐸", tr("Tadpole")), ("🦢", tr("Cygnet")), ("🐐", tr("Kid")),
+         ("🦅", tr("Eaglet")), ("🐷", tr("Piglet")), ("🦉", tr("Owlet"))]
     ]
 
     private static let tripleSets: [[(String, String)]] = [
-        [("🔴", "Red"), ("🔵", "Blue"), ("🟢", "Green"), ("🟡", "Yellow"), ("🟠", "Orange"), ("🟣", "Purple"),
-         ("⚫️", "Black"), ("⚪️", "White"), ("🩷", "Pink"), ("🩵", "Cyan")],
-        [("🍎", "Apple"), ("🍌", "Banana"), ("🍊", "Orange"), ("🍇", "Grapes"), ("🍓", "Strawberry"), ("🍉", "Watermelon"),
-         ("🍑", "Peach"), ("🍒", "Cherry"), ("🥝", "Kiwi"), ("🍍", "Pineapple")],
-        [("⭐", "Star"), ("🌙", "Moon"), ("☀️", "Sun"), ("🌈", "Rainbow"), ("☁️", "Cloud"), ("❄️", "Snow"),
-         ("🔥", "Fire"), ("💧", "Water"), ("🌸", "Flower"), ("🍀", "Clover")],
-        [("🐶", "Dog"), ("🐱", "Cat"), ("🐰", "Rabbit"), ("🐻", "Bear"), ("🦊", "Fox"), ("🐼", "Panda"),
-         ("🦁", "Lion"), ("🐯", "Tiger"), ("🐸", "Frog"), ("🐵", "Monkey")],
-        [("🚗", "Car"), ("🚌", "Bus"), ("🚓", "Police Car"), ("🚑", "Ambulance"), ("🚒", "Fire Truck"), ("✈️", "Plane"),
-         ("🚀", "Rocket"), ("🚁", "Helicopter"), ("🚲", "Bike"), ("⛵", "Boat")],
-        [("🍕", "Pizza"), ("🍔", "Burger"), ("🌭", "Hot Dog"), ("🍟", "Fries"), ("🍩", "Donut"), ("🍪", "Cookie"),
-         ("🍰", "Cake"), ("🍦", "Ice Cream"), ("🍫", "Chocolate"), ("🍿", "Popcorn")]
+        [("🔴", tr("Red")), ("🔵", tr("Blue")), ("🟢", tr("Green")), ("🟡", tr("Yellow")), ("🟠", tr("Orange")), ("🟣", tr("Purple")),
+         ("⚫️", tr("Black")), ("⚪️", tr("White")), ("🩷", tr("Pink")), ("🩵", tr("Cyan"))],
+        [("🍎", tr("Apple")), ("🍌", tr("Banana")), ("🍊", tr("Orange (fruit)")), ("🍇", tr("Grapes")), ("🍓", tr("Strawberry")), ("🍉", tr("Watermelon")),
+         ("🍑", tr("Peach")), ("🍒", tr("Cherry")), ("🥝", tr("Kiwi")), ("🍍", tr("Pineapple"))],
+        [("⭐", tr("Star")), ("🌙", tr("Moon")), ("☀️", tr("Sun")), ("🌈", tr("Rainbow")), ("☁️", tr("Cloud")), ("❄️", tr("Snow")),
+         ("🔥", tr("Fire")), ("💧", tr("Water")), ("🌸", tr("Flower")), ("🍀", tr("Clover"))],
+        [("🐶", tr("Dog")), ("🐱", tr("Cat")), ("🐰", tr("Rabbit")), ("🐻", tr("Bear")), ("🦊", tr("Fox")), ("🐼", tr("Panda")),
+         ("🦁", tr("Lion")), ("🐯", tr("Tiger")), ("🐸", tr("Frog")), ("🐵", tr("Monkey"))],
+        [("🚗", tr("Car")), ("🚌", tr("Bus")), ("🚓", tr("Police Car")), ("🚑", tr("Ambulance")), ("🚒", tr("Fire Truck")), ("✈️", tr("Plane")),
+         ("🚀", tr("Rocket")), ("🚁", tr("Helicopter")), ("🚲", tr("Bike")), ("⛵", tr("Boat"))],
+        [("🍕", tr("Pizza")), ("🍔", tr("Burger")), ("🌭", tr("Hot Dog")), ("🍟", tr("Fries")), ("🍩", tr("Donut")), ("🍪", tr("Cookie")),
+         ("🍰", tr("Cake")), ("🍦", tr("Ice Cream")), ("🍫", tr("Chocolate")), ("🍿", tr("Popcorn"))]
     ]
 
     private static func makePairs(level: Int, count: Int, mode: MatchMode) -> [LevelPairDefinition] {

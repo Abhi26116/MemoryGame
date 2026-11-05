@@ -1,5 +1,7 @@
 package com.memogame.app.model
 
+import com.memogame.app.core.tr
+
 enum class GridSize(val label: String, val gridRows: Int, val gridColumns: Int) {
     TWO_BY_TWO("2×2", 2, 2),
     TWO_BY_THREE("2×3", 2, 3),
@@ -19,9 +21,9 @@ enum class MatchMode {
 }
 
 enum class BadgeTier(val rawValue: String, val colorHex: String) {
-    BRONZE("Bronze", "CD7F32"),
-    SILVER("Silver", "C0C0C0"),
-    GOLD("Gold", "FFD700");
+    BRONZE(tr("Bronze"), "CD7F32"),
+    SILVER(tr("Silver"), "C0C0C0"),
+    GOLD(tr("Gold"), "FFD700");
 
     companion object {
         fun forStars(stars: Int): BadgeTier? = when {
@@ -36,9 +38,9 @@ enum class BadgeTier(val rawValue: String, val colorHex: String) {
 }
 
 enum class AppearanceMode(val rawValue: String, val title: String) {
-    SYSTEM("system", "System"),
-    LIGHT("light", "Light"),
-    DARK("dark", "Dark");
+    SYSTEM("system", tr("System")),
+    LIGHT("light", tr("Light")),
+    DARK("dark", tr("Dark"));
 
     companion object {
         fun fromRaw(raw: String?): AppearanceMode =
@@ -47,11 +49,11 @@ enum class AppearanceMode(val rawValue: String, val title: String) {
 }
 
 enum class CardBackStyle(val rawValue: String, val label: String, val colorHexes: List<String>) {
-    CLASSIC("classic", "Classic", listOf("5B8DEF", "7B5BEF", "9B4DEF")),
-    OCEAN("ocean", "Ocean", listOf("2BC0E4", "1A6FB5")),
-    SUNSET("sunset", "Sunset", listOf("FF9500", "FF5E3A", "FF2D55")),
-    FOREST("forest", "Forest", listOf("34C759", "1A8F50")),
-    CANDY("candy", "Candy", listOf("FF6B9D", "C44DFF"));
+    CLASSIC("classic", tr("Classic"), listOf("5B8DEF", "7B5BEF", "9B4DEF")),
+    OCEAN("ocean", tr("Ocean"), listOf("2BC0E4", "1A6FB5")),
+    SUNSET("sunset", tr("Sunset"), listOf("FF9500", "FF5E3A", "FF2D55")),
+    FOREST("forest", tr("Forest"), listOf("34C759", "1A8F50")),
+    CANDY("candy", tr("Candy"), listOf("FF6B9D", "C44DFF"));
 
     companion object {
         fun fromRaw(raw: String?): CardBackStyle =

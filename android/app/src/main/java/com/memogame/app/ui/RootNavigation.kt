@@ -48,6 +48,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.memogame.app.core.LocalDSColors
+import com.memogame.app.core.tr
 import com.memogame.app.services.ProgressStore
 import com.memogame.app.services.RemoveAdsPromptGate
 import com.memogame.app.services.ReminderScheduler
@@ -151,9 +152,9 @@ private fun MainScaffold(store: ProgressStore, storeManager: StoreManager) {
     val currentRoute = backStackEntry?.destination?.route
 
     val tabs = listOf(
-        TabItem("home", "Play", Icons.Rounded.SportsEsports),
-        TabItem("awards", "Awards", Icons.Rounded.EmojiEvents),
-        TabItem("settings", "Settings", Icons.Rounded.Settings)
+        TabItem("home", tr("Play"), Icons.Rounded.SportsEsports),
+        TabItem("awards", tr("Awards"), Icons.Rounded.EmojiEvents),
+        TabItem("settings", tr("Settings"), Icons.Rounded.Settings)
     )
 
     // Game / Levels push over the tab Scaffold instead of replacing a NavHost

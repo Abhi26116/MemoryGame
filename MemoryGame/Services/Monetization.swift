@@ -308,8 +308,8 @@ final class StoreManager: ObservableObject {
 
     /// Primary CTA label with localized price once StoreKit has loaded it.
     var removeAdsButtonTitle: String {
-        guard let price = removeAdsDisplayPrice else { return "Remove Ads" }
-        return "Remove Ads — \(price)"
+        guard let price = removeAdsDisplayPrice else { return tr("Remove Ads") }
+        return tr("Remove Ads — {0}", price)
     }
 
     private init() {
@@ -364,7 +364,7 @@ final class StoreManager: ObservableObject {
                 removeAdsProduct = product
             }
             guard let product else {
-                setError("Couldn't load the purchase price. Check your connection and try again.")
+                setError(tr("Couldn't load the purchase price. Check your connection and try again."))
                 return false
             }
 
@@ -377,16 +377,16 @@ final class StoreManager: ObservableObject {
                     await transaction.finish()
                     return true
                 case .unverified:
-                    setError("Purchase couldn't be verified. Please try again or contact support.")
+                    setError(tr("Purchase couldn't be verified. Please try again or contact support."))
                     return false
                 }
             case .userCancelled:
                 return false
             case .pending:
-                setError("Purchase is waiting for approval. You'll get ad-free access once it's approved.")
+                setError(tr("Purchase is waiting for approval. You'll get ad-free access once it's approved."))
                 return false
             @unknown default:
-                setError("Something went wrong. Please try again.")
+                setError(tr("Something went wrong. Please try again."))
                 return false
             }
         } catch {
@@ -408,7 +408,7 @@ final class StoreManager: ObservableObject {
             if adsRemoved {
                 return true
             }
-            setError("No previous Remove Ads purchase was found for this Apple ID.")
+            setError(tr("No previous Remove Ads purchase was found for this Apple ID."))
             return false
         } catch {
             let message = friendlyMessage(for: error, context: .restore)
@@ -428,13 +428,13 @@ final class StoreManager: ObservableObject {
         if let storeError = error as? StoreKitError {
             switch storeError {
             case .networkError:
-                return "Network error. Check your connection and try again."
+                return tr("Network error. Check your connection and try again.")
             case .notAvailableInStorefront:
-                return "This purchase isn't available in your App Store region."
+                return tr("This purchase isn't available in your App Store region.")
             case .notEntitled:
                 return context == .restore
-                    ? "No previous Remove Ads purchase was found for this Apple ID."
-                    : "Purchase isn't available right now. Please try again later."
+                    ? tr("No previous Remove Ads purchase was found for this Apple ID.")
+                    : tr("Purchase isn't available right now. Please try again later.")
             case .userCancelled:
                 return ""
             default:
@@ -442,13 +442,13 @@ final class StoreManager: ObservableObject {
             }
         }
         if (error as NSError).domain == NSURLErrorDomain {
-            return "Network error. Check your connection and try again."
+            return tr("Network error. Check your connection and try again.")
         }
         switch context {
         case .purchase:
-            return "Purchase couldn't be completed. Please try again."
+            return tr("Purchase couldn't be completed. Please try again.")
         case .restore:
-            return "Couldn't restore purchases. Please try again."
+            return tr("Couldn't restore purchases. Please try again.")
         }
     }
 }
@@ -500,11 +500,11 @@ struct ParentalGateView: View {
                 .font(.system(size: 44))
                 .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
 
-            Text("Ask a grown-up")
+            Text(tr("Ask a grown-up"))
                 .font(.system(.title2, design: .rounded, weight: .heavy))
                 .foregroundStyle(AppTheme.textPrimary(for: colorScheme))
 
-            Text("What is \(a) + \(b)?")
+            Text(tr("What is {0} + {1}?", a, b))
                 .font(.system(.title3, design: .rounded, weight: .semibold))
                 .foregroundStyle(AppTheme.textSecondary(for: colorScheme))
 
@@ -524,12 +524,12 @@ struct ParentalGateView: View {
             }
 
             if wrong {
-                Text("Try again!")
+                Text(tr("Try again!"))
                     .font(AppTheme.captionFont)
                     .foregroundStyle(Color(hex: "FF3B30"))
             }
 
-            Button("Cancel") { dismiss() }
+            Button(tr("Cancel")) { dismiss() }
                 .font(.system(.body, design: .rounded, weight: .semibold))
                 .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
                 .padding(.top, 4)

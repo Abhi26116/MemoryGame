@@ -50,6 +50,7 @@ import com.memogame.app.core.PrimaryButton
 import com.memogame.app.core.RoundIconButton
 import com.memogame.app.core.pressableClickable
 import com.memogame.app.core.softShadow
+import com.memogame.app.core.tr
 import com.memogame.app.services.StoreManager
 
 /**
@@ -92,7 +93,7 @@ fun RemoveAdsShowcaseScreen(storeManager: StoreManager, onDismiss: () -> Unit) {
                     Spacer(Modifier.weight(1f))
                     RoundIconButton(
                         icon = Icons.Rounded.Close,
-                        contentDescription = "Close",
+                        contentDescription = tr("Close"),
                         tint = ds.textSecondary,
                         size = 36.dp,
                         onClick = onDismiss
@@ -132,13 +133,13 @@ fun RemoveAdsShowcaseScreen(storeManager: StoreManager, onDismiss: () -> Unit) {
                 Spacer(Modifier.height(DS.Spacing.lg))
 
                 Text(
-                    "Go Ad-Free",
+                    tr("Go Ad-Free"),
                     style = DSText.largeTitle.copy(brush = ds.accentGradient),
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(DS.Spacing.xs))
                 Text(
-                    "Unlock the calmest way to play $APP_NAME.",
+                    tr("Unlock the calmest way to play {0}.", APP_NAME),
                     style = DSText.callout,
                     color = ds.textSecondary,
                     textAlign = TextAlign.Center
@@ -148,16 +149,16 @@ fun RemoveAdsShowcaseScreen(storeManager: StoreManager, onDismiss: () -> Unit) {
 
                 Column(verticalArrangement = Arrangement.spacedBy(DS.Spacing.md)) {
                     FeatureRow(
-                        Icons.Rounded.FlashOff, ds.brand, "No Interruptions",
-                        "Play level after level without a single ad break."
+                        Icons.Rounded.FlashOff, ds.brand, tr("No Interruptions"),
+                        tr("Play level after level without a single ad break.")
                     )
                     FeatureRow(
-                        Icons.Rounded.Favorite, ds.accent, "Support the Game",
-                        "Your purchase directly funds new levels and features."
+                        Icons.Rounded.Favorite, ds.accent, tr("Support the Game"),
+                        tr("Your purchase directly funds new levels and features.")
                     )
                     FeatureRow(
-                        Icons.Rounded.Verified, ds.success, "Pay Once, Keep Forever",
-                        "No subscription — a single purchase, forever ad-free."
+                        Icons.Rounded.Verified, ds.success, tr("Pay Once, Keep Forever"),
+                        tr("No subscription — a single purchase, forever ad-free.")
                     )
                 }
 
@@ -184,7 +185,7 @@ fun RemoveAdsShowcaseScreen(storeManager: StoreManager, onDismiss: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Not Now",
+                            tr("Not Now"),
                             style = DSText.caption,
                             color = ds.textSecondary,
                             modifier = Modifier

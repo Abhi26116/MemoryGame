@@ -100,9 +100,9 @@ final class GameViewModel: ObservableObject {
     var lossReasonText: String? {
         switch failReason {
         case .won: return nil
-        case .outOfLives: return "Out of hearts — play again to match all the pairs!"
-        case .outOfMoves: return "Out of moves — play again to match all the pairs!"
-        case .outOfTime: return "Time's up — play again to match all the pairs!"
+        case .outOfLives: return tr("Out of hearts — play again to match all the pairs!")
+        case .outOfMoves: return tr("Out of moves — play again to match all the pairs!")
+        case .outOfTime: return tr("Time's up — play again to match all the pairs!")
         }
     }
 

@@ -32,6 +32,7 @@ struct SettingsView: View {
                 progressSection
                 levelsSection
                 appearanceSection
+                languageSection
                 cardStyleSection
                 gameplaySection
                 notificationsSection
@@ -47,7 +48,7 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity)
         }
         .dsScreenBackground()
-        .navigationTitle("Settings")
+        .navigationTitle(tr("Settings"))
         .tint(DS.Color.link)
         .onAppear {
             viewModel.syncFromStore()
@@ -64,23 +65,23 @@ struct SettingsView: View {
             }
             .presentationDetents([.medium])
         }
-        .alert("Reset all progress?", isPresented: $showResetAlert) {
-            Button("Cancel", role: .cancel) {}
-            Button("Reset", role: .destructive) {
+        .alert(tr("Reset all progress?"), isPresented: $showResetAlert) {
+            Button(tr("Cancel"), role: .cancel) {}
+            Button(tr("Reset"), role: .destructive) {
                 viewModel.resetAllProgress()
             }
         } message: {
-            Text("This removes stars, level progress, and achievements. Your settings stay the same.")
+            Text(tr("This removes stars, level progress, and achievements. Your settings stay the same."))
         }
-        .alert("Notifications are off", isPresented: $showNotifDeniedAlert) {
-            Button("Open Settings") {
+        .alert(tr("Notifications are off"), isPresented: $showNotifDeniedAlert) {
+            Button(tr("Open Settings")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button("Not Now", role: .cancel) {}
+            Button(tr("Not Now"), role: .cancel) {}
         } message: {
-            Text("Enable notifications for Memory Match in the Settings app to get daily reminders.")
+            Text(tr("Enable notifications for Memory Match in the Settings app to get daily reminders."))
         }
     }
 
@@ -88,13 +89,13 @@ struct SettingsView: View {
 
     private var progressSection: some View {
         DSCard {
-            SectionHeader(title: "Your Progress", icon: "chart.bar.fill")
+            SectionHeader(title: tr("Your Progress"), icon: "chart.bar.fill")
 
             HStack(spacing: DS.Spacing.sm + 2) {
-                StatCard(value: "\(progressStore.completedLevels)", label: "Done", icon: "flag.checkered")
-                StatCard(value: "\(progressStore.totalStars)", label: "Stars",
+                StatCard(value: "\(progressStore.completedLevels)", label: tr("Done"), icon: "flag.checkered")
+                StatCard(value: "\(progressStore.totalStars)", label: tr("Stars"),
                          icon: "star.fill", tint: DS.Color.star)
-                StatCard(value: "\(progressStore.goldLevels)", label: "Gold",
+                StatCard(value: "\(progressStore.goldLevels)", label: tr("Gold"),
                          icon: "crown.fill", tint: DS.Color.star)
             }
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
@@ -102,7 +103,7 @@ struct SettingsView: View {
             HStack(spacing: DS.Spacing.sm) {
                 Image(systemName: "trophy.fill")
                     .foregroundStyle(DS.Color.star)
-                Text("\(progressStore.achievementsUnlocked) achievements unlocked")
+                Text(tr("{0} achievements unlocked", progressStore.achievementsUnlocked))
                     .font(.DSText.caption)
                     .foregroundStyle(DS.Color.textSecondary)
             }
@@ -113,7 +114,7 @@ struct SettingsView: View {
 
     private var levelsSection: some View {
         DSCard {
-            SectionHeader(title: "Levels", icon: "square.grid.2x2.fill")
+            SectionHeader(title: tr("Levels"), icon: "square.grid.2x2.fill")
             NavigationLink {
                 LevelsView(progressStore: progressStore)
             } label: {
@@ -123,10 +124,10 @@ struct SettingsView: View {
                         .foregroundStyle(DS.Color.link)
                         .frame(width: DS.Layout.isPad ? 34 : 28)
                     VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
-                        Text("All Levels")
+                        Text(tr("All Levels"))
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(DS.Color.textPrimary)
-                        Text("Browse, replay, and check your stars")
+                        Text(tr("Browse, replay, and check your stars"))
                             .font(.DSText.caption)
                             .foregroundStyle(DS.Color.textSecondary)
                     }
@@ -145,8 +146,8 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         DSCard {
-            SectionHeader(title: "Appearance", icon: "paintbrush.fill")
-            Text("Choose light, dark, or match your device.")
+            SectionHeader(title: tr("Appearance"), icon: "paintbrush.fill")
+            Text(tr("Choose light, dark, or match your device."))
                 .font(.DSText.caption)
                 .foregroundStyle(DS.Color.textSecondary)
 
@@ -156,6 +157,43 @@ struct SettingsView: View {
                 }
             }
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+        }
+    }
+
+    // MARK: - Language
+
+    /// iOS keeps the per-app language in the Settings app (it appears there
+    /// because the bundle ships several .lproj folders) and relaunches the app
+    /// when it changes, so the row just sends the parent there.
+    private var languageSection: some View {
+        DSCard {
+            SectionHeader(title: tr("Language"), icon: "globe")
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                HStack(spacing: DS.Spacing.md) {
+                    Image(systemName: "character.bubble.fill")
+                        .font(.title3)
+                        .foregroundStyle(DS.Color.link)
+                        .frame(width: DS.Layout.isPad ? 34 : 28)
+                    VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
+                        Text(L10n.nativeNames[L10n.language] ?? "English")
+                            .font(.system(.body, design: .rounded, weight: .bold))
+                            .foregroundStyle(DS.Color.textPrimary)
+                        Text(tr("Change it in the Settings app"))
+                            .font(.DSText.caption)
+                            .foregroundStyle(DS.Color.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.footnote)
+                        .foregroundStyle(DS.Color.textSecondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.pressable)
         }
     }
 
@@ -183,7 +221,7 @@ struct SettingsView: View {
             )
         }
         .buttonStyle(.pressable)
-        .accessibilityLabel("\(mode.title) theme")
+        .accessibilityLabel(tr("{0} theme", mode.title))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -191,8 +229,8 @@ struct SettingsView: View {
 
     private var cardStyleSection: some View {
         DSCard {
-            SectionHeader(title: "Card Style", icon: "rectangle.stack.fill")
-            Text("Pick the look of the card backs.")
+            SectionHeader(title: tr("Card Style"), icon: "rectangle.stack.fill")
+            Text(tr("Pick the look of the card backs."))
                 .font(.DSText.caption)
                 .foregroundStyle(DS.Color.textSecondary)
 
@@ -226,7 +264,7 @@ struct SettingsView: View {
                     .buttonStyle(.pressable)
                     .frame(maxWidth: .infinity)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(style.label) card back")
+                    .accessibilityLabel(tr("{0} card back", style.label))
                     .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
                 }
             }
@@ -238,22 +276,22 @@ struct SettingsView: View {
 
     private var gameplaySection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            SectionHeader(title: "Gameplay", icon: "gamecontroller.fill")
+            SectionHeader(title: tr("Gameplay"), icon: "gamecontroller.fill")
             settingsToggle(
-                title: "Sound Effects",
-                subtitle: "Flips, matches, and level complete sounds",
+                title: tr("Sound Effects"),
+                subtitle: tr("Flips, matches, and level complete sounds"),
                 icon: "speaker.wave.2.fill",
                 isOn: $viewModel.soundEnabled
             ) { viewModel.setSound($0) }
             settingsToggle(
-                title: "Haptic Feedback",
-                subtitle: "Gentle taps when you flip and match cards",
+                title: tr("Haptic Feedback"),
+                subtitle: tr("Gentle taps when you flip and match cards"),
                 icon: "hand.tap.fill",
                 isOn: $viewModel.hapticsEnabled
             ) { viewModel.setHaptics($0) }
             settingsToggle(
-                title: "Memorize Preview",
-                subtitle: "Show all cards to memorize at the start (level 3+)",
+                title: tr("Memorize Preview"),
+                subtitle: tr("Show all cards to memorize at the start (level 3+)"),
                 icon: "eye.fill",
                 isOn: $viewModel.memorizePreviewEnabled
             ) { viewModel.setMemorizePreview($0) }
@@ -265,10 +303,10 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            SectionHeader(title: "Notifications", icon: "bell.badge.fill")
+            SectionHeader(title: tr("Notifications"), icon: "bell.badge.fill")
             settingsToggle(
-                title: "Reminders",
-                subtitle: "A daily nudge, plus a friendly note if you've been away",
+                title: tr("Reminders"),
+                subtitle: tr("A daily nudge, plus a friendly note if you've been away"),
                 icon: "bell.fill",
                 isOn: $remindersEnabled
             ) { handleReminders($0) }
@@ -296,22 +334,22 @@ struct SettingsView: View {
 
     private var accessibilitySection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            SectionHeader(title: "Accessibility", icon: "accessibility")
+            SectionHeader(title: tr("Accessibility"), icon: "accessibility")
             settingsToggle(
-                title: "Large Text",
-                subtitle: "Bigger emojis and labels on game cards",
+                title: tr("Large Text"),
+                subtitle: tr("Bigger emojis and labels on game cards"),
                 icon: "textformat.size",
                 isOn: $viewModel.largeText
             ) { viewModel.setLargeText($0) }
             settingsToggle(
-                title: "High Contrast",
-                subtitle: "Thicker borders and sharper card faces",
+                title: tr("High Contrast"),
+                subtitle: tr("Thicker borders and sharper card faces"),
                 icon: "circle.lefthalf.filled",
                 isOn: $viewModel.highContrast
             ) { viewModel.setHighContrast($0) }
             settingsToggle(
-                title: "Color Blind Friendly",
-                subtitle: "Uses blue accents instead of mixed colors",
+                title: tr("Color Blind Friendly"),
+                subtitle: tr("Uses blue accents instead of mixed colors"),
                 icon: "eye.trianglebadge.exclamationmark",
                 isOn: $viewModel.colorBlindMode
             ) { viewModel.setColorBlind($0) }
@@ -323,13 +361,13 @@ struct SettingsView: View {
 
     private var removeAdsSection: some View {
         DSCard {
-            SectionHeader(title: "Ads", icon: "heart.slash.fill")
+            SectionHeader(title: tr("Ads"), icon: "heart.slash.fill")
 
             if store.adsRemoved {
                 HStack(spacing: DS.Spacing.sm + 2) {
                     Image(systemName: "checkmark.seal.fill")
                         .foregroundStyle(DS.Color.success)
-                    Text("Ads removed — thank you!")
+                    Text(tr("Ads removed — thank you!"))
                         .font(.system(.body, design: .rounded, weight: .semibold))
                         .foregroundStyle(DS.Color.textPrimary)
                 }
@@ -342,10 +380,10 @@ struct SettingsView: View {
                         Image(systemName: "heart.slash.fill")
                             .font(.title3)
                         VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
-                            Text("Remove Ads")
+                            Text(tr("Remove Ads"))
                                 .font(.system(.body, design: .rounded, weight: .bold))
-                            Text(store.removeAdsProduct.map { "One-time purchase — \($0.displayPrice), no more ads" }
-                                 ?? "One-time purchase — no more ads")
+                            Text(store.removeAdsProduct.map { tr("One-time purchase — {0}, no more ads", $0.displayPrice) }
+                                 ?? tr("One-time purchase — no more ads"))
                                 .font(.DSText.caption)
                                 .foregroundStyle(DS.Color.textSecondary)
                         }
@@ -365,7 +403,7 @@ struct SettingsView: View {
                 Button {
                     Task { await store.restore() }
                 } label: {
-                    Text("Restore Purchases")
+                    Text(tr("Restore Purchases"))
                         .font(.DSText.caption)
                         .foregroundStyle(DS.Color.link)
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -381,7 +419,7 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         DSCard {
-            SectionHeader(title: "Data", icon: "externaldrive.fill")
+            SectionHeader(title: tr("Data"), icon: "externaldrive.fill")
             Button(role: .destructive) {
                 showResetAlert = true
             } label: {
@@ -389,9 +427,9 @@ struct SettingsView: View {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.title3)
                     VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
-                        Text("Reset All Progress")
+                        Text(tr("Reset All Progress"))
                             .font(.system(.body, design: .rounded, weight: .bold))
-                        Text("Start over from Level 1")
+                        Text(tr("Start over from Level 1"))
                             .font(.DSText.caption)
                             .foregroundStyle(DS.Color.textSecondary)
                     }
@@ -408,12 +446,12 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         DSCard {
-            SectionHeader(title: "About", icon: "info.circle.fill")
-            infoRow(label: "App", value: AppTheme.appName)
-            infoRow(label: "Unlock rule", value: "Complete a level to open the next")
+            SectionHeader(title: tr("About"), icon: "info.circle.fill")
+            infoRow(label: tr("App"), value: AppTheme.appName)
+            infoRow(label: tr("Unlock rule"), value: tr("Complete a level to open the next"))
             infoRow(
-                label: "Star guide",
-                value: "3★ ≤ pairs moves · 2★ ≤ pairs + \(StarRatingRules.twoStarExtraMoves) · 1★ finish"
+                label: tr("Star guide"),
+                value: tr("3★ ≤ pairs moves · 2★ ≤ pairs + {0} · 1★ finish", StarRatingRules.twoStarExtraMoves)
             )
         }
     }
@@ -427,16 +465,16 @@ struct SettingsView: View {
 
     private var legalSection: some View {
         DSCard {
-            SectionHeader(title: "Support & Privacy", icon: "hand.raised.fill")
+            SectionHeader(title: tr("Support & Privacy"), icon: "hand.raised.fill")
             // Only shown where UMP says this user is owed a way back to their
             // consent answer — elsewhere there is no form to re-present, so the
             // row would dead-end.
             if showPrivacyOptions {
                 privacyOptionsRow
             }
-            legalLink(title: "Privacy Policy", icon: "lock.doc.fill", url: Self.privacyPolicyURL)
-            legalLink(title: "Terms & Conditions", icon: "doc.text.fill", url: Self.termsURL)
-            legalLink(title: "Contact Support", icon: "questionmark.circle.fill", url: Self.supportURL)
+            legalLink(title: tr("Privacy Policy"), icon: "lock.doc.fill", url: Self.privacyPolicyURL)
+            legalLink(title: tr("Terms & Conditions"), icon: "doc.text.fill", url: Self.termsURL)
+            legalLink(title: tr("Contact Support"), icon: "questionmark.circle.fill", url: Self.supportURL)
         }
     }
 
@@ -453,7 +491,7 @@ struct SettingsView: View {
                     .font(.body)
                     .foregroundStyle(DS.Color.link)
                     .frame(width: DS.Layout.isPad ? 34 : 28)
-                Text("Privacy Options")
+                Text(tr("Privacy Options"))
                     .font(.system(.body, design: .rounded, weight: .semibold))
                     .foregroundStyle(DS.Color.textPrimary)
                 Spacer()

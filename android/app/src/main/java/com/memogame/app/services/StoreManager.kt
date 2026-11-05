@@ -17,6 +17,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.memogame.app.core.tr
 
 /**
  * "Remove Ads" one-time purchase via Google Play Billing — port of the iOS
@@ -70,7 +71,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
 
     /** Primary CTA label with localized price once Billing has loaded it. */
     val removeAdsButtonTitle: String
-        get() = removeAdsDisplayPrice?.let { "Remove Ads — $it" } ?: "Remove Ads"
+        get() = removeAdsDisplayPrice?.let { tr("Remove Ads — {0}", it) } ?: tr("Remove Ads")
 
     private val billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -186,7 +187,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
             if (product == null) {
                 // One retry: load the product, then launch.
                 loadProduct()
-                setError("Couldn't load the purchase price. Check your connection and try again.")
+                setError(tr("Couldn't load the purchase price. Check your connection and try again."))
                 isWorking = false
                 return@withConnection
             }
@@ -206,7 +207,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
                 .build()
             val result = billingClient.launchBillingFlow(activity, params)
             if (result.responseCode != BillingClient.BillingResponseCode.OK) {
-                setError("Purchase couldn't be started. Please try again.")
+                setError(tr("Purchase couldn't be started. Please try again."))
                 isWorking = false
             }
             // isWorking is cleared in onPurchasesUpdated.
@@ -219,7 +220,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
         refresh { owned ->
             isWorking = false
             if (!owned) {
-                setError("No previous Remove Ads purchase was found for this Google account.")
+                setError(tr("No previous Remove Ads purchase was found for this Google account."))
             }
         }
     }
@@ -236,7 +237,7 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
                                 setAdsRemoved(true)
                             }
                             Purchase.PurchaseState.PENDING -> {
-                                setError("Purchase is waiting for approval. You'll get ad-free access once it's approved.")
+                                setError(tr("Purchase is waiting for approval. You'll get ad-free access once it's approved."))
                             }
                         }
                     }
@@ -249,10 +250,10 @@ class StoreManager private constructor(context: Context) : PurchasesUpdatedListe
                 setAdsRemoved(true)
             }
             BillingClient.BillingResponseCode.NETWORK_ERROR -> {
-                setError("Network error. Check your connection and try again.")
+                setError(tr("Network error. Check your connection and try again."))
             }
             else -> {
-                setError("Purchase couldn't be completed. Please try again.")
+                setError(tr("Purchase couldn't be completed. Please try again."))
             }
         }
     }

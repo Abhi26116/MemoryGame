@@ -1,5 +1,7 @@
 package com.memogame.app.data
 
+import com.memogame.app.core.tr
+
 import com.memogame.app.engine.MathAssociationHelper
 import com.memogame.app.model.CardContent
 import com.memogame.app.model.GridSize
@@ -32,7 +34,7 @@ object LevelCatalog {
         return LevelModel(
             id = "level_$number",
             levelNumber = number,
-            title = "Level $number",
+            title = tr("Level {0}", number),
             subtitle = "$theme · ${grid.label}",
             objective = objective(number, mode),
             matchMode = mode,
@@ -125,11 +127,11 @@ object LevelCatalog {
     }
 
     private val associationThemeNames = listOf(
-        "Letters", "Animal Match", "Opposites", "Addition", "Word Match", "Countries",
-        "Goes Together", "Baby Animals"
+        tr("Letters"), tr("Animal Match"), tr("Opposites"), tr("Addition"), tr("Word Match"), tr("Countries"),
+        tr("Goes Together"), tr("Baby Animals")
     )
 
-    private val tripleThemeNames = listOf("Colors", "Fruits", "Stars", "Animals", "Vehicles", "Food")
+    private val tripleThemeNames = listOf(tr("Colors"), tr("Fruits"), tr("Stars"), tr("Animals"), tr("Vehicles"), tr("Food"))
 
     /** Association level where the mechanic is first introduced. */
     private const val FIRST_ASSOCIATION_LEVEL = 20
@@ -150,65 +152,65 @@ object LevelCatalog {
             return associationThemeNames[associationThemeIndex(number)]
         }
         if (mode == MatchMode.TRIPLE) {
-            return "Triple · ${tripleThemeNames[(number - 1) % tripleThemeNames.size]}"
+            return tr("Triple · {0}", tripleThemeNames[(number - 1) % tripleThemeNames.size])
         }
         val themes = listOf(
-            "Animals", "Colors", "Fruits", "Vehicles", "Shapes",
-            "Faces", "Weather", "Toys", "Nature", "Sports"
+            tr("Animals"), tr("Colors"), tr("Fruits"), tr("Vehicles"), tr("Shapes"),
+            tr("Faces"), tr("Weather"), tr("Toys"), tr("Nature"), tr("Sports")
         )
         return themes[themeIndex(number)]
     }
 
     /** Kid-friendly "what to do" line shown on the play screen and memorize phase. */
     private fun objective(number: Int, mode: MatchMode): String = when (mode) {
-        MatchMode.TRIPLE -> "Find all three cards that are the same!"
+        MatchMode.TRIPLE -> tr("Find all three cards that are the same!")
         MatchMode.ASSOCIATION -> when (associationThemeIndex(number)) {
-            0 -> "Match each capital letter to its small letter."
-            1 -> "Match each animal to its favorite food."
-            2 -> "Match each picture to its opposite."
-            3 -> "Match each sum to the correct answer."
-            4 -> "Match each animal to its name."
-            5 -> "Match each flag to its country."
-            6 -> "Match the things that go together."
-            7 -> "Match each animal to its baby's name."
-            else -> "Match the two cards that go together!"
+            0 -> tr("Match each capital letter to its small letter.")
+            1 -> tr("Match each animal to its favorite food.")
+            2 -> tr("Match each picture to its opposite.")
+            3 -> tr("Match each sum to the correct answer.")
+            4 -> tr("Match each animal to its name.")
+            5 -> tr("Match each flag to its country.")
+            6 -> tr("Match the things that go together.")
+            7 -> tr("Match each animal to its baby's name.")
+            else -> tr("Match the two cards that go together!")
         }
-        else -> "Find and match the pairs that look the same!"
+        else -> tr("Find and match the pairs that look the same!")
     }
 
     // MARK: - Card content pools
 
     private val identicalSets: List<List<Pair<String, String>>> = listOf(
-        listOf("🐶" to "Puppy", "🐱" to "Kitten", "🐰" to "Bunny", "🐥" to "Duck", "🐻" to "Bear", "🦊" to "Fox",
-            "🐼" to "Panda", "🐨" to "Koala", "🐯" to "Tiger", "🦁" to "Lion", "🐷" to "Pig", "🐸" to "Frog",
-            "🐙" to "Octopus", "🦒" to "Giraffe", "🐘" to "Elephant"),
-        listOf("🔴" to "Red", "🔵" to "Blue", "🟢" to "Green", "🟡" to "Yellow", "🟠" to "Orange", "🟣" to "Purple",
-            "🟤" to "Brown", "⚫️" to "Black", "⚪️" to "White", "🩷" to "Pink", "🩵" to "Light Blue", "💚" to "Light Green",
-            "💛" to "Light Yellow", "🧡" to "Light Orange", "💜" to "Light Purple"),
-        listOf("🍎" to "Apple", "🍌" to "Banana", "🍊" to "Orange", "🍇" to "Grapes", "🍓" to "Strawberry", "🍉" to "Watermelon",
-            "🍑" to "Peach", "🍒" to "Cherry", "🥝" to "Kiwi", "🍍" to "Pineapple", "🥭" to "Mango", "🫐" to "Blueberry",
-            "🍋" to "Lemon", "🥥" to "Coconut", "🍈" to "Melon"),
-        listOf("🚗" to "Car", "🚂" to "Train", "✈️" to "Plane", "🚲" to "Bike", "🚌" to "Bus", "🚁" to "Helicopter",
-            "🚢" to "Ship", "🏍️" to "Motorcycle", "🛴" to "Scooter", "🚕" to "Taxi", "🚑" to "Ambulance", "🚒" to "Fire Truck",
-            "🚜" to "Tractor", "🛸" to "UFO", "🚀" to "Rocket"),
-        listOf("⭐" to "Star", "🔴" to "Circle", "🟦" to "Square", "🔺" to "Triangle", "💠" to "Diamond", "⬛️" to "Block",
-            "⭕️" to "Ring", "🔶" to "Orange Shape", "🔷" to "Blue Shape", "💟" to "Heart", "✨" to "Sparkle", "☀️" to "Sun Shape",
-            "🌙" to "Moon Shape", "🌈" to "Rainbow", "❇️" to "Asterisk"),
-        listOf("😊" to "Happy", "😢" to "Sad", "😮" to "Wow", "🤩" to "Excited", "😴" to "Sleepy", "😎" to "Cool",
-            "🥳" to "Party", "😇" to "Angel", "🤔" to "Thinking", "😍" to "Love", "😜" to "Silly", "🤗" to "Hug",
-            "😱" to "Surprised", "🥰" to "Blush", "😋" to "Yummy"),
-        listOf("☀️" to "Sun", "🌧️" to "Rain", "❄️" to "Snow", "☁️" to "Cloud", "⛈️" to "Storm", "🌈" to "Rainbow",
-            "🌪️" to "Tornado", "🌫️" to "Fog", "💨" to "Wind", "🌤️" to "Partly Sunny", "🌥️" to "Cloudy", "🌦️" to "Sun Shower",
-            "🌨️" to "Snow Cloud", "🌩️" to "Lightning", "🌬️" to "Breeze"),
-        listOf("🧸" to "Teddy", "🪀" to "Yo-yo", "🚙" to "Toy Car", "🧱" to "Blocks", "🪁" to "Kite", "🎲" to "Dice",
-            "🪆" to "Doll", "🧩" to "Puzzle", "🎠" to "Carousel", "🛼" to "Skates", "🎯" to "Target", "🪅" to "Piñata",
-            "🪩" to "Disco", "🧵" to "Thread", "🪄" to "Wand"),
-        listOf("🌸" to "Flower", "🌳" to "Tree", "🦋" to "Butterfly", "🐝" to "Bee", "🌻" to "Sunflower", "🍀" to "Clover",
-            "🌵" to "Cactus", "🍄" to "Mushroom", "🌺" to "Hibiscus", "🌷" to "Tulip", "🪴" to "Plant", "🌿" to "Leaf",
-            "🪺" to "Nest", "🐚" to "Shell", "🪸" to "Coral"),
-        listOf("⚽" to "Soccer", "🏀" to "Basketball", "🎾" to "Tennis", "🏈" to "Football", "🏐" to "Volleyball", "🏓" to "Ping Pong",
-            "🏸" to "Badminton", "🥊" to "Boxing", "⛳️" to "Golf", "🎳" to "Bowling", "🏏" to "Cricket", "🥏" to "Frisbee",
-            "🛹" to "Skateboard", "⛷️" to "Skiing", "🏊" to "Swimming")
+        listOf("🐶" to tr("Puppy"), "🐱" to tr("Kitten"), "🐰" to tr("Bunny"), "🐥" to tr("Duck"), "🐻" to tr("Bear"), "🦊" to tr("Fox"),
+            "🐼" to tr("Panda"), "🐨" to tr("Koala"), "🐯" to tr("Tiger"), "🦁" to tr("Lion"), "🐷" to tr("Pig"), "🐸" to tr("Frog"),
+            "🐙" to tr("Octopus"), "🦒" to tr("Giraffe"), "🐘" to tr("Elephant")),
+        listOf("🔴" to tr("Red"), "🔵" to tr("Blue"), "🟢" to tr("Green"), "🟡" to tr("Yellow"), "🟠" to tr("Orange"), "🟣" to tr("Purple"),
+            "🟤" to tr("Brown"), "⚫️" to tr("Black"), "⚪️" to tr("White"), "🩷" to tr("Pink"), "🩵" to tr("Light Blue"), "💚" to tr("Light Green"),
+            "💛" to tr("Light Yellow"), "🧡" to tr("Light Orange"), "💜" to tr("Light Purple")),
+        listOf("🍎" to tr("Apple"), "🍌" to tr("Banana"), "🍊" to tr("Orange (fruit)"), "🍇" to tr("Grapes"), "🍓" to tr("Strawberry"), "🍉" to tr("Watermelon"),
+            "🍑" to tr("Peach"), "🍒" to tr("Cherry"), "🥝" to tr("Kiwi"), "🍍" to tr("Pineapple"), "🥭" to tr("Mango"), "🫐" to tr("Blueberry"),
+            "🍋" to tr("Lemon"), "🥥" to tr("Coconut"), "🍈" to tr("Melon")),
+        listOf("🚗" to tr("Car"), "🚂" to tr("Train"), "✈️" to tr("Plane"), "🚲" to tr("Bike"), "🚌" to tr("Bus"), "🚁" to tr("Helicopter"),
+            "🚢" to tr("Ship"), "🏍️" to tr("Motorcycle"), "🛴" to tr("Scooter"), "🚕" to tr("Taxi"), "🚑" to tr("Ambulance"), "🚒" to tr("Fire Truck"),
+            "🚜" to tr("Tractor"), "🛸" to tr("UFO"), "🚀" to tr("Rocket")),
+        listOf("⭐" to tr("Star"), "🔴" to tr("Circle"), "🟦" to tr("Square"), "🔺" to tr("Triangle"), "💠" to tr("Diamond"), "⬛️" to tr("Block"),
+            "⭕️" to tr("Ring"), "🔶" to tr("Orange Shape"), "🔷" to tr("Blue Shape"), "💟" to tr("Heart"), "✨" to tr("Sparkle"), "☀️" to tr("Sun Shape"),
+            "🌙" to tr("Moon Shape"), "🌈" to tr("Rainbow"), "❇️" to tr("Asterisk")),
+        listOf("😊" to tr("Happy"), "😢" to tr("Sad"), "😮" to tr("Wow"), "🤩" to tr("Excited"), "😴" to tr("Sleepy"), "😎" to tr("Cool"),
+            "🥳" to tr("Party"), "😇" to tr("Angel"), "🤔" to tr("Thinking"), "😍" to tr("Love"), "😜" to tr("Silly"), "🤗" to tr("Hug"),
+            "😱" to tr("Surprised"), "🥰" to tr("Blush"), "😋" to tr("Yummy")),
+        listOf("☀️" to tr("Sun"), "🌧️" to tr("Rain"), "❄️" to tr("Snow"), "☁️" to tr("Cloud"), "⛈️" to tr("Storm"), "🌈" to tr("Rainbow"),
+            "🌪️" to tr("Tornado"), "🌫️" to tr("Fog"), "💨" to tr("Wind"), "🌤️" to tr("Partly Sunny"), "🌥️" to tr("Cloudy"), "🌦️" to tr("Sun Shower"),
+            "🌨️" to tr("Snow Cloud"), "🌩️" to tr("Lightning"), "🌬️" to tr("Breeze")),
+        listOf("🧸" to tr("Teddy"), "🪀" to tr("Yo-yo"), "🚙" to tr("Toy Car"), "🧱" to tr("Blocks"), "🪁" to tr("Kite"), "🎲" to tr("Dice"),
+            "🪆" to tr("Doll"), "🧩" to tr("Puzzle"), "🎠" to tr("Carousel"), "🛼" to tr("Skates"), "🎯" to tr("Target"), "🪅" to tr("Piñata"),
+            "🪩" to tr("Disco"), "🧵" to tr("Thread"), "🪄" to tr("Wand")),
+        listOf("🌸" to tr("Flower"), "🌳" to tr("Tree"), "🦋" to tr("Butterfly"), "🐝" to tr("Bee"), "🌻" to tr("Sunflower"), "🍀" to tr("Clover"),
+            "🌵" to tr("Cactus"), "🍄" to tr("Mushroom"), "🌺" to tr("Hibiscus"), "🌷" to tr("Tulip"), "🪴" to tr("Plant"), "🌿" to tr("Leaf"),
+            "🪺" to tr("Nest"), "🐚" to tr("Shell"), "🪸" to tr("Coral")),
+        listOf("⚽" to tr("Soccer"), "🏀" to tr("Basketball"), "🎾" to tr("Tennis"), "🏈" to tr("Football"), "🏐" to tr("Volleyball"), "🏓" to tr("Ping Pong"),
+            "🏸" to tr("Badminton"), "🥊" to tr("Boxing"), "⛳️" to tr("Golf"), "🎳" to tr("Bowling"), "🏏" to tr("Cricket"), "🥏" to tr("Frisbee"),
+            "🛹" to tr("Skateboard"), "⛷️" to tr("Skiing"), "🏊" to tr("Swimming"))
     )
 
     private val associationSets: List<List<Pair<String, String>>> = listOf(
@@ -223,33 +225,33 @@ object LevelCatalog {
         listOf("1+1" to "2", "2+1" to "3", "3+1" to "4", "4+1" to "5", "5+1" to "6", "6+1" to "7",
             "7+1" to "8", "8+1" to "9", "9+1" to "10", "10+1" to "11", "10+2" to "12", "10+3" to "13",
             "10+4" to "14", "10+5" to "15", "10+6" to "16"),
-        listOf("🦈" to "SHARK", "🐋" to "WHALE", "🦭" to "SEAL", "🐊" to "CROCODILE", "🦎" to "LIZARD", "🐍" to "SNAKE",
-            "🦘" to "KANGAROO", "🦏" to "RHINO", "🦛" to "HIPPO", "🐪" to "CAMEL", "🦬" to "BISON", "🦙" to "LLAMA",
-            "🦥" to "SLOTH", "🦨" to "SKUNK", "🦫" to "BEAVER"),
-        listOf("🇺🇸" to "USA", "🇬🇧" to "UK", "🇫🇷" to "France", "🇯🇵" to "Japan", "🇮🇳" to "India", "🇧🇷" to "Brazil",
-            "🇨🇦" to "Canada", "🇩🇪" to "Germany", "🇮🇹" to "Italy", "🇪🇸" to "Spain", "🇦🇺" to "Australia", "🇲🇽" to "Mexico",
-            "🇰🇷" to "Korea", "🇨🇳" to "China", "🇿🇦" to "South Africa"),
+        listOf("🦈" to tr("SHARK"), "🐋" to tr("WHALE"), "🦭" to tr("SEAL"), "🐊" to tr("CROCODILE"), "🦎" to tr("LIZARD"), "🐍" to tr("SNAKE"),
+            "🦘" to tr("KANGAROO"), "🦏" to tr("RHINO"), "🦛" to tr("HIPPO"), "🐪" to tr("CAMEL"), "🦬" to tr("BISON"), "🦙" to tr("LLAMA"),
+            "🦥" to tr("SLOTH"), "🦨" to tr("SKUNK"), "🦫" to tr("BEAVER")),
+        listOf("🇺🇸" to tr("USA"), "🇬🇧" to tr("UK"), "🇫🇷" to tr("France"), "🇯🇵" to tr("Japan"), "🇮🇳" to tr("India"), "🇧🇷" to tr("Brazil"),
+            "🇨🇦" to tr("Canada"), "🇩🇪" to tr("Germany"), "🇮🇹" to tr("Italy"), "🇪🇸" to tr("Spain"), "🇦🇺" to tr("Australia"), "🇲🇽" to tr("Mexico"),
+            "🇰🇷" to tr("Korea"), "🇨🇳" to tr("China"), "🇿🇦" to tr("South Africa")),
         listOf("🧦" to "👟", "🔑" to "🔒", "✏️" to "📓", "🪥" to "🦷", "☂️" to "🌧️", "🧤" to "❄️",
             "🐝" to "🌻", "🐟" to "🐠", "🍴" to "🍽️", "🔌" to "💡", "🎁" to "🎀", "⚽" to "🥅",
             "🖍️" to "🎨", "🧩" to "🧠", "🌱" to "💧"),
-        listOf("🐶" to "Puppy", "🐱" to "Kitten", "🐮" to "Calf", "🐑" to "Lamb", "🐴" to "Foal", "🐻" to "Cub",
-            "🦌" to "Fawn", "🐔" to "Chick", "🦘" to "Joey", "🐸" to "Tadpole", "🦢" to "Cygnet", "🐐" to "Kid",
-            "🦅" to "Eaglet", "🐷" to "Piglet", "🦉" to "Owlet")
+        listOf("🐶" to tr("Puppy"), "🐱" to tr("Kitten"), "🐮" to tr("Calf"), "🐑" to tr("Lamb"), "🐴" to tr("Foal"), "🐻" to tr("Cub"),
+            "🦌" to tr("Fawn"), "🐔" to tr("Chick"), "🦘" to tr("Joey"), "🐸" to tr("Tadpole"), "🦢" to tr("Cygnet"), "🐐" to tr("Kid"),
+            "🦅" to tr("Eaglet"), "🐷" to tr("Piglet"), "🦉" to tr("Owlet"))
     )
 
     private val tripleSets: List<List<Pair<String, String>>> = listOf(
-        listOf("🔴" to "Red", "🔵" to "Blue", "🟢" to "Green", "🟡" to "Yellow", "🟠" to "Orange", "🟣" to "Purple",
-            "⚫️" to "Black", "⚪️" to "White", "🩷" to "Pink", "🩵" to "Cyan"),
-        listOf("🍎" to "Apple", "🍌" to "Banana", "🍊" to "Orange", "🍇" to "Grapes", "🍓" to "Strawberry", "🍉" to "Watermelon",
-            "🍑" to "Peach", "🍒" to "Cherry", "🥝" to "Kiwi", "🍍" to "Pineapple"),
-        listOf("⭐" to "Star", "🌙" to "Moon", "☀️" to "Sun", "🌈" to "Rainbow", "☁️" to "Cloud", "❄️" to "Snow",
-            "🔥" to "Fire", "💧" to "Water", "🌸" to "Flower", "🍀" to "Clover"),
-        listOf("🐶" to "Dog", "🐱" to "Cat", "🐰" to "Rabbit", "🐻" to "Bear", "🦊" to "Fox", "🐼" to "Panda",
-            "🦁" to "Lion", "🐯" to "Tiger", "🐸" to "Frog", "🐵" to "Monkey"),
-        listOf("🚗" to "Car", "🚌" to "Bus", "🚓" to "Police Car", "🚑" to "Ambulance", "🚒" to "Fire Truck", "✈️" to "Plane",
-            "🚀" to "Rocket", "🚁" to "Helicopter", "🚲" to "Bike", "⛵" to "Boat"),
-        listOf("🍕" to "Pizza", "🍔" to "Burger", "🌭" to "Hot Dog", "🍟" to "Fries", "🍩" to "Donut", "🍪" to "Cookie",
-            "🍰" to "Cake", "🍦" to "Ice Cream", "🍫" to "Chocolate", "🍿" to "Popcorn")
+        listOf("🔴" to tr("Red"), "🔵" to tr("Blue"), "🟢" to tr("Green"), "🟡" to tr("Yellow"), "🟠" to tr("Orange"), "🟣" to tr("Purple"),
+            "⚫️" to tr("Black"), "⚪️" to tr("White"), "🩷" to tr("Pink"), "🩵" to tr("Cyan")),
+        listOf("🍎" to tr("Apple"), "🍌" to tr("Banana"), "🍊" to tr("Orange (fruit)"), "🍇" to tr("Grapes"), "🍓" to tr("Strawberry"), "🍉" to tr("Watermelon"),
+            "🍑" to tr("Peach"), "🍒" to tr("Cherry"), "🥝" to tr("Kiwi"), "🍍" to tr("Pineapple")),
+        listOf("⭐" to tr("Star"), "🌙" to tr("Moon"), "☀️" to tr("Sun"), "🌈" to tr("Rainbow"), "☁️" to tr("Cloud"), "❄️" to tr("Snow"),
+            "🔥" to tr("Fire"), "💧" to tr("Water"), "🌸" to tr("Flower"), "🍀" to tr("Clover")),
+        listOf("🐶" to tr("Dog"), "🐱" to tr("Cat"), "🐰" to tr("Rabbit"), "🐻" to tr("Bear"), "🦊" to tr("Fox"), "🐼" to tr("Panda"),
+            "🦁" to tr("Lion"), "🐯" to tr("Tiger"), "🐸" to tr("Frog"), "🐵" to tr("Monkey")),
+        listOf("🚗" to tr("Car"), "🚌" to tr("Bus"), "🚓" to tr("Police Car"), "🚑" to tr("Ambulance"), "🚒" to tr("Fire Truck"), "✈️" to tr("Plane"),
+            "🚀" to tr("Rocket"), "🚁" to tr("Helicopter"), "🚲" to tr("Bike"), "⛵" to tr("Boat")),
+        listOf("🍕" to tr("Pizza"), "🍔" to tr("Burger"), "🌭" to tr("Hot Dog"), "🍟" to tr("Fries"), "🍩" to tr("Donut"), "🍪" to tr("Cookie"),
+            "🍰" to tr("Cake"), "🍦" to tr("Ice Cream"), "🍫" to tr("Chocolate"), "🍿" to tr("Popcorn"))
     )
 
     private fun makePairs(level: Int, count: Int, mode: MatchMode): List<LevelPairDefinition> =

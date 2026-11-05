@@ -28,7 +28,7 @@ struct BadgeView: View {
                 .font(.system(size: size * 0.4, weight: .bold))
                 .foregroundStyle(.white)
         }
-        .accessibilityLabel("\(tier.rawValue) badge")
+        .accessibilityLabel(tr("{0} badge", tr(tier.rawValue)))
     }
 }
 
@@ -45,6 +45,6 @@ struct StarRatingView: View {
                     .foregroundStyle(i < stars ? Color(hex: "FFD60A") : Color.gray.opacity(0.4))
             }
         }
-        .accessibilityLabel("\(stars) of \(max) stars")
+        .accessibilityLabel(tr("{0} of {1} stars", stars, max))
     }
 }

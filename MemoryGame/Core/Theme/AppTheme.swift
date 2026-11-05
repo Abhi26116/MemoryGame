@@ -114,11 +114,11 @@ enum CardBackStyle: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .classic: return "Classic"
-        case .ocean: return "Ocean"
-        case .sunset: return "Sunset"
-        case .forest: return "Forest"
-        case .candy: return "Candy"
+        case .classic: return tr("Classic")
+        case .ocean: return tr("Ocean")
+        case .sunset: return tr("Sunset")
+        case .forest: return tr("Forest")
+        case .candy: return tr("Candy")
         }
     }
 
@@ -191,7 +191,7 @@ struct KidBackButtonModifier: ViewModifier {
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(AppTheme.linkBlue(for: colorScheme))
                     }
-                    .accessibilityLabel("Back")
+                    .accessibilityLabel(tr("Back"))
                 }
             }
     }

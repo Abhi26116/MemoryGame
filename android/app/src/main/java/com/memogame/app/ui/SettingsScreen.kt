@@ -38,6 +38,7 @@ import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HeartBroken
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.OpenInNew
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
@@ -81,11 +83,13 @@ import com.memogame.app.core.DSCard
 import com.memogame.app.core.DSScreenBackground
 import com.memogame.app.core.DSText
 import com.memogame.app.core.InlineTitleBar
+import com.memogame.app.core.L10n
 import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.SectionHeader
 import com.memogame.app.core.StatCard
 import com.memogame.app.core.cardBackBrush
 import com.memogame.app.core.pressableClickable
+import com.memogame.app.core.tr
 import com.memogame.app.engine.StarRatingRules
 import com.memogame.app.model.AppearanceMode
 import com.memogame.app.model.CardBackStyle
@@ -107,6 +111,7 @@ fun SettingsScreen(
     var showResetAlert by remember { mutableStateOf(false) }
     var showParentalGate by remember { mutableStateOf(false) }
     var showNotifDeniedAlert by remember { mutableStateOf(false) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
     var showPrivacyOptions by remember { mutableStateOf(false) }
 
     // Keyed on isReady so this re-reads once the launch consent flow settles —
@@ -138,7 +143,7 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InlineTitleBar(title = "Settings", alpha = collapsedFraction)
+            InlineTitleBar(title = tr("Settings"), alpha = collapsedFraction)
             Column(
                 modifier = Modifier
                     .widthIn(max = DS.Layout.contentMaxWidth)
@@ -149,7 +154,7 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(DS.Spacing.xl)
             ) {
                 Text(
-                    "Settings",
+                    tr("Settings"),
                     style = DSText.title.copy(fontSize = 24.sp),
                     color = ds.textPrimary,
                     modifier = Modifier.graphicsLayer { alpha = 1f - collapsedFraction }
@@ -157,24 +162,24 @@ fun SettingsScreen(
 
             // Your Progress
             DSCard {
-                SectionHeader("Your Progress", Icons.Rounded.BarChart)
+                SectionHeader(tr("Your Progress"), Icons.Rounded.BarChart)
                 Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm + 2.dp)) {
-                    StatCard("${store.completedLevels}", "Done", Icons.Rounded.CheckCircle, Modifier.weight(1f))
-                    StatCard("${store.totalStars}", "Stars", Icons.Rounded.Star, Modifier.weight(1f), tint = ds.star)
-                    StatCard("${store.goldLevels}", "Gold", Icons.Rounded.WorkspacePremium, Modifier.weight(1f), tint = ds.star)
+                    StatCard("${store.completedLevels}", tr("Done"), Icons.Rounded.CheckCircle, Modifier.weight(1f))
+                    StatCard("${store.totalStars}", tr("Stars"), Icons.Rounded.Star, Modifier.weight(1f), tint = ds.star)
+                    StatCard("${store.goldLevels}", tr("Gold"), Icons.Rounded.WorkspacePremium, Modifier.weight(1f), tint = ds.star)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm)
                 ) {
                     Icon(Icons.Rounded.EmojiEvents, contentDescription = null, tint = ds.star, modifier = Modifier.size(18.dp))
-                    Text("${store.achievementsUnlocked} achievements unlocked", style = DSText.caption, color = ds.textSecondary)
+                    Text(tr("{0} achievements unlocked", store.achievementsUnlocked), style = DSText.caption, color = ds.textSecondary)
                 }
             }
 
             // Levels
             DSCard {
-                SectionHeader("Levels", Icons.Rounded.GridView)
+                SectionHeader(tr("Levels"), Icons.Rounded.GridView)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -184,8 +189,8 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Rounded.FormatListNumbered, contentDescription = null, tint = ds.link)
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)) {
-                        Text("All Levels", style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.textPrimary)
-                        Text("Browse, replay, and check your stars", style = DSText.caption, color = ds.textSecondary)
+                        Text(tr("All Levels"), style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.textPrimary)
+                        Text(tr("Browse, replay, and check your stars"), style = DSText.caption, color = ds.textSecondary)
                     }
                     Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = ds.textSecondary)
                 }
@@ -193,8 +198,8 @@ fun SettingsScreen(
 
             // Appearance
             DSCard {
-                SectionHeader("Appearance", Icons.Rounded.Brush)
-                Text("Choose light, dark, or match your device.", style = DSText.caption, color = ds.textSecondary)
+                SectionHeader(tr("Appearance"), Icons.Rounded.Brush)
+                Text(tr("Choose light, dark, or match your device."), style = DSText.caption, color = ds.textSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm)) {
                     AppearanceMode.entries.forEach { mode ->
                         val selected = store.appearanceMode == mode
@@ -231,10 +236,35 @@ fun SettingsScreen(
                 }
             }
 
+            // Language
+            DSCard {
+                SectionHeader(tr("Language"), Icons.Rounded.Language)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pressableClickable { showLanguagePicker = true },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.md)
+                ) {
+                    Icon(Icons.Rounded.Translate, contentDescription = null, tint = ds.link)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)) {
+                        Text(
+                            L10n.nativeNames[L10n.language] ?: "English",
+                            style = DSText.body.copy(fontWeight = FontWeight.Bold),
+                            color = ds.textPrimary
+                        )
+                        if (L10n.override == null) {
+                            Text(tr("Same as device"), style = DSText.caption, color = ds.textSecondary)
+                        }
+                    }
+                    Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = ds.textSecondary)
+                }
+            }
+
             // Card style
             DSCard {
-                SectionHeader("Card Style", Icons.Rounded.GridView)
-                Text("Pick the look of the card backs.", style = DSText.caption, color = ds.textSecondary)
+                SectionHeader(tr("Card Style"), Icons.Rounded.GridView)
+                Text(tr("Pick the look of the card backs."), style = DSText.caption, color = ds.textSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.sm + 2.dp)) {
                     CardBackStyle.entries.forEach { style ->
                         val selected = store.cardBackStyle == style
@@ -274,10 +304,10 @@ fun SettingsScreen(
 
             // Gameplay
             DSCard {
-                SectionHeader("Gameplay", Icons.Rounded.SportsEsports)
+                SectionHeader(tr("Gameplay"), Icons.Rounded.SportsEsports)
                 SettingsToggle(
-                    title = "Sound Effects",
-                    subtitle = "Flips, matches, and level complete sounds",
+                    title = tr("Sound Effects"),
+                    subtitle = tr("Flips, matches, and level complete sounds"),
                     icon = Icons.Rounded.VolumeUp,
                     checked = store.settings.soundEnabled
                 ) { value ->
@@ -285,14 +315,14 @@ fun SettingsScreen(
                     store.updateSettings { it.copy(soundEnabled = value) }
                 }
                 SettingsToggle(
-                    title = "Haptic Feedback",
-                    subtitle = "Gentle taps when you flip and match cards",
+                    title = tr("Haptic Feedback"),
+                    subtitle = tr("Gentle taps when you flip and match cards"),
                     icon = Icons.Rounded.TouchApp,
                     checked = store.settings.hapticsEnabled
                 ) { value -> store.updateSettings { it.copy(hapticsEnabled = value) } }
                 SettingsToggle(
-                    title = "Memorize Preview",
-                    subtitle = "Show all cards to memorize at the start (level 3+)",
+                    title = tr("Memorize Preview"),
+                    subtitle = tr("Show all cards to memorize at the start (level 3+)"),
                     icon = Icons.Rounded.RemoveRedEye,
                     checked = store.settings.memorizePreviewEnabled
                 ) { value -> store.updateSettings { it.copy(memorizePreviewEnabled = value) } }
@@ -300,10 +330,10 @@ fun SettingsScreen(
 
             // Notifications
             DSCard {
-                SectionHeader("Notifications", Icons.Rounded.Notifications)
+                SectionHeader(tr("Notifications"), Icons.Rounded.Notifications)
                 SettingsToggle(
-                    title = "Reminders",
-                    subtitle = "A daily nudge, plus a friendly note if you've been away",
+                    title = tr("Reminders"),
+                    subtitle = tr("A daily nudge, plus a friendly note if you've been away"),
                     icon = Icons.Rounded.Notifications,
                     checked = store.remindersEnabled
                 ) { enabled ->
@@ -324,7 +354,7 @@ fun SettingsScreen(
             // Remove Ads — hidden while purchases are disabled for this build.
             if (StoreManager.PURCHASES_ENABLED) {
             DSCard {
-                SectionHeader("Ads", Icons.Rounded.HeartBroken)
+                SectionHeader(tr("Ads"), Icons.Rounded.HeartBroken)
                 if (storeManager.adsRemoved) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -332,7 +362,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = ds.success)
                         Text(
-                            "Ads removed — thank you!",
+                            tr("Ads removed — thank you!"),
                             style = DSText.body.copy(fontWeight = FontWeight.SemiBold),
                             color = ds.textPrimary
                         )
@@ -350,10 +380,10 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Rounded.HeartBroken, contentDescription = null, tint = ds.link)
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)) {
-                            Text("Remove Ads", style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.link)
+                            Text(tr("Remove Ads"), style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.link)
                             Text(
-                                storeManager.removeAdsDisplayPrice?.let { "One-time purchase — $it, no more ads" }
-                                    ?: "One-time purchase — no more ads",
+                                storeManager.removeAdsDisplayPrice?.let { tr("One-time purchase — {0}, no more ads", it) }
+                                    ?: tr("One-time purchase — no more ads"),
                                 style = DSText.caption,
                                 color = ds.textSecondary
                             )
@@ -370,22 +400,22 @@ fun SettingsScreen(
 
             // Accessibility
             DSCard {
-                SectionHeader("Accessibility", Icons.Rounded.Accessibility)
+                SectionHeader(tr("Accessibility"), Icons.Rounded.Accessibility)
                 SettingsToggle(
-                    title = "Large Text",
-                    subtitle = "Bigger emojis and labels on game cards",
+                    title = tr("Large Text"),
+                    subtitle = tr("Bigger emojis and labels on game cards"),
                     icon = Icons.Rounded.TextFields,
                     checked = store.settings.largeText
                 ) { value -> store.updateSettings { it.copy(largeText = value) } }
                 SettingsToggle(
-                    title = "High Contrast",
-                    subtitle = "Thicker borders and sharper card faces",
+                    title = tr("High Contrast"),
+                    subtitle = tr("Thicker borders and sharper card faces"),
                     icon = Icons.Rounded.Contrast,
                     checked = store.settings.highContrast
                 ) { value -> store.updateSettings { it.copy(highContrast = value) } }
                 SettingsToggle(
-                    title = "Color Blind Friendly",
-                    subtitle = "Uses blue accents instead of mixed colors",
+                    title = tr("Color Blind Friendly"),
+                    subtitle = tr("Uses blue accents instead of mixed colors"),
                     icon = Icons.Rounded.RemoveRedEye,
                     checked = store.settings.colorBlindMode
                 ) { value -> store.updateSettings { it.copy(colorBlindMode = value) } }
@@ -393,7 +423,7 @@ fun SettingsScreen(
 
             // Data
             DSCard {
-                SectionHeader("Data", Icons.Rounded.Storage)
+                SectionHeader(tr("Data"), Icons.Rounded.Storage)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -403,26 +433,26 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Rounded.Refresh, contentDescription = null, tint = ds.danger)
                     Column(verticalArrangement = Arrangement.spacedBy(DS.Spacing.xxs)) {
-                        Text("Reset All Progress", style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.danger)
-                        Text("Start over from Level 1", style = DSText.caption, color = ds.textSecondary)
+                        Text(tr("Reset All Progress"), style = DSText.body.copy(fontWeight = FontWeight.Bold), color = ds.danger)
+                        Text(tr("Start over from Level 1"), style = DSText.caption, color = ds.textSecondary)
                     }
                 }
             }
 
             // About
             DSCard {
-                SectionHeader("About", Icons.Rounded.Info)
-                InfoRow("App", APP_NAME)
-                InfoRow("Unlock rule", "Complete a level to open the next")
+                SectionHeader(tr("About"), Icons.Rounded.Info)
+                InfoRow(tr("App"), APP_NAME)
+                InfoRow(tr("Unlock rule"), tr("Complete a level to open the next"))
                 InfoRow(
-                    "Star guide",
-                    "3★ ≤ pairs moves · 2★ ≤ pairs + ${StarRatingRules.TWO_STAR_EXTRA_MOVES} · 1★ finish"
+                    tr("Star guide"),
+                    tr("3★ ≤ pairs moves · 2★ ≤ pairs + {0} · 1★ finish", StarRatingRules.TWO_STAR_EXTRA_MOVES)
                 )
             }
 
             // Legal
             DSCard {
-                SectionHeader("Support & Privacy", Icons.Rounded.Info)
+                SectionHeader(tr("Support & Privacy"), Icons.Rounded.Info)
                 // Only shown where UMP says this user is owed a way back to
                 // their consent answer — elsewhere there is no form to
                 // re-present, so the row would dead-end.
@@ -433,9 +463,9 @@ fun SettingsScreen(
                         }
                     )
                 }
-                LegalLink("Privacy Policy", "$SITE_BASE_URL/privacy-policy.html")
-                LegalLink("Terms & Conditions", "$SITE_BASE_URL/terms-and-conditions.html")
-                LegalLink("Contact Support", "$SITE_BASE_URL/")
+                LegalLink(tr("Privacy Policy"), "$SITE_BASE_URL/privacy-policy.html")
+                LegalLink(tr("Terms & Conditions"), "$SITE_BASE_URL/terms-and-conditions.html")
+                LegalLink(tr("Contact Support"), "$SITE_BASE_URL/")
             }
 
             Spacer(Modifier.height(DS.Spacing.lg))
@@ -446,16 +476,16 @@ fun SettingsScreen(
     if (showResetAlert) {
         AlertDialog(
             onDismissRequest = { showResetAlert = false },
-            title = { Text("Reset all progress?") },
-            text = { Text("This removes stars, level progress, and achievements. Your settings stay the same.") },
+            title = { Text(tr("Reset all progress?")) },
+            text = { Text(tr("This removes stars, level progress, and achievements. Your settings stay the same.")) },
             confirmButton = {
                 TextButton(onClick = {
                     store.resetAllProgress()
                     showResetAlert = false
-                }) { Text("Reset", color = ds.danger) }
+                }) { Text(tr("Reset"), color = ds.danger) }
             },
             dismissButton = {
-                TextButton(onClick = { showResetAlert = false }) { Text("Cancel") }
+                TextButton(onClick = { showResetAlert = false }) { Text(tr("Cancel")) }
             }
         )
     }
@@ -463,18 +493,55 @@ fun SettingsScreen(
     if (showNotifDeniedAlert) {
         AlertDialog(
             onDismissRequest = { showNotifDeniedAlert = false },
-            title = { Text("Notifications are off") },
-            text = { Text("Enable notifications for $APP_NAME in your device Settings to get daily reminders.") },
+            title = { Text(tr("Notifications are off")) },
+            text = { Text(tr("Enable notifications for {0} in your device Settings to get daily reminders.", APP_NAME)) },
             confirmButton = {
                 TextButton(onClick = {
                     showNotifDeniedAlert = false
                     val intent = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                         .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
                     runCatching { context.startActivity(intent) }
-                }) { Text("Open Settings") }
+                }) { Text(tr("Open Settings")) }
             },
             dismissButton = {
-                TextButton(onClick = { showNotifDeniedAlert = false }) { Text("Not Now") }
+                TextButton(onClick = { showNotifDeniedAlert = false }) { Text(tr("Not Now")) }
+            }
+        )
+    }
+
+    if (showLanguagePicker) {
+        // null = follow the device; then each language in its own name.
+        val options = listOf<String?>(null) + L10n.nativeNames.keys
+        AlertDialog(
+            onDismissRequest = { showLanguagePicker = false },
+            title = { Text(tr("Language")) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    options.forEach { code ->
+                        val selected = L10n.override == code
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pressableClickable {
+                                    showLanguagePicker = false
+                                    context.findActivity()?.let { L10n.setOverride(it, code) }
+                                }
+                                .padding(vertical = DS.Spacing.sm),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                if (code == null) tr("Same as device") else L10n.nativeNames.getValue(code),
+                                style = DSText.body.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal),
+                                color = if (selected) ds.link else ds.textPrimary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (selected) Icon(Icons.Rounded.Check, contentDescription = null, tint = ds.link)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguagePicker = false }) { Text(tr("Cancel")) }
             }
         )
     }
@@ -557,7 +624,7 @@ private fun PrivacyOptionsLink(onDismissed: () -> Unit) {
     ) {
         Icon(Icons.Rounded.PrivacyTip, contentDescription = null, tint = ds.link, modifier = Modifier.size(20.dp))
         Text(
-            "Privacy Options",
+            tr("Privacy Options"),
             style = DSText.body.copy(fontWeight = FontWeight.SemiBold),
             color = ds.textPrimary,
             modifier = Modifier.weight(1f)

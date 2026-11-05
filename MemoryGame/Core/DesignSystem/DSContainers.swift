@@ -283,16 +283,16 @@ struct Dialog<Content: View>: View {
     ScrollView {
         VStack(spacing: DS.Spacing.xl) {
             DSCard {
-                SectionHeader(title: "Your Journey", icon: "map.fill")
+                SectionHeader(title: tr("Your Journey"), icon: "map.fill")
                 HStack(spacing: DS.Spacing.md) {
-                    StatCard(value: "12", label: "Completed", icon: "flag.checkered")
-                    StatCard(value: "28", label: "Stars", icon: "star.fill", tint: DS.Color.star)
+                    StatCard(value: "12", label: tr("Completed"), icon: "flag.checkered")
+                    StatCard(value: "28", label: tr("Stars"), icon: "star.fill", tint: DS.Color.star)
                 }
             }
             HStack(spacing: DS.Spacing.md) {
-                StatCard(value: "4", label: "Moves", icon: "arrow.left.arrow.right",
+                StatCard(value: "4", label: tr("Moves"), icon: "arrow.left.arrow.right",
                          axis: .horizontal)
-                StatCard(value: "0:42", label: "Time", icon: "clock.fill",
+                StatCard(value: "0:42", label: tr("Time"), icon: "clock.fill",
                          tint: DS.Color.accent, axis: .horizontal)
             }
             ProgressRing(progress: 0.7) {

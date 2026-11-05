@@ -31,6 +31,7 @@ import com.memogame.app.core.DS
 import com.memogame.app.core.DSText
 import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.pressableClickable
+import com.memogame.app.core.tr
 import kotlin.random.Random
 
 private data class GateQuestion(val a: Int, val b: Int, val options: List<Int>)
@@ -69,13 +70,13 @@ fun ParentalGateDialog(onDismiss: () -> Unit, onPass: () -> Unit) {
             )
 
             Text(
-                "Ask a grown-up",
+                tr("Ask a grown-up"),
                 style = DSText.title.copy(fontSize = 24.sp),
                 color = ds.textPrimary
             )
 
             Text(
-                "What is ${question.a} + ${question.b}?",
+                tr("What is {0} + {1}?", question.a, question.b),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = ds.textSecondary
@@ -108,11 +109,11 @@ fun ParentalGateDialog(onDismiss: () -> Unit, onPass: () -> Unit) {
             }
 
             if (wrong) {
-                Text("Try again!", style = DSText.caption, color = ds.danger)
+                Text(tr("Try again!"), style = DSText.caption, color = ds.danger)
             }
 
             Text(
-                "Cancel",
+                tr("Cancel"),
                 style = DSText.body.copy(fontWeight = FontWeight.SemiBold),
                 color = ds.link,
                 textAlign = TextAlign.Center,

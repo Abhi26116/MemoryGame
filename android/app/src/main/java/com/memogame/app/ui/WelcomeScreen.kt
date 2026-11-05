@@ -51,6 +51,7 @@ import com.memogame.app.core.DSText
 import com.memogame.app.core.LocalDSColors
 import com.memogame.app.core.PrimaryButton
 import com.memogame.app.core.pressableClickable
+import com.memogame.app.core.tr
 import com.memogame.app.services.StoreManager
 
 /**
@@ -149,12 +150,12 @@ private fun WelcomePage(onNext: () -> Unit) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DS.Spacing.sm)) {
             Text(
-                "Welcome to $APP_NAME",
+                tr("Welcome to {0}", APP_NAME),
                 style = DSText.largeTitle.copy(brush = ds.accentGradient),
                 textAlign = TextAlign.Center
             )
             Text(
-                "Train your memory with delightful, bite-sized levels.",
+                tr("Train your memory with delightful, bite-sized levels."),
                 style = DSText.callout,
                 color = ds.textSecondary,
                 textAlign = TextAlign.Center
@@ -162,17 +163,17 @@ private fun WelcomePage(onNext: () -> Unit) {
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(DS.Spacing.md)) {
-            FeatureRow(Icons.Rounded.GridView, ds.brand, "Flip & Match",
-                "Find every matching pair to clear a level.")
-            FeatureRow(Icons.Rounded.Star, ds.star, "Earn Stars",
-                "Finish fast with few moves to earn 3 stars.")
-            FeatureRow(Icons.Rounded.LockOpen, ds.success, "Unlock Levels",
-                "Beat a level to open the next challenge.")
+            FeatureRow(Icons.Rounded.GridView, ds.brand, tr("Flip & Match"),
+                tr("Find every matching pair to clear a level."))
+            FeatureRow(Icons.Rounded.Star, ds.star, tr("Earn Stars"),
+                tr("Finish fast with few moves to earn 3 stars."))
+            FeatureRow(Icons.Rounded.LockOpen, ds.success, tr("Unlock Levels"),
+                tr("Beat a level to open the next challenge."))
         }
 
         Spacer(Modifier.weight(1f))
 
-        PrimaryButton(title = "Next", icon = Icons.Rounded.ArrowForward, onClick = onNext)
+        PrimaryButton(title = tr("Next"), icon = Icons.Rounded.ArrowForward, onClick = onNext)
     }
 }
 
@@ -186,11 +187,11 @@ private fun RemoveAdsPage(
     val adsRemoved = storeManager.adsRemoved
 
     val subtitle = if (adsRemoved) {
-        "Your Remove Ads purchase is active. Enjoy uninterrupted play!"
+        tr("Your Remove Ads purchase is active. Enjoy uninterrupted play!")
     } else {
         storeManager.removeAdsDisplayPrice?.let {
-            "One-time purchase — $it. Remove all ads and keep the focus on play. You can always do this later in Settings."
-        } ?: "Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings."
+            tr("One-time purchase — {0}. Remove all ads and keep the focus on play. You can always do this later in Settings.", it)
+        } ?: tr("Remove all ads with a one-time purchase and keep the focus on play. You can always do this later in Settings.")
     }
 
     Column(
@@ -220,7 +221,7 @@ private fun RemoveAdsPage(
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DS.Spacing.sm)) {
             Text(
-                if (adsRemoved) "You're Ad-Free!" else "Play Ad-Free",
+                if (adsRemoved) tr("You're Ad-Free!") else tr("Play Ad-Free"),
                 style = DSText.title.copy(brush = ds.accentGradient),
                 textAlign = TextAlign.Center
             )
@@ -231,7 +232,7 @@ private fun RemoveAdsPage(
 
         Column(verticalArrangement = Arrangement.spacedBy(DS.Spacing.sm)) {
             if (adsRemoved) {
-                PrimaryButton(title = "Continue", icon = Icons.Rounded.ArrowForward, onClick = onFinish)
+                PrimaryButton(title = tr("Continue"), icon = Icons.Rounded.ArrowForward, onClick = onFinish)
             } else {
                 StoreStatusBanner(storeManager)
 
@@ -245,7 +246,7 @@ private fun RemoveAdsPage(
                 // No "Restore Purchases" on Android — Play Billing restores the
                 // entitlement automatically when the app connects.
                 Text(
-                    "Skip for now",
+                    tr("Skip for now"),
                     style = DSText.button,
                     color = ds.textSecondary,
                     modifier = Modifier
