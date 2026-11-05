@@ -25,20 +25,16 @@ object ConsentManager {
     private const val TAG = "Consent"
 
     /**
-     * The app is COPPA child-directed ([AdsManager.configure] sets
-     * `TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE`), so the UMP request says the
-     * same thing: the user is under the age of consent. UMP then never asks a
-     * child to consent to personalized ads, which is the only answer
-     * consistent with the child-directed flag already forcing
-     * non-personalized ads anyway.
+     * Off, so EEA/UK users get the published "European regulations" consent
+     * form and Settings shows the Privacy Options row when UMP requires it.
+     * Setting it to `true` makes Google treat the form as ineligible and UMP
+     * resolves to "no consent needed, serve non-personalized" instead.
      *
-     * Side effect worth knowing: with this set, Google treats the EEA
-     * *consent* message as ineligible, so the published "European
-     * regulations" form generally won't appear — UMP resolves to "no consent
-     * needed, serve non-personalized" instead. Flip this to `false` only if
-     * the app stops being child-directed.
+     * Note: ad requests are still tagged child-directed ([AdsManager.configure]
+     * sets `TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE`), which forces
+     * non-personalized ads regardless of what the user picks here.
      */
-    private const val TAG_FOR_UNDER_AGE_OF_CONSENT = true
+    private const val TAG_FOR_UNDER_AGE_OF_CONSENT = false
 
     private var gathered = false
     private var gathering = false
