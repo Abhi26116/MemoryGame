@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: back up only player progress (levels, stars, achievements,
+     settings) so it comes back after a reinstall. Ad / consent SDK state is
+     left out on purpose and re-gathered on the new install. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="memory_game_store.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="memory_game_store.xml" />
+    </device-transfer>
+</data-extraction-rules>
